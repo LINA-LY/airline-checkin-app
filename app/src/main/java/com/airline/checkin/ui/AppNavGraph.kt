@@ -24,7 +24,6 @@ object Routes {
 @Composable
 fun AppNavGraph(navController: NavHostController = rememberNavController()) {
     NavHost(navController = navController, startDestination = Routes.LOGIN) {
-
         composable(Routes.LOGIN) {
             LoginScreen(
                 onLoginSuccess  = { navController.navigate(Routes.BOOKING_LOOKUP) },
