@@ -3,8 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt)
-    alias(libs.plugins.google.services)
-    kotlin("kapt")
+    // alias(libs.plugins.google.services)  // TODO: add google-services.json from Auth task
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -43,6 +43,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.compose.foundation)
     debugImplementation(libs.androidx.ui.tooling)
 
     // Navigation
@@ -50,19 +51,19 @@ dependencies {
 
     // Hilt
     implementation(libs.hilt.android)
-    kapt(libs.hilt.compiler)
+    ksp(libs.hilt.compiler)
     implementation(libs.hilt.navigation.compose)
 
     // Room
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
-    kapt(libs.room.compiler)
+    ksp(libs.room.compiler)
 
     // Firebase
-    implementation(platform(libs.firebase.bom))
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.firestore)
-    implementation(libs.firebase.storage)
+    //implementation(platform(libs.firebase.bom))
+    //implementation(libs.firebase.auth)
+    //implementation(libs.firebase.firestore)
+    //implementation(libs.firebase.storage)
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
