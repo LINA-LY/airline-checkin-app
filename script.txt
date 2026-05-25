@@ -1,0 +1,2053 @@
+============================================================
+DIRECTORY STRUCTURE
+============================================================
++---app/
+|   +---src/
+|   |   \---main/
+|   |       +---java/
+|   |       |   \---com/
+|   |       |       \---airline/
+|   |       |           \---checkin/
+|   |       |               +---data/
+|   |       |               |   +---local/
+|   |       |               |   |   +---dao/
+|   |       |               |   |   |   \---Daos.kt
+|   |       |               |   |   +---entity/
+|   |       |               |   |   |   \---Entities.kt
+|   |       |               |   |   \---AppDatabase.kt
+|   |       |               |   +---remote/
+|   |       |               |   |   \---firebase/
+|   |       |               |   |       \---FirebaseService.kt
+|   |       |               |   \---repository/
+|   |       |               |       \---Repositories.kt
+|   |       |               +---di/
+|   |       |               |   \---AppModules.kt
+|   |       |               +---domain/
+|   |       |               |   \---model/
+|   |       |               |       \---Models.kt
+|   |       |               +---ui/
+|   |       |               |   +---auth/
+|   |       |               |   |   +---AuthScreens.kt
+|   |       |               |   |   \---AuthViewModel.kt
+|   |       |               |   +---boardingpass/
+|   |       |               |   |   \---BoardingPassScreen.kt
+|   |       |               |   +---checkin/
+|   |       |               |   |   \---CheckInScreens.kt
+|   |       |               |   +---seat/
+|   |       |               |   |   \---SeatMapScreen.kt
+|   |       |               |   \---AppNavGraph.kt
+|   |       |               \---MainActivity.kt
+|   |       +---res/
+|   |       |   \---values/
+|   |       |       \---themes.xml
+|   |       \---AndroidManifest.xml
+|   +---build.gradle.kts
+|   \---google-services.json
++---gradle/
+|   +---wrapper/
+|   |   \---gradle-wrapper.properties
+|   \---libs.versions.toml
++---build.gradle.kts
++---gradle.properties
++---gradlew.bat
++---local.properties
++---README.md
+\---settings.gradle.kts
+
+============================================================
+FILE CONTENTS
+============================================================
+
+============================================================
+FILE: app/src/main/java/com/airline/checkin/data/local/dao/Daos.kt
+============================================================
+package com.airline.checkin.data.local.dao
+
+import androidx.room.*
+import com.airline.checkin.data.local.entity.*
+import kotlinx.coroutines.flow.Flow
+
+@Dao
+interface UserDao {
+    @Query("SELECT * FROM users WHERE id = :id")
+    suspend fun getById(id: String): UserEntity?
+
+    @Upsert
+    suspend fun upsert(user: UserEntity)
+
+    @Query("DELETE FROM users")
+    suspend fun clear()
+}
+
+@Dao
+interface FlightDao {
+    @Query("SELECT * FROM flights WHERE id = :id")
+    suspend fun getById(id: String): FlightEntity?
+
+    @Upsert
+    suspend fun upsert(flight: FlightEntity)
+}
+
+@Dao
+interface BookingDao {
+    @Query("SELECT * FROM bookings WHERE reference = :ref")
+    suspend fun getByReference(ref: String): BookingEntity?
+
+    @Upsert
+    suspend fun upsert(booking: BookingEntity)
+
+    @Query("UPDATE bookings SET checkInStatus = 1 WHERE id = :id")
+    suspend fun markCheckedIn(id: String)
+}
+
+@Dao
+interface PassengerDao {
+    @Query("SELECT * FROM passengers WHERE bookingId = :bookingId")
+    suspend fun getByBooking(bookingId: String): PassengerEntity?
+
+    @Upsert
+    suspend fun upsert(passenger: PassengerEntity)
+}
+
+@Dao
+interface SeatDao {
+    @Query("SELECT * FROM seats WHERE flightId = :flightId")
+    fun getByFlight(flightId: String): Flow<List<SeatEntity>>
+
+    @Upsert
+    suspend fun upsertAll(seats: List<SeatEntity>)
+
+    @Query("UPDATE seats SET isOccupied = 1 WHERE id = :seatId")
+    suspend fun markOccupied(seatId: String)
+}
+
+@Dao
+interface BoardingPassDao {
+    @Query("SELECT * FROM boarding_passes WHERE bookingId = :bookingId")
+    suspend fun getByBooking(bookingId: String): BoardingPassEntity?
+
+    @Upsert
+    suspend fun upsert(boardingPass: BoardingPassEntity)
+}
+
+@Dao
+interface BaggageDeclarationDao {
+    @Query("SELECT * FROM baggage_declarations WHERE bookingId = :bookingId")
+    suspend fun getByBooking(bookingId: String): BaggageDeclarationEntity?
+
+    @Upsert
+    suspend fun upsert(baggage: BaggageDeclarationEntity)
+}
+
+
+============================================================
+FILE: app/src/main/java/com/airline/checkin/data/local/entity/Entities.kt
+============================================================
+package com.airline.checkin.data.local.entity
+
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "users")
+data class UserEntity(
+    @PrimaryKey val id: String,
+    val fullName: String,
+    val email: String,
+    val phone: String
+)
+
+@Entity(tableName = "flights")
+data class FlightEntity(
+    @PrimaryKey val id: String,
+    val flightNumber: String,
+    val origin: String,
+    val destination: String,
+    val departureTime: String,
+    val arrivalTime: String,
+    val status: String
+)
+
+@Entity(tableName = "bookings")
+data class BookingEntity(
+    @PrimaryKey val id: String,
+    val reference: String,
+    val flightId: String,
+    val passengerId: String,
+    val checkInStatus: Boolean
+)
+
+@Entity(tableName = "passengers")
+data class PassengerEntity(
+    @PrimaryKey val id: String,
+    val bookingId: String,
+    val fullName: String,
+    val passportNumber: String,
+    val dateOfBirth: String,
+    val nationality: String
+)
+
+@Entity(tableName = "seats")
+data class SeatEntity(
+    @PrimaryKey val id: String,
+    val flightId: String,
+    val seatNumber: String,
+    val type: String,
+    val isOccupied: Boolean
+)
+
+@Entity(tableName = "boarding_passes")
+data class BoardingPassEntity(
+    @PrimaryKey val id: String,
+    val bookingId: String,
+    val passengerId: String,
+    val flightNumber: String,
+    val seatNumber: String,
+    val gate: String,
+    val boardingTime: String,
+    val qrCode: String,
+    val isDownloaded: Boolean
+)
+
+@Entity(tableName = "baggage_declarations")
+data class BaggageDeclarationEntity(
+    @PrimaryKey val id: String,
+    val bookingId: String,
+    val cabinBags: Int,
+    val checkedBags: Int,
+    val specialItems: String
+)
+
+
+============================================================
+FILE: app/src/main/java/com/airline/checkin/data/local/AppDatabase.kt
+============================================================
+package com.airline.checkin.data.local
+
+import androidx.room.Database
+import androidx.room.RoomDatabase
+import com.airline.checkin.data.local.dao.*
+import com.airline.checkin.data.local.entity.*
+
+@Database(
+    entities = [
+        UserEntity::class,
+        FlightEntity::class,
+        BookingEntity::class,
+        PassengerEntity::class,
+        SeatEntity::class,
+        BoardingPassEntity::class,
+        BaggageDeclarationEntity::class
+    ],
+    version = 1,
+    exportSchema = false
+)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun userDao(): UserDao
+    abstract fun flightDao(): FlightDao
+    abstract fun bookingDao(): BookingDao
+    abstract fun passengerDao(): PassengerDao
+    abstract fun seatDao(): SeatDao
+    abstract fun boardingPassDao(): BoardingPassDao
+    abstract fun baggageDeclarationDao(): BaggageDeclarationDao
+}
+
+
+============================================================
+FILE: app/src/main/java/com/airline/checkin/data/remote/firebase/FirebaseService.kt
+============================================================
+package com.airline.checkin.data.remote.firebase
+
+import com.airline.checkin.domain.model.*
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class FirebaseService @Inject constructor() {
+
+    // ---- Auth ----
+    suspend fun signIn(email: String, password: String): Boolean {
+        return email == "test@test.com" && password == "123456"
+    }
+
+    suspend fun register(email: String, password: String): Boolean {
+        return true
+    }
+
+    fun signOut() { /* no-op */ }
+
+    fun currentUserId(): String? = "mock-user-001"
+
+    // ---- Bookings ----
+    suspend fun getBookingByReference(ref: String, lastName: String): Booking? {
+        if (ref.isBlank() || lastName.isBlank()) return null
+        return Booking(
+            id = "B001",
+            reference = ref,
+            flightId = "FL001",
+            passengerId = "P001",
+            checkInStatus = false
+        )
+    }
+
+    // ---- Flights ----
+    suspend fun getFlight(flightId: String): Flight? {
+        return Flight(
+            id = "FL001",
+            flightNumber = "IDN16821",
+            origin = "CGK",
+            destination = "DPS",
+            departureTime = "16:55",
+            arrivalTime = "20:30",
+            status = "On Time"
+        )
+    }
+
+    // ---- Seats ----
+    suspend fun getSeats(flightId: String): List<Seat> {
+        return listOf(
+            Seat(id = "S1", flightId = flightId, seatNumber = "5B",
+                type = SeatType.ECONOMY, isOccupied = false),
+            Seat(id = "S2", flightId = flightId, seatNumber = "5C",
+                type = SeatType.ECONOMY, isOccupied = true),
+            Seat(id = "S3", flightId = flightId, seatNumber = "5D",
+                type = SeatType.ECONOMY, isOccupied = false)
+        )
+    }
+
+    suspend fun selectSeat(seatId: String) { /* no-op */ }
+
+    // ---- Boarding Pass ----
+    suspend fun getBoardingPass(bookingId: String): BoardingPass? {
+        return BoardingPass(
+            id = "BP001",
+            bookingId = bookingId,
+            passengerId = "P001",
+            flightNumber = "IDN16821",
+            seatNumber = "5B",
+            gate = "12",
+            boardingTime = "16:55",
+            qrCode = "MOCK_QR_${bookingId}",
+            isDownloaded = false
+        )
+    }
+
+    // ---- Check-in ----
+    suspend fun submitCheckIn(bookingId: String, baggage: BaggageDeclaration) {
+        // Mock: pretend it worked
+    }
+}
+
+============================================================
+FILE: app/src/main/java/com/airline/checkin/data/repository/Repositories.kt
+============================================================
+package com.airline.checkin.data.repository
+
+import com.airline.checkin.data.local.dao.*
+import com.airline.checkin.data.remote.firebase.FirebaseService
+import com.airline.checkin.domain.model.*
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class AuthRepository @Inject constructor(
+    private val firebase: FirebaseService
+) {
+    suspend fun signIn(email: String, password: String) =
+        firebase.signIn(email, password)
+
+    suspend fun register(email: String, password: String) =
+        firebase.register(email, password)
+
+    fun signOut() = firebase.signOut()
+
+    fun isLoggedIn() = firebase.currentUserId() != null
+}
+
+@Singleton
+class BookingRepository @Inject constructor(
+    private val firebase: FirebaseService,
+    private val bookingDao: BookingDao,
+    private val flightDao: FlightDao
+) {
+    suspend fun getBooking(reference: String, lastName: String): Booking? {
+        return firebase.getBookingByReference(reference, lastName)
+    }
+}
+
+@Singleton
+class SeatRepository @Inject constructor(
+    private val firebase: FirebaseService,
+    private val seatDao: SeatDao
+) {
+    suspend fun getSeats(flightId: String): List<Seat> {
+        val remote = firebase.getSeats(flightId)
+        // cache locally
+        seatDao.upsertAll(remote.map {
+            com.airline.checkin.data.local.entity.SeatEntity(
+                id = it.id,
+                flightId = it.flightId,
+                seatNumber = it.seatNumber,
+                type = it.type.name,
+                isOccupied = it.isOccupied
+            )
+        })
+        return remote
+    }
+
+    suspend fun selectSeat(seatId: String) {
+        firebase.selectSeat(seatId)
+        seatDao.markOccupied(seatId)
+    }
+}
+
+@Singleton
+class BoardingPassRepository @Inject constructor(
+    private val firebase: FirebaseService,
+    private val boardingPassDao: BoardingPassDao
+) {
+    suspend fun getBoardingPass(bookingId: String): BoardingPass? {
+        // Try local cache first
+        val cached = boardingPassDao.getByBooking(bookingId)
+        if (cached != null) return BoardingPass(
+            id = cached.id,
+            bookingId = cached.bookingId,
+            passengerId = cached.passengerId,
+            flightNumber = cached.flightNumber,
+            seatNumber = cached.seatNumber,
+            gate = cached.gate,
+            boardingTime = cached.boardingTime,
+            qrCode = cached.qrCode
+        )
+        // Fetch from Firebase
+        return firebase.getBoardingPass(bookingId)
+    }
+}
+
+
+============================================================
+FILE: app/src/main/java/com/airline/checkin/di/AppModules.kt
+============================================================
+package com.airline.checkin.di
+
+import android.content.Context
+import androidx.room.Room
+import com.airline.checkin.data.local.AppDatabase
+import com.airline.checkin.data.local.dao.*
+
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+object DatabaseModule {
+
+    @Provides
+    @Singleton
+    fun provideDatabase(@ApplicationContext context: Context): AppDatabase =
+        Room.databaseBuilder(
+            context,
+            AppDatabase::class.java,
+            "airline_checkin_db"
+        ).build()
+
+    @Provides fun provideUserDao(db: AppDatabase): UserDao = db.userDao()
+    @Provides fun provideFlightDao(db: AppDatabase): FlightDao = db.flightDao()
+    @Provides fun provideBookingDao(db: AppDatabase): BookingDao = db.bookingDao()
+    @Provides fun providePassengerDao(db: AppDatabase): PassengerDao = db.passengerDao()
+    @Provides fun provideSeatDao(db: AppDatabase): SeatDao = db.seatDao()
+    @Provides fun provideBoardingPassDao(db: AppDatabase): BoardingPassDao = db.boardingPassDao()
+    @Provides fun provideBaggageDao(db: AppDatabase): BaggageDeclarationDao = db.baggageDeclarationDao()
+}
+
+@Module
+@InstallIn(SingletonComponent::class)
+object FirebaseModule {
+    // TODO: restore when google-services.json is available
+}
+
+
+============================================================
+FILE: app/src/main/java/com/airline/checkin/domain/model/Models.kt
+============================================================
+package com.airline.checkin.domain.model
+
+data class User(
+    val id: String = "",
+    val fullName: String = "",
+    val email: String = "",
+    val phone: String = ""
+)
+
+data class Flight(
+    val id: String = "",
+    val flightNumber: String = "",
+    val origin: String = "",
+    val destination: String = "",
+    val departureTime: String = "",
+    val arrivalTime: String = "",
+    val status: String = ""
+)
+
+data class Booking(
+    val id: String = "",
+    val reference: String = "",
+    val flightId: String = "",
+    val passengerId: String = "",
+    val checkInStatus: Boolean = false
+)
+
+data class Passenger(
+    val id: String = "",
+    val bookingId: String = "",
+    val fullName: String = "",
+    val passportNumber: String = "",
+    val dateOfBirth: String = "",
+    val nationality: String = ""
+)
+
+data class Seat(
+    val id: String = "",
+    val flightId: String = "",
+    val seatNumber: String = "",
+    val type: SeatType = SeatType.ECONOMY,
+    val isOccupied: Boolean = false
+)
+
+enum class SeatType { ECONOMY, PREMIUM, BUSINESS }
+
+data class BoardingPass(
+    val id: String = "",
+    val bookingId: String = "",
+    val passengerId: String = "",
+    val flightNumber: String = "",
+    val seatNumber: String = "",
+    val gate: String = "",
+    val boardingTime: String = "",
+    val qrCode: String = "",
+    val isDownloaded: Boolean = false
+)
+
+data class BaggageDeclaration(
+    val id: String = "",
+    val bookingId: String = "",
+    val cabinBags: Int = 0,
+    val checkedBags: Int = 0,
+    val specialItems: String = ""
+)
+
+
+============================================================
+FILE: app/src/main/java/com/airline/checkin/ui/auth/AuthScreens.kt
+============================================================
+package com.airline.checkin.ui.auth
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+
+// ---- Login ----
+
+@Composable
+fun LoginScreen(
+    onLoginSuccess: () -> Unit,
+    onGoToRegister: () -> Unit,
+    viewModel: AuthViewModel = hiltViewModel()
+) {
+    // TODO Member 1: implement login UI
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Login Screen", style = MaterialTheme.typography.headlineMedium)
+        Spacer(Modifier.height(16.dp))
+        Button(onClick = onLoginSuccess) { Text("Login (placeholder)") }
+        TextButton(onClick = onGoToRegister) { Text("Register") }
+    }
+}
+
+// ---- Register ----
+
+@Composable
+fun RegisterScreen(
+    onRegisterSuccess: () -> Unit,
+    onGoToLogin: () -> Unit,
+    viewModel: AuthViewModel = hiltViewModel()
+) {
+    // TODO Member 1: implement register UI
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Register Screen", style = MaterialTheme.typography.headlineMedium)
+        Spacer(Modifier.height(16.dp))
+        Button(onClick = onRegisterSuccess) { Text("Register (placeholder)") }
+        TextButton(onClick = onGoToLogin) { Text("Back to Login") }
+    }
+}
+
+
+============================================================
+FILE: app/src/main/java/com/airline/checkin/ui/auth/AuthViewModel.kt
+============================================================
+package com.airline.checkin.ui.auth
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.airline.checkin.data.repository.AuthRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+data class AuthUiState(
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val isSuccess: Boolean = false
+)
+
+@HiltViewModel
+class AuthViewModel @Inject constructor(
+    private val repository: AuthRepository
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(AuthUiState())
+    val uiState = _uiState.asStateFlow()
+
+    fun signIn(email: String, password: String) {
+        viewModelScope.launch {
+            _uiState.value = AuthUiState(isLoading = true)
+            try {
+                repository.signIn(email, password)
+                _uiState.value = AuthUiState(isSuccess = true)
+            } catch (e: Exception) {
+                _uiState.value = AuthUiState(error = e.message)
+            }
+        }
+    }
+
+    fun register(email: String, password: String) {
+        viewModelScope.launch {
+            _uiState.value = AuthUiState(isLoading = true)
+            try {
+                repository.register(email, password)
+                _uiState.value = AuthUiState(isSuccess = true)
+            } catch (e: Exception) {
+                _uiState.value = AuthUiState(error = e.message)
+            }
+        }
+    }
+}
+
+
+============================================================
+FILE: app/src/main/java/com/airline/checkin/ui/boardingpass/BoardingPassScreen.kt
+============================================================
+package com.airline.checkin.ui.boardingpass
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.airline.checkin.data.repository.BoardingPassRepository
+import com.airline.checkin.domain.model.BoardingPass
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+// ---- ViewModel ----
+
+@HiltViewModel
+class BoardingPassViewModel @Inject constructor(
+    private val repository: BoardingPassRepository
+) : ViewModel() {
+
+    private val _boardingPass = MutableStateFlow<BoardingPass?>(null)
+    val boardingPass = _boardingPass.asStateFlow()
+
+    fun load(bookingId: String) {
+        viewModelScope.launch {
+            _boardingPass.value = repository.getBoardingPass(bookingId)
+        }
+    }
+}
+
+// ---- Screen ----
+
+@Composable
+fun BoardingPassScreen(
+    bookingId: String,
+    viewModel: BoardingPassViewModel = hiltViewModel()
+) {
+    val pass by viewModel.boardingPass.collectAsState()
+
+    LaunchedEffect(bookingId) { viewModel.load(bookingId) }
+
+    // TODO Member 4: implement boarding pass UI with QR code
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Boarding Pass", style = MaterialTheme.typography.headlineMedium)
+        pass?.let {
+            Text("Flight: ${it.flightNumber}")
+            Text("Seat: ${it.seatNumber}")
+            Text("Gate: ${it.gate}")
+        } ?: Text("Loading...")
+    }
+}
+
+
+============================================================
+FILE: app/src/main/java/com/airline/checkin/ui/checkin/CheckInScreens.kt
+============================================================
+package com.airline.checkin.ui.checkin
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.airline.checkin.data.repository.BookingRepository
+import com.airline.checkin.domain.model.BaggageDeclaration
+import com.airline.checkin.domain.model.Booking
+import com.airline.checkin.domain.model.Passenger
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+import androidx.compose.material3.ExperimentalMaterial3Api
+
+// ---- ViewModel ----
+
+data class CheckInUiState(
+    val isLoading: Boolean = false,
+    val booking: Booking? = null,
+    val error: String? = null,
+    val currentStep: Int = 1,
+    val passenger: Passenger = Passenger(),
+    val baggageList: List<BaggageDeclaration> = emptyList(),
+    val mealPreference: String = "",
+    val needsWheelchair: Boolean = false,
+    val travelingWithInfant: Boolean = false,
+    val travelingWithPet: Boolean = false
+)
+
+@HiltViewModel
+class CheckInViewModel @Inject constructor(
+    private val bookingRepository: BookingRepository
+) : ViewModel() {
+
+    private val _uiState = MutableStateFlow(CheckInUiState())
+    val uiState = _uiState.asStateFlow()
+
+    fun lookupBooking(reference: String, lastName: String) {
+        viewModelScope.launch {
+            _uiState.value = CheckInUiState(isLoading = true)
+            try {
+                val booking = bookingRepository.getBooking(reference, lastName)
+                _uiState.value = CheckInUiState(booking = booking)
+            } catch (e: Exception) {
+                _uiState.value = CheckInUiState(error = e.message)
+            }
+        }
+    }
+
+    fun updatePassenger(passenger: Passenger) {
+        _uiState.value = _uiState.value.copy(passenger = passenger)
+    }
+
+    fun addBaggage(baggage: BaggageDeclaration) {
+        val updated = _uiState.value.baggageList + baggage
+        _uiState.value = _uiState.value.copy(baggageList = updated)
+    }
+
+    fun removeBaggage(index: Int) {
+        val updated = _uiState.value.baggageList.toMutableList().also { it.removeAt(index) }
+        _uiState.value = _uiState.value.copy(baggageList = updated)
+    }
+
+    fun updateSpecialRequests(
+        meal: String = _uiState.value.mealPreference,
+        wheelchair: Boolean = _uiState.value.needsWheelchair,
+        infant: Boolean = _uiState.value.travelingWithInfant,
+        pet: Boolean = _uiState.value.travelingWithPet
+    ) {
+        _uiState.value = _uiState.value.copy(
+            mealPreference = meal,
+            needsWheelchair = wheelchair,
+            travelingWithInfant = infant,
+            travelingWithPet = pet
+        )
+    }
+
+    fun nextStep() {
+        _uiState.value = _uiState.value.copy(currentStep = _uiState.value.currentStep + 1)
+    }
+
+    fun prevStep() {
+        if (_uiState.value.currentStep > 1) {
+            _uiState.value = _uiState.value.copy(currentStep = _uiState.value.currentStep - 1)
+        }
+    }
+}
+
+// ---- Booking Lookup Screen ----
+
+@Composable
+fun BookingLookupScreen(
+    onBookingFound: (bookingId: String) -> Unit,
+    viewModel: CheckInViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    var bookingRef by remember { mutableStateOf("") }
+    var lastName by remember { mutableStateOf("") }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.Top
+    ) {
+        Spacer(Modifier.height(40.dp))
+
+        Text(
+            text = "Find my bookings",
+            style = MaterialTheme.typography.headlineMedium
+        )
+
+        Spacer(Modifier.height(24.dp))
+
+        // Booking ID field
+        OutlinedTextField(
+            value = bookingRef,
+            onValueChange = { bookingRef = it },
+            label = { Text("Booking reference") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        // Last name field
+        OutlinedTextField(
+            value = lastName,
+            onValueChange = { lastName = it },
+            label = { Text("Last name") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        Spacer(Modifier.height(20.dp))
+
+        // Find button
+        Button(
+            onClick = { viewModel.lookupBooking(bookingRef, lastName) },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = !uiState.isLoading
+        ) {
+            Text("Find my booking")
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        // State 1: Loading
+        if (uiState.isLoading) {
+            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        }
+
+        // State 2: Error
+        uiState.error?.let { errorMsg ->
+            Text(
+                text = " $errorMsg",
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+
+        // State 3: Booking found → show flight card
+        uiState.booking?.let { booking ->
+            Spacer(Modifier.height(8.dp))
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                elevation = CardDefaults.cardElevation(4.dp)
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(
+                        text = "Booking ID: ${booking.reference}",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = "Flight: ${booking.flightId}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(Modifier.height(4.dp))
+                    Text(
+                        text = if (booking.checkInStatus) " Checked In" else " Not checked in",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Button(
+                        onClick = { onBookingFound(booking.id) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Start checking")
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ---- Check-In Flow Screen ----
+
+@Composable
+fun CheckInScreen(
+    bookingId: String,
+    onGoToSeat: (flightId: String) -> Unit,
+    onDone: () -> Unit,
+    viewModel: CheckInViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    when (uiState.currentStep) {
+        1 -> PassportScanStep(onNext = { viewModel.nextStep() })
+        2 -> PassengerDetailsStep(
+            passenger = uiState.passenger,
+            onUpdate = { viewModel.updatePassenger(it) },
+            onNext = { viewModel.nextStep() },
+            onBack = { viewModel.prevStep() }
+        )
+        3 -> BaggageStep(
+            baggageList = uiState.baggageList,
+            onAdd = { viewModel.addBaggage(it) },
+            onRemove = { viewModel.removeBaggage(it) },
+            onNext = { viewModel.nextStep() },
+            onBack = { viewModel.prevStep() }
+        )
+        4 -> SpecialRequestsStep(
+            meal = uiState.mealPreference,
+            wheelchair = uiState.needsWheelchair,
+            infant = uiState.travelingWithInfant,
+            pet = uiState.travelingWithPet,
+            onUpdate = { meal, wc, inf, pet ->
+                viewModel.updateSpecialRequests(meal, wc, inf, pet)
+            },
+            onNext = { viewModel.nextStep() },
+            onBack = { viewModel.prevStep() }
+        )
+        5 -> ConfirmationStep(
+            uiState = uiState,
+            onConfirm = { onDone() },
+            onBack = { viewModel.prevStep() }
+        )
+    }
+}
+
+// ---- Step 1: Passport Scan ----
+@Composable
+fun PassportScanStep(onNext: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text("Scan Passport", style = MaterialTheme.typography.headlineMedium)
+        Spacer(Modifier.height(24.dp))
+        // Camera placeholder box
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(300.dp)
+                .padding(8.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Card(
+                modifier = Modifier.fillMaxSize(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+                )
+            ) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("📷 Camera Preview", style = MaterialTheme.typography.bodyLarge)
+                }
+            }
+        }
+        Spacer(Modifier.height(32.dp))
+        Button(onClick = onNext, modifier = Modifier.fillMaxWidth()) {
+            Text("Passport Scanned → Next")
+        }
+    }
+}
+
+// ---- Step 2: Passenger Details ----
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PassengerDetailsStep(
+    passenger: Passenger,
+    onUpdate: (Passenger) -> Unit,
+    onNext: () -> Unit,
+    onBack: () -> Unit
+) {
+    var givenName by remember { mutableStateOf(passenger.fullName.substringBefore(" ")) }
+    var lastName by remember { mutableStateOf(passenger.fullName.substringAfter(" ", "")) }
+    var nationality by remember { mutableStateOf(passenger.nationality) }
+    var dob by remember { mutableStateOf(passenger.dateOfBirth) }
+    var passport by remember { mutableStateOf(passenger.passportNumber) }
+    var gender by remember { mutableStateOf("") }
+    var idType by remember { mutableStateOf("Passport") }
+
+    // Gender dropdown state
+    var genderExpanded by remember { mutableStateOf(false) }
+    val genderOptions = listOf("Male", "Female", "Other")
+
+    // ID type dropdown state
+    var idTypeExpanded by remember { mutableStateOf(false) }
+    val idTypeOptions = listOf("Passport", "National ID", "Driver License")
+
+    Column(modifier = Modifier.fillMaxSize()) {
+
+        // ── Purple flight info header bar ──
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(Color(0xFF6200EE))
+                .padding(horizontal = 16.dp, vertical = 10.dp)
+        ) {
+            Text(
+                text = "Depart  •  Jakarta - Bali  •  Mon, May 7  •  16:55 - 20:30  ⏱",
+                color = Color.White,
+                style = MaterialTheme.typography.labelSmall,
+                maxLines = 1
+            )
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(24.dp)
+        ) {
+            Spacer(Modifier.height(8.dp))
+
+            // Section label
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Passenger", style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold)
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = null,
+                    tint = Color.Gray,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+            // Given names
+            OutlinedTextField(
+                value = givenName,
+                onValueChange = { givenName = it },
+                label = { Text("Given names") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+            Spacer(Modifier.height(10.dp))
+
+            // Last name
+            OutlinedTextField(
+                value = lastName,
+                onValueChange = { lastName = it },
+                label = { Text("Last name (surname)") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+            Spacer(Modifier.height(10.dp))
+
+            // Nationality dropdown
+            ExposedDropdownMenuBox(
+                expanded = false, // nationality is free text, keep simple
+                onExpandedChange = {}
+            ) {
+                OutlinedTextField(
+                    value = nationality,
+                    onValueChange = { nationality = it },
+                    label = { Text("Nationality") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    trailingIcon = {
+                        Icon(Icons.Default.KeyboardArrowDown, contentDescription = null)
+                    }
+                )
+            }
+            Spacer(Modifier.height(10.dp))
+
+            // Date of birth with calendar icon
+            OutlinedTextField(
+                value = dob,
+                onValueChange = { dob = it },
+                label = { Text("Date of birth") },
+                placeholder = { Text("DD/MM/YYYY") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                trailingIcon = {
+                    Icon(Icons.Default.DateRange, contentDescription = "Pick date",
+                        tint = Color(0xFF6200EE))
+                }
+            )
+            Spacer(Modifier.height(10.dp))
+
+            // Gender dropdown
+            ExposedDropdownMenuBox(
+                expanded = genderExpanded,
+                onExpandedChange = { genderExpanded = !genderExpanded }
+            ) {
+                OutlinedTextField(
+                    value = gender,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Gender") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(),
+                    trailingIcon = {
+                        Icon(
+                            if (genderExpanded) Icons.Default.KeyboardArrowUp
+                            else Icons.Default.KeyboardArrowDown,
+                            contentDescription = null
+                        )
+                    }
+                )
+                ExposedDropdownMenu(
+                    expanded = genderExpanded,
+                    onDismissRequest = { genderExpanded = false }
+                ) {
+                    genderOptions.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(option) },
+                            onClick = {
+                                gender = option
+                                genderExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+            Spacer(Modifier.height(10.dp))
+
+            // ID type dropdown
+            ExposedDropdownMenuBox(
+                expanded = idTypeExpanded,
+                onExpandedChange = { idTypeExpanded = !idTypeExpanded }
+            ) {
+                OutlinedTextField(
+                    value = idType,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("ID type") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .menuAnchor(),
+                    trailingIcon = {
+                        Icon(
+                            if (idTypeExpanded) Icons.Default.KeyboardArrowUp
+                            else Icons.Default.KeyboardArrowDown,
+                            contentDescription = null
+                        )
+                    }
+                )
+                ExposedDropdownMenu(
+                    expanded = idTypeExpanded,
+                    onDismissRequest = { idTypeExpanded = false }
+                ) {
+                    idTypeOptions.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(option) },
+                            onClick = {
+                                idType = option
+                                idTypeExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(10.dp))
+
+            // Passport number
+            OutlinedTextField(
+                value = passport,
+                onValueChange = { passport = it },
+                label = { Text("Passport / ID number") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true
+            )
+
+            Spacer(Modifier.height(28.dp))
+
+            Button(
+                onClick = {
+                    onUpdate(
+                        Passenger(
+                            fullName = "$givenName $lastName".trim(),
+                            nationality = nationality,
+                            dateOfBirth = dob,
+                            passportNumber = passport
+                        )
+                    )
+                    onNext()
+                },
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+                enabled = givenName.isNotBlank() && lastName.isNotBlank() && passport.isNotBlank(),
+                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF6200EE))
+            ) { Text("Confirm", fontSize = 16.sp) }
+
+            Spacer(Modifier.height(10.dp))
+
+            OutlinedButton(
+                onClick = onBack,
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+                border = BorderStroke(1.dp, Color(0xFF6200EE))
+            ) {
+                Icon(Icons.Default.Edit, contentDescription = null,
+                    tint = Color(0xFF6200EE), modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Edit", color = Color(0xFF6200EE), fontSize = 16.sp)
+            }
+        }
+    }
+}
+
+// ---- Step 3: Baggage ----
+@Composable
+fun BaggageStep(
+    baggageList: List<BaggageDeclaration>,
+    onAdd: (BaggageDeclaration) -> Unit,
+    onRemove: (Int) -> Unit,
+    onNext: () -> Unit,
+    onBack: () -> Unit
+) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp)
+    ) {
+        Text("Baggage Declaration", style = MaterialTheme.typography.headlineMedium)
+        Spacer(Modifier.height(16.dp))
+
+        OutlinedButton(
+            onClick = {
+                onAdd(
+                    BaggageDeclaration(
+                        id = "BAG-${baggageList.size + 1}",
+                        cabinBags = 1,
+                        checkedBags = 0
+                    )
+                )
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) { Text("+ Add Cabin Bag (7kg)") }
+
+        Spacer(Modifier.height(8.dp))
+
+        OutlinedButton(
+            onClick = {
+                onAdd(
+                    BaggageDeclaration(
+                        id = "BAG-${baggageList.size + 1}",
+                        cabinBags = 0,
+                        checkedBags = 1
+                    )
+                )
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) { Text("+ Add Checked Bag (20kg)") }
+
+        Spacer(Modifier.height(16.dp))
+
+        baggageList.forEachIndexed { index, bag ->
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        if (bag.cabinBags > 0) "Cabin bag — 7kg" else "Checked bag — 20kg",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    TextButton(onClick = { onRemove(index) }) {
+                        Text("Remove", color = MaterialTheme.colorScheme.error)
+                    }
+                }
+            }
+        }
+
+        Spacer(Modifier.weight(1f))
+
+        Button(onClick = onNext, modifier = Modifier.fillMaxWidth()) {
+            Text("Next →")
+        }
+        Spacer(Modifier.height(8.dp))
+        OutlinedButton(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
+            Text("← Back")
+        }
+    }
+}
+
+// ---- Step 4: Special Requests ----
+@Composable
+fun SpecialRequestsStep(
+    meal: String,
+    wheelchair: Boolean,
+    infant: Boolean,
+    pet: Boolean,
+    onUpdate: (String, Boolean, Boolean, Boolean) -> Unit,
+    onNext: () -> Unit,
+    onBack: () -> Unit
+) {
+    var mealText by remember { mutableStateOf(meal) }
+    var wcChecked by remember { mutableStateOf(wheelchair) }
+    var infantChecked by remember { mutableStateOf(infant) }
+    var petChecked by remember { mutableStateOf(pet) }
+
+    Column(modifier = Modifier.fillMaxSize().padding(24.dp)) {
+        Text("Special Requests", style = MaterialTheme.typography.headlineMedium)
+        Spacer(Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = mealText,
+            onValueChange = { mealText = it },
+            label = { Text("Meal preferences (optional)") },
+            modifier = Modifier.fillMaxWidth().height(120.dp),
+            maxLines = 4
+        )
+        Spacer(Modifier.height(16.dp))
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(checked = wcChecked, onCheckedChange = { wcChecked = it })
+            Spacer(Modifier.width(8.dp))
+            Text("Wheelchair assistance")
+        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(checked = infantChecked, onCheckedChange = { infantChecked = it })
+            Spacer(Modifier.width(8.dp))
+            Text("Traveling with infant")
+        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(checked = petChecked, onCheckedChange = { petChecked = it })
+            Spacer(Modifier.width(8.dp))
+            Text("Traveling with pet")
+        }
+
+        Spacer(Modifier.weight(1f))
+
+        Button(
+            onClick = {
+                onUpdate(mealText, wcChecked, infantChecked, petChecked)
+                onNext()
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) { Text("Confirm") }
+
+        Spacer(Modifier.height(8.dp))
+        OutlinedButton(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
+            Text("← Back")
+        }
+    }
+}
+
+// ---- Step 5: Confirmation ----
+@Composable
+fun ConfirmationStep(
+    uiState: CheckInUiState,
+    onConfirm: () -> Unit,
+    onBack: () -> Unit
+) {
+    var showDialog by remember { mutableStateOf(false) }
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Boarding Pass", style = MaterialTheme.typography.headlineMedium)
+        Spacer(Modifier.height(16.dp))
+
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text("✈ CGK → DPS", style = MaterialTheme.typography.titleLarge)
+                Spacer(Modifier.height(8.dp))
+                Text("Passenger: ${uiState.passenger.fullName.ifBlank { "—" }}")
+                Text("Flight: IDN16821")
+                Text("Date: Mon, May 7")
+                Text("Departure: 16:55  Arrival: 20:30")
+                Text("Gate: 12  Seat: 5B")
+                Spacer(Modifier.height(16.dp))
+                // QR code placeholder
+                Box(
+                    modifier = Modifier
+                        .size(150.dp)
+                        .align(Alignment.CenterHorizontally),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Card(
+                        modifier = Modifier.fillMaxSize(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text("QR", style = MaterialTheme.typography.headlineLarge)
+                        }
+                    }
+                }
+            }
+        }
+
+        Spacer(Modifier.height(24.dp))
+
+        Button(
+            onClick = { showDialog = true },
+            modifier = Modifier.fillMaxWidth()
+        ) { Text("Confirm") }
+
+        Spacer(Modifier.height(8.dp))
+        OutlinedButton(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
+            Text("← Edit")
+        }
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            icon = { Text("✅", style = MaterialTheme.typography.headlineLarge) },
+            title = { Text("Booking saved") },
+            text = { Text("Your booking has been saved successfully") },
+            confirmButton = {
+                Button(onClick = {
+                    showDialog = false
+                    onConfirm()
+                }) { Text("See Ticket") }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    showDialog = false
+                    onConfirm()
+                }) { Text("Back to home") }
+            }
+        )
+    }
+}
+
+============================================================
+FILE: app/src/main/java/com/airline/checkin/ui/seat/SeatMapScreen.kt
+============================================================
+package com.airline.checkin.ui.seat
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+
+@Composable
+fun SeatMapScreen(
+    flightId: String,
+    onSeatPicked: () -> Unit
+) {
+    // TODO Member 3: implement interactive seat map
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Seat Map", style = MaterialTheme.typography.headlineMedium)
+        Text("Flight: $flightId")
+        Spacer(Modifier.height(16.dp))
+        Button(onClick = onSeatPicked) { Text("Pick Seat (placeholder)") }
+    }
+}
+
+
+============================================================
+FILE: app/src/main/java/com/airline/checkin/ui/AppNavGraph.kt
+============================================================
+package com.airline.checkin.ui
+
+import androidx.compose.runtime.Composable
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.airline.checkin.ui.auth.LoginScreen
+import com.airline.checkin.ui.auth.RegisterScreen
+import com.airline.checkin.ui.boardingpass.BoardingPassScreen
+import com.airline.checkin.ui.checkin.BookingLookupScreen
+import com.airline.checkin.ui.checkin.CheckInScreen
+import com.airline.checkin.ui.seat.SeatMapScreen
+
+object Routes {
+    const val LOGIN          = "login"
+    const val REGISTER       = "register"
+    const val BOOKING_LOOKUP = "booking_lookup"
+    const val CHECK_IN       = "check_in/{bookingId}"
+    const val SEAT_MAP       = "seat_map/{flightId}"
+    const val BOARDING_PASS  = "boarding_pass/{bookingId}"
+}
+
+@Composable
+fun AppNavGraph(navController: NavHostController = rememberNavController()) {
+    NavHost(navController = navController, startDestination = Routes.LOGIN) {
+
+        composable(Routes.LOGIN) {
+            LoginScreen(
+                onLoginSuccess  = { navController.navigate(Routes.BOOKING_LOOKUP) },
+                onGoToRegister  = { navController.navigate(Routes.REGISTER) }
+            )
+        }
+
+        composable(Routes.REGISTER) {
+            RegisterScreen(
+                onRegisterSuccess = { navController.navigate(Routes.BOOKING_LOOKUP) },
+                onGoToLogin       = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.BOOKING_LOOKUP) {
+            BookingLookupScreen(
+                onBookingFound = { bookingId ->
+                    navController.navigate("check_in/$bookingId")
+                }
+            )
+        }
+
+        composable(Routes.CHECK_IN) { backStack ->
+            val bookingId = backStack.arguments?.getString("bookingId") ?: ""
+            CheckInScreen(
+                bookingId  = bookingId,
+                onGoToSeat = { flightId -> navController.navigate("seat_map/$flightId") },
+                onDone     = { navController.navigate("boarding_pass/$bookingId") }
+            )
+        }
+
+        composable(Routes.SEAT_MAP) { backStack ->
+            val flightId = backStack.arguments?.getString("flightId") ?: ""
+            SeatMapScreen(
+                flightId   = flightId,
+                onSeatPicked = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.BOARDING_PASS) { backStack ->
+            val bookingId = backStack.arguments?.getString("bookingId") ?: ""
+            BoardingPassScreen(bookingId = bookingId)
+        }
+    }
+}
+
+
+============================================================
+FILE: app/src/main/java/com/airline/checkin/MainActivity.kt
+============================================================
+package com.airline.checkin
+
+import android.app.Application
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import com.airline.checkin.ui.AppNavGraph
+import dagger.hilt.android.AndroidEntryPoint
+import dagger.hilt.android.HiltAndroidApp
+
+@HiltAndroidApp
+class AirlineApp : Application()
+
+@AndroidEntryPoint
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            AppNavGraph()
+        }
+    }
+}
+
+
+============================================================
+FILE: app/src/main/res/values/themes.xml
+============================================================
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.AirlineCheckin"
+        parent="android:Theme.Material.Light.NoActionBar">
+    </style>
+</resources>
+
+============================================================
+FILE: app/src/main/AndroidManifest.xml
+============================================================
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
+    <application
+        android:name=".AirlineApp"
+        android:allowBackup="true"
+        android:label="BookingSpace"
+        android:theme="@style/Theme.AirlineCheckin"
+        android:supportsRtl="true">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:theme="@style/Theme.AirlineCheckin">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+    </application>
+
+</manifest>
+
+============================================================
+FILE: app/build.gradle.kts
+============================================================
+plugins {
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.hilt)
+    // alias(libs.plugins.google.services)  // TODO: add google-services.json from Auth task
+    alias(libs.plugins.ksp)
+}
+
+android {
+    namespace = "com.airline.checkin"
+    compileSdk = 35
+
+    defaultConfig {
+        applicationId = "com.airline.checkin"
+        minSdk = 26
+        targetSdk = 35
+        versionCode = 1
+        versionName = "1.0"
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = "17"
+    }
+    buildFeatures {
+        compose = true
+    }
+}
+
+dependencies {
+    // Core
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.activity.compose)
+
+    // Compose
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.material3)
+    implementation(libs.androidx.compose.foundation)
+    debugImplementation(libs.androidx.ui.tooling)
+
+    // Navigation
+    implementation(libs.androidx.navigation.compose)
+
+    // Hilt
+    implementation(libs.hilt.android)
+    ksp(libs.hilt.compiler)
+    implementation(libs.hilt.navigation.compose)
+
+    // Room
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
+
+    // Firebase
+    //implementation(platform(libs.firebase.bom))
+    //implementation(libs.firebase.auth)
+    //implementation(libs.firebase.firestore)
+    //implementation(libs.firebase.storage)
+
+    // Coroutines
+    implementation(libs.kotlinx.coroutines.android)
+}
+
+
+============================================================
+FILE: app/google-services.json
+============================================================
+{
+  "project_info": {
+    "project_number": "509826767525",
+    "project_id": "organizers-app",
+    "storage_bucket": "organizers-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:509826767525:android:525ea532697b96657ccb4c",
+        "android_client_info": {
+          "package_name": "com.airline.checkin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyArYkcW5apd9CvryjwhGjhOqr4rC01CN0M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
+
+
+============================================================
+FILE: gradle/libs.versions.toml
+============================================================
+[versions]
+agp                     = "8.6.0"
+kotlin                  = "2.1.0"
+coreKtx                 = "1.13.1"
+lifecycleRuntimeKtx     = "2.8.4"
+activityCompose         = "1.9.1"
+composeBom              = "2024.08.00"
+navigationCompose       = "2.7.7"
+hilt                    = "2.51.1"
+hiltNavigationCompose   = "1.2.0"
+room                    = "2.7.0"
+firebaseBom             = "33.1.2"
+coroutines              = "1.8.1"
+googleServices          = "4.4.2"
+foundation              = "1.11.0"
+ksp                     = "2.1.0-1.0.29"
+
+[libraries]
+# Core
+androidx-core-ktx               = { group = "androidx.core",            name = "core-ktx",                      version.ref = "coreKtx" }
+androidx-lifecycle-runtime-ktx  = { group = "androidx.lifecycle",        name = "lifecycle-runtime-ktx",         version.ref = "lifecycleRuntimeKtx" }
+androidx-activity-compose        = { group = "androidx.activity",         name = "activity-compose",              version.ref = "activityCompose" }
+
+# Compose
+androidx-compose-bom             = { group = "androidx.compose",          name = "compose-bom",                  version.ref = "composeBom" }
+androidx-ui                      = { group = "androidx.compose.ui",       name = "ui" }
+androidx-ui-graphics             = { group = "androidx.compose.ui",       name = "ui-graphics" }
+androidx-ui-tooling-preview      = { group = "androidx.compose.ui",       name = "ui-tooling-preview" }
+androidx-material3               = { group = "androidx.compose.material3",name = "material3" }
+androidx-ui-tooling              = { group = "androidx.compose.ui",       name = "ui-tooling" }
+
+# Navigation
+androidx-navigation-compose      = { group = "androidx.navigation",       name = "navigation-compose",           version.ref = "navigationCompose" }
+
+# Hilt
+hilt-android                     = { group = "com.google.dagger",         name = "hilt-android",                 version.ref = "hilt" }
+hilt-compiler                    = { group = "com.google.dagger",         name = "hilt-android-compiler",        version.ref = "hilt" }
+hilt-navigation-compose          = { group = "androidx.hilt",             name = "hilt-navigation-compose",      version.ref = "hiltNavigationCompose" }
+
+# Room
+room-runtime                     = { group = "androidx.room",             name = "room-runtime",                 version.ref = "room" }
+room-ktx                         = { group = "androidx.room",             name = "room-ktx",                    version.ref = "room" }
+room-compiler                    = { group = "androidx.room",             name = "room-compiler",                version.ref = "room" }
+
+# Firebase
+firebase-bom                     = { group = "com.google.firebase",       name = "firebase-bom",                 version.ref = "firebaseBom" }
+firebase-auth                    = { group = "com.google.firebase",       name = "firebase-auth-ktx" }
+firebase-firestore               = { group = "com.google.firebase",       name = "firebase-firestore-ktx" }
+firebase-storage                 = { group = "com.google.firebase",       name = "firebase-storage-ktx" }
+
+# Coroutines
+kotlinx-coroutines-android       = { group = "org.jetbrains.kotlinx",    name = "kotlinx-coroutines-android",   version.ref = "coroutines" }
+androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
+
+[plugins]
+android-application  = { id = "com.android.application",            version.ref = "agp" }
+kotlin-android       = { id = "org.jetbrains.kotlin.android",       version.ref = "kotlin" }
+kotlin-compose       = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+hilt                 = { id = "com.google.dagger.hilt.android",     version.ref = "hilt" }
+google-services      = { id = "com.google.gms.google-services",     version.ref = "googleServices" }
+ksp                  = { id = "com.google.devtools.ksp",            version.ref = "ksp" }
+
+
+============================================================
+FILE: build.gradle.kts
+============================================================
+// Top-level build file
+plugins {
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.kotlin.compose) apply false
+    alias(libs.plugins.hilt) apply false
+    alias(libs.plugins.google.services) apply false
+    id("com.google.devtools.ksp") version "2.1.0-1.0.29" apply false
+}
+
+============================================================
+FILE: gradle.properties
+============================================================
+android.useAndroidX=true
+android.enableJetifier=true
+
+org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m -XX:+HeapDumpOnOutOfMemoryError
+org.gradle.daemon=true
+org.gradle.parallel=true
+
+============================================================
+FILE: gradlew.bat
+============================================================
+@rem Gradle startup script for Windows
+@if "%DEBUG%"=="" @echo off
+@rem Set local scope for the variables with windows NT shell
+if "%OS%"=="Windows_NT" setlocal
+set DIRNAME=%~dp0
+if "%DIRNAME%"=="" set DIRNAME=.
+set APP_BASE_NAME=%~n0
+set APP_HOME=%DIRNAME%
+
+@rem Find java.exe
+if defined JAVA_HOME goto findJavaFromJavaHome
+set JAVA_EXE=java.exe
+goto execute
+:findJavaFromJavaHome
+set JAVA_HOME=%JAVA_HOME:"=%
+set JAVA_EXE=%JAVA_HOME%/bin/java.exe²
+:execute
+"%JAVA_EXE%" -classpath "%APP_HOME%\gradle\wrapper\gradle-wrapper.jar" org.gradle.wrapper.GradleWrapperMain %*
+
+============================================================
+FILE: local.properties
+============================================================
+## This file must *NOT* be checked into Version Control Systems,
+# as it contains information specific to your local configuration.
+#
+# Location of the SDK. This is only used by Gradle.
+# For customization when using a Version Control System, please read the
+# header note.
+#Mon Mar 30 11:31:08 CET 2026
+sdk.dir=C\:\\Users\\yanou\\AppData\\Local\\Android\\Sdk
+
+
+============================================================
+FILE: README.md
+============================================================
+# Airline Online Check-In App
+
+Android mobile application for online check-in built with Kotlin & Jetpack Compose.
+
+---
+
+## Tech Stack
+
+| Layer          | Technology                        |
+|----------------|-----------------------------------|
+| Language       | Kotlin                            |
+| UI             | Jetpack Compose                   |
+| Architecture   | MVVM + Clean Architecture         |
+| Local DB       | Room                              |
+| Cloud / Auth   | Firebase (Firestore + Auth)       |
+| DI             | Hilt                              |
+| Async          | Kotlin Coroutines + StateFlow     |
+| Navigation     | Jetpack Navigation Compose        |
+| OCR            | Google ML Kit                     |
+| QR Code        | ZXing                             |
+
+---
+
+## Project Structure
+
+```
+app/src/main/java/com/airline/checkin/
+├── data/
+│   ├── local/
+│   │   ├── dao/          # Room DAOs
+│   │   ├── entity/       # Room Entities
+│   │   └── AppDatabase.kt
+│   ├── remote/
+│   │   └── firebase/     # FirebaseService
+│   └── repository/       # Repositories
+├── domain/
+│   └── model/            # Data classes
+├── ui/
+│   ├── auth/             # Login, Register (Member 1)
+│   ├── checkin/          # Check-in flow (Member 2)
+│   ├── seat/             # Seat map (Member 3)
+│   ├── boardingpass/     # Boarding pass (Member 4)
+│   ├── common/           # Shared UI components
+│   └── AppNavGraph.kt    # Navigation
+├── di/                   # Hilt modules
+└── MainActivity.kt
+```
+
+---
+
+## Getting Started
+
+### Prerequisites
+- Android Studio Hedgehog or later
+- JDK 17 (bundled with Android Studio)
+- Android SDK API 26+
+- Git
+
+### Setup
+
+1. Clone the repository
+```bash
+git clone https://github.com/YOUR_USERNAME/airline-checkin-app.git
+```
+
+2. Open in Android Studio
+   - Launch Android Studio
+   - Click **Open**
+   - Select the cloned folder
+   - Wait for Gradle sync to finish
+
+3. Add Firebase config
+   - Go to [Firebase Console](https://console.firebase.google.com)
+   - Create a project → Add Android app
+   - Package name: `com.airline.checkin`
+   - Download `google-services.json`
+   - Place it in the `app/` folder
+
+4. Run the app
+   - Connect a device or start an emulator (API 26+)
+   - Click **Run** or press `Shift + F10`
+
+---
+
+## Branch Strategy
+
+| Branch                  | Purpose                  | Owner        |
+|-------------------------|--------------------------|--------------|
+| `main`                  | Stable code              | Team Lead    |
+| `dev`                   | Integration branch       | Everyone     |
+| `feature/auth`          | Auth screens             | Member 1     |
+| `feature/checkin`       | Check-in flow            | Member 2     |
+| `feature/seatmap`       | Seat map                 | Member 3     |
+| `feature/boardingpass`  | Boarding pass & QR       | Member 4     |
+
+**Rules:**
+- Never push directly to `main`
+- Create your branch from `main`
+- Open a Pull Request to `dev` when your feature is ready
+- At least 1 member must review before merging
+
+---
+
+## Commit Convention
+
+```
+feat:      new feature or screen
+fix:       bug fix
+ui:        UI / layout changes
+refactor:  code restructure, no behaviour change
+docs:      documentation only
+test:      adding or fixing tests
+chore:     gradle, dependencies, config
+```
+
+**Examples:**
+```
+feat: add passport OCR scan screen
+fix: boarding pass not loading offline
+ui: update seat map colors for premium seats
+chore: add ZXing dependency
+```
+
+---
+
+## Team
+
+| Member   | Role                              |
+|----------|-----------------------------------|
+| Member 1 | Team Lead — Architecture & Auth   |
+| Member 2 | Check-In Flow & Booking Lookup    |
+| Member 3 | Seat Map & UI/UX                  |
+| Member 4 | Boarding Pass, QR Code & Research |
+
+
+============================================================
+FILE: settings.gradle.kts
+============================================================
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = "AirlineCheckin"
+include(":app")
+
