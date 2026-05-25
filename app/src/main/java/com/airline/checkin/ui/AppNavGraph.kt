@@ -21,14 +21,18 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.airline.checkin.ui.auth.LoginScreen
 import com.airline.checkin.ui.auth.RegisterScreen
+import com.airline.checkin.ui.auth.WelcomeScreen
 import com.airline.checkin.ui.boardingpass.BoardingPassScreen
 import com.airline.checkin.ui.checkin.BookingLookupScreen
 import com.airline.checkin.ui.checkin.CheckInScreen
 import com.airline.checkin.ui.home.BoardingPassHubScreen
 import com.airline.checkin.ui.home.HomeScreen
+import com.airline.checkin.ui.onboarding.OnboardingScreen
 import com.airline.checkin.ui.seat.SeatMapScreen
 
 object Routes {
+    const val ONBOARDING     = "onboarding"
+    const val WELCOME        = "welcome"
     const val LOGIN          = "login"
     const val REGISTER       = "register"
     const val HOME           = "home"
@@ -40,7 +44,11 @@ object Routes {
 }
 
 @Composable
-fun AppNavGraph(navController: NavHostController = rememberNavController()) {
+fun AppNavGraph(
+    startDestination: String,
+    onOnboardingComplete: () -> Unit,
+    navController: NavHostController = rememberNavController()
+) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
 
@@ -77,14 +85,32 @@ fun AppNavGraph(navController: NavHostController = rememberNavController()) {
     ) { paddingValues ->
         NavHost(
             navController = navController,
-            startDestination = Routes.LOGIN,
+            startDestination = startDestination,
             modifier = Modifier.padding(paddingValues)
         ) {
+            composable(Routes.ONBOARDING) {
+                OnboardingScreen(
+                    onFinish = {
+                        onOnboardingComplete()
+                        navController.navigate(Routes.WELCOME) {
+                            popUpTo(Routes.ONBOARDING) { inclusive = true }
+                        }
+                    }
+                )
+            }
+
+            composable(Routes.WELCOME) {
+                WelcomeScreen(
+                    onSignInWithPassword = { navController.navigate(Routes.LOGIN) },
+                    onGoToRegister = { navController.navigate(Routes.REGISTER) }
+                )
+            }
+
             composable(Routes.LOGIN) {
                 LoginScreen(
                     onLoginSuccess  = {
                         navController.navigate(Routes.HOME) {
-                            popUpTo(Routes.LOGIN) { inclusive = true }
+                            popUpTo(Routes.WELCOME) { inclusive = true }
                         }
                     },
                     onGoToRegister  = { navController.navigate(Routes.REGISTER) }
@@ -95,7 +121,7 @@ fun AppNavGraph(navController: NavHostController = rememberNavController()) {
                 RegisterScreen(
                     onRegisterSuccess = {
                         navController.navigate(Routes.HOME) {
-                            popUpTo(Routes.LOGIN) { inclusive = true }
+                            popUpTo(Routes.WELCOME) { inclusive = true }
                         }
                     },
                     onGoToLogin       = { navController.popBackStack() }

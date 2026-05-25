@@ -1,0 +1,8 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "/^Move-Item \"app\\\\src\\\\main\\\\res\\\\drawable\\\\images\\\\plane\\.png\" \"app\\\\src\\\\main\\\\res\\\\drawable\\\\plane\\.png\"\nMove-Item \"app\\\\src\\\\main\\\\res\\\\drawable\\\\images\\\\airport-terminal 1\\.png\" \"app\\\\src\\\\main\\\\res\\\\drawable\\\\airport_terminal_1\\.png\"\nMove-Item \"app\\\\src\\\\main\\\\res\\\\drawable\\\\icons\\\\apple-logo\\.png\" \"app\\\\src\\\\main\\\\res\\\\drawable\\\\apple_logo\\.png\"\nMove-Item \"app\\\\src\\\\main\\\\res\\\\drawable\\\\icons\\\\facebook\\.png\" \"app\\\\src\\\\main\\\\res\\\\drawable\\\\facebook\\.png\"\nMove-Item \"app\\\\src\\\\main\\\\res\\\\drawable\\\\icons\\\\google\\.png\" \"app\\\\src\\\\main\\\\res\\\\drawable\\\\google\\.png\"$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}
