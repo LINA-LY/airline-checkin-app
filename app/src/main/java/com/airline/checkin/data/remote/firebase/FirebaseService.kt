@@ -1,69 +1,81 @@
 package com.airline.checkin.data.remote.firebase
 
 import com.airline.checkin.domain.model.*
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class FirebaseService @Inject constructor(
-    private val auth: FirebaseAuth,
-    private val firestore: FirebaseFirestore
-) {
+class FirebaseService @Inject constructor() {
+
     // ---- Auth ----
-    suspend fun signIn(email: String, password: String) =
-        auth.signInWithEmailAndPassword(email, password).await()
+    suspend fun signIn(email: String, password: String): Boolean {
+        return email == "test@test.com" && password == "123456"
+    }
 
-    suspend fun register(email: String, password: String) =
-        auth.createUserWithEmailAndPassword(email, password).await()
+    suspend fun register(email: String, password: String): Boolean {
+        return true
+    }
 
-    fun signOut() = auth.signOut()
+    fun signOut() { /* no-op */ }
 
-    fun currentUserId() = auth.currentUser?.uid
+    fun currentUserId(): String? = "mock-user-001"
 
     // ---- Bookings ----
     suspend fun getBookingByReference(ref: String, lastName: String): Booking? {
-        val snapshot = firestore.collection("bookings")
-            .whereEqualTo("reference", ref)
-            .get().await()
-        return snapshot.documents.firstOrNull()?.toObject(Booking::class.java)
+        if (ref.isBlank() || lastName.isBlank()) return null
+        return Booking(
+            id = "B001",
+            reference = ref,
+            flightId = "FL001",
+            passengerId = "P001",
+            checkInStatus = false
+        )
     }
 
     // ---- Flights ----
-    suspend fun getFlight(flightId: String): Flight? =
-        firestore.collection("flights")
-            .document(flightId).get().await()
-            .toObject(Flight::class.java)
+    suspend fun getFlight(flightId: String): Flight? {
+        return Flight(
+            id = "FL001",
+            flightNumber = "IDN16821",
+            origin = "CGK",
+            destination = "DPS",
+            departureTime = "16:55",
+            arrivalTime = "20:30",
+            status = "On Time"
+        )
+    }
 
     // ---- Seats ----
     suspend fun getSeats(flightId: String): List<Seat> {
-        val snapshot = firestore.collection("seats")
-            .whereEqualTo("flightId", flightId).get().await()
-        return snapshot.toObjects(Seat::class.java)
+        return listOf(
+            Seat(id = "S1", flightId = flightId, seatNumber = "5B",
+                type = SeatType.ECONOMY, isOccupied = false),
+            Seat(id = "S2", flightId = flightId, seatNumber = "5C",
+                type = SeatType.ECONOMY, isOccupied = true),
+            Seat(id = "S3", flightId = flightId, seatNumber = "5D",
+                type = SeatType.ECONOMY, isOccupied = false)
+        )
     }
 
-    suspend fun selectSeat(seatId: String) {
-        firestore.collection("seats")
-            .document(seatId)
-            .update("isOccupied", true).await()
-    }
+    suspend fun selectSeat(seatId: String) { /* no-op */ }
 
     // ---- Boarding Pass ----
     suspend fun getBoardingPass(bookingId: String): BoardingPass? {
-        val snapshot = firestore.collection("boarding_passes")
-            .whereEqualTo("bookingId", bookingId).get().await()
-        return snapshot.documents.firstOrNull()?.toObject(BoardingPass::class.java)
+        return BoardingPass(
+            id = "BP001",
+            bookingId = bookingId,
+            passengerId = "P001",
+            flightNumber = "IDN16821",
+            seatNumber = "5B",
+            gate = "12",
+            boardingTime = "16:55",
+            qrCode = "MOCK_QR_${bookingId}",
+            isDownloaded = false
+        )
     }
 
     // ---- Check-in ----
     suspend fun submitCheckIn(bookingId: String, baggage: BaggageDeclaration) {
-        firestore.collection("bookings")
-            .document(bookingId)
-            .update("checkInStatus", true).await()
-
-        firestore.collection("baggage_declarations")
-            .add(baggage).await()
+        // Mock: pretend it worked
     }
 }

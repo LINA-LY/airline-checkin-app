@@ -68,6 +68,9 @@ secrets.properties
 Thumbs.db
 desktop.ini
 
+*.hprof
+hs_err_pid*.log
+
 
 # ============================================================
 # History
