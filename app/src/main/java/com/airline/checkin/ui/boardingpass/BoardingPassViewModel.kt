@@ -4,7 +4,6 @@ import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.airline.checkin.data.repository.BoardingPassRepository
-import com.airline.checkin.data.repository.MockDataStore
 import com.airline.checkin.domain.model.BoardingPass
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -32,11 +31,7 @@ class BoardingPassViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                // Using MockDataStore to bypass Firebase crash.
-                val boardingPass = MockDataStore.getMockBoardingPass(bookingId)
-                // IMPORTANT
-                // Fetching real data from Firebase/Room
-                // val boardingPass = boardingPassRepository.getBoardingPass(bookingId)
+                val boardingPass = boardingPassRepository.getBoardingPass(bookingId)
 
                 if (boardingPass != null) {
                     _uiState.value = _uiState.value.copy(boardingPass = boardingPass)

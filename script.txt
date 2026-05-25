@@ -17,8 +17,10 @@ DIRECTORY STRUCTURE
 |   |       |               |   |   \---AppDatabase.kt
 |   |       |               |   +---remote/
 |   |       |               |   |   \---firebase/
+|   |       |               |   |       +---DatabaseSeeder.kt
 |   |       |               |   |       \---FirebaseService.kt
 |   |       |               |   \---repository/
+|   |       |               |       +---MockDataStore.kt
 |   |       |               |       \---Repositories.kt
 |   |       |               +---di/
 |   |       |               |   \---AppModules.kt
@@ -30,7 +32,10 @@ DIRECTORY STRUCTURE
 |   |       |               |   |   +---AuthScreens.kt
 |   |       |               |   |   \---AuthViewModel.kt
 |   |       |               |   +---boardingpass/
-|   |       |               |   |   \---BoardingPassScreen.kt
+|   |       |               |   |   +---BoardingPassScreen.kt
+|   |       |               |   |   +---BoardingPassViewModel.kt
+|   |       |               |   |   +---PdfGenerator.kt
+|   |       |               |   |   \---QrCodeGenerator.kt
 |   |       |               |   +---checkin/
 |   |       |               |   |   \---CheckInScreens.kt
 |   |       |               |   +---seat/
@@ -38,18 +43,30 @@ DIRECTORY STRUCTURE
 |   |       |               |   \---AppNavGraph.kt
 |   |       |               \---MainActivity.kt
 |   |       +---res/
-|   |       |   \---values/
-|   |       |       \---themes.xml
+|   |       |   +---drawable/
+|   |       |   |   +---ic_launcher_background.xml
+|   |       |   |   \---ic_launcher_foreground.xml
+|   |       |   +---mipmap-anydpi-v26/
+|   |       |   |   +---ic_launcher.xml
+|   |       |   |   \---ic_launcher_round.xml
+|   |       |   +---values/
+|   |       |   |   +---strings.xml
+|   |       |   |   \---themes.xml
+|   |       |   \---xml/
+|   |       |       \---file_paths.xml
 |   |       \---AndroidManifest.xml
 |   +---build.gradle.kts
 |   \---google-services.json
 +---gradle/
 |   +---wrapper/
 |   |   \---gradle-wrapper.properties
+|   +---gradle-daemon-jvm.properties
 |   \---libs.versions.toml
 +---build.gradle.kts
 +---gradle.properties
++---gradlew
 +---gradlew.bat
++---hs_err_pid17596.log
 +---local.properties
 +---README.md
 \---settings.gradle.kts
@@ -253,87 +270,273 @@ abstract class AppDatabase : RoomDatabase() {
 
 
 ============================================================
+FILE: app/src/main/java/com/airline/checkin/data/remote/firebase/DatabaseSeeder.kt
+============================================================
+package com.airline.checkin.data.remote.firebase
+
+import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.coroutines.tasks.await
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class DatabaseSeeder @Inject constructor(
+    private val firestore: FirebaseFirestore
+) {
+    suspend fun seedIfNeeded() {
+        val flightRef = firestore.collection("flights").document("FL001")
+        val existing = flightRef.get().await()
+        if (existing.exists()) return
+
+        val batch = firestore.batch()
+
+        batch.set(
+            flightRef,
+            mapOf(
+                "flight_number" to "IDN16821",
+                "origin" to "CGK",
+                "destination" to "DPS",
+                "departureTime" to "16:55",
+                "arrivalTime" to "18:45",
+                "status" to "On Time"
+            )
+        )
+
+        batch.set(
+            firestore.collection("bookings").document("mock_booking_id"),
+            mapOf(
+                "reference" to "ABCDEF",
+                "flightId" to "FL001",
+                "passengerId" to "mock-user-001",
+                "checkInStatus" to false
+            )
+        )
+
+        val seatDocs = listOf(
+            "S1" to mapOf(
+                "flightId" to "FL001",
+                "seatNumber" to "5A",
+                "type" to "ECONOMY",
+                "isOccupied" to false
+            ),
+            "S2" to mapOf(
+                "flightId" to "FL001",
+                "seatNumber" to "5B",
+                "type" to "ECONOMY",
+                "isOccupied" to true
+            ),
+            "S3" to mapOf(
+                "flightId" to "FL001",
+                "seatNumber" to "5C",
+                "type" to "ECONOMY",
+                "isOccupied" to false
+            )
+        )
+
+        seatDocs.forEach { (id, data) ->
+            batch.set(firestore.collection("seats").document(id), data)
+        }
+
+        batch.set(
+            firestore.collection("boarding_passes").document("BP001"),
+            mapOf(
+                "bookingId" to "mock_booking_id",
+                "passengerId" to "mock-user-001",
+                "flightNumber" to "IDN16821",
+                "seatNumber" to "5B",
+                "gate" to "12",
+                "boardingTime" to "16:55",
+                "qrCode" to "PNR: mock_booking_id | Flight: IDN16821 | Seat: 5B",
+                "isDownloaded" to false
+            )
+        )
+
+        batch.commit().await()
+    }
+}
+
+
+============================================================
 FILE: app/src/main/java/com/airline/checkin/data/remote/firebase/FirebaseService.kt
 ============================================================
 package com.airline.checkin.data.remote.firebase
 
 import com.airline.checkin.domain.model.*
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.SetOptions
+import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class FirebaseService @Inject constructor() {
+class FirebaseService @Inject constructor(
+    private val auth: FirebaseAuth,
+    private val firestore: FirebaseFirestore,
+    private val storage: FirebaseStorage
+) {
+
+    private val bookings = firestore.collection("bookings")
+    private val flights = firestore.collection("flights")
+    private val seats = firestore.collection("seats")
+    private val boardingPasses = firestore.collection("boarding_passes")
+    private val baggageDeclarations = firestore.collection("baggage_declarations")
 
     // ---- Auth ----
     suspend fun signIn(email: String, password: String): Boolean {
-        return email == "test@test.com" && password == "123456"
+        auth.signInWithEmailAndPassword(email, password).await()
+        return auth.currentUser != null
     }
 
     suspend fun register(email: String, password: String): Boolean {
-        return true
+        auth.createUserWithEmailAndPassword(email, password).await()
+        return auth.currentUser != null
     }
 
-    fun signOut() { /* no-op */ }
+    fun signOut() {
+        auth.signOut()
+    }
 
-    fun currentUserId(): String? = "mock-user-001"
+    fun currentUserId(): String? = auth.currentUser?.uid
 
     // ---- Bookings ----
     suspend fun getBookingByReference(ref: String, lastName: String): Booking? {
-        if (ref.isBlank() || lastName.isBlank()) return null
-        return Booking(
-            id = "B001",
-            reference = ref,
-            flightId = "FL001",
-            passengerId = "P001",
-            checkInStatus = false
-        )
+        if (ref.isBlank()) return null
+        val baseQuery = bookings.whereEqualTo("reference", ref)
+        val snapshot = if (lastName.isNotBlank()) {
+            val withLastName = baseQuery.whereEqualTo("lastName", lastName).get().await()
+            if (withLastName.isEmpty) baseQuery.get().await() else withLastName
+        } else {
+            baseQuery.get().await()
+        }
+        val doc = snapshot.documents.firstOrNull() ?: return null
+        return doc.toBooking()
     }
 
     // ---- Flights ----
     suspend fun getFlight(flightId: String): Flight? {
-        return Flight(
-            id = "FL001",
-            flightNumber = "IDN16821",
-            origin = "CGK",
-            destination = "DPS",
-            departureTime = "16:55",
-            arrivalTime = "20:30",
-            status = "On Time"
-        )
+        if (flightId.isBlank()) return null
+        val doc = flights.document(flightId).get().await()
+        if (!doc.exists()) return null
+        return doc.toFlight()
     }
 
     // ---- Seats ----
     suspend fun getSeats(flightId: String): List<Seat> {
-        return listOf(
-            Seat(id = "S1", flightId = flightId, seatNumber = "5B",
-                type = SeatType.ECONOMY, isOccupied = false),
-            Seat(id = "S2", flightId = flightId, seatNumber = "5C",
-                type = SeatType.ECONOMY, isOccupied = true),
-            Seat(id = "S3", flightId = flightId, seatNumber = "5D",
-                type = SeatType.ECONOMY, isOccupied = false)
-        )
+        if (flightId.isBlank()) return emptyList()
+        val snapshot = seats.whereEqualTo("flightId", flightId).get().await()
+        return snapshot.documents.mapNotNull { it.toSeat() }
     }
 
-    suspend fun selectSeat(seatId: String) { /* no-op */ }
+    suspend fun selectSeat(seatId: String) {
+        if (seatId.isBlank()) return
+        seats.document(seatId).update("isOccupied", true).await()
+    }
 
     // ---- Boarding Pass ----
     suspend fun getBoardingPass(bookingId: String): BoardingPass? {
-        return BoardingPass(
-            id = "BP001",
-            bookingId = bookingId,
-            passengerId = "P001",
-            flightNumber = "IDN16821",
-            seatNumber = "5B",
-            gate = "12",
-            boardingTime = "16:55",
-            qrCode = "MOCK_QR_${bookingId}",
-            isDownloaded = false
-        )
+        if (bookingId.isBlank()) return null
+        val snapshot = boardingPasses.whereEqualTo("bookingId", bookingId)
+            .limit(1)
+            .get()
+            .await()
+        val doc = snapshot.documents.firstOrNull() ?: return null
+        return doc.toBoardingPass()
     }
 
     // ---- Check-in ----
     suspend fun submitCheckIn(bookingId: String, baggage: BaggageDeclaration) {
-        // Mock: pretend it worked
+        if (bookingId.isBlank()) return
+        bookings.document(bookingId)
+            .set(mapOf("checkInStatus" to true), SetOptions.merge())
+            .await()
+
+        val baggageId = if (baggage.id.isNotBlank()) baggage.id else bookingId
+        baggageDeclarations.document(baggageId)
+            .set(
+                mapOf(
+                    "bookingId" to bookingId,
+                    "cabinBags" to baggage.cabinBags,
+                    "checkedBags" to baggage.checkedBags,
+                    "specialItems" to baggage.specialItems
+                ),
+                SetOptions.merge()
+            )
+            .await()
+    }
+
+    private fun DocumentSnapshot.toBooking(): Booking = Booking(
+        id = id,
+        reference = getString("reference") ?: "",
+        flightId = getString("flightId") ?: "",
+        passengerId = getString("passengerId") ?: "",
+        checkInStatus = getBoolean("checkInStatus") ?: false
+    )
+
+    private fun DocumentSnapshot.toFlight(): Flight = Flight(
+        id = id,
+        flightNumber = getString("flight_number") ?: getString("flightNumber") ?: "",
+        origin = getString("origin") ?: "",
+        destination = getString("destination") ?: "",
+        departureTime = getString("departureTime") ?: "",
+        arrivalTime = getString("arrivalTime") ?: "",
+        status = getString("status") ?: ""
+    )
+
+    private fun DocumentSnapshot.toSeat(): Seat? {
+        val flightId = getString("flightId") ?: return null
+        val seatNumber = getString("seatNumber") ?: return null
+        val typeRaw = getString("type") ?: SeatType.ECONOMY.name
+        val seatType = runCatching { SeatType.valueOf(typeRaw.uppercase()) }
+            .getOrDefault(SeatType.ECONOMY)
+        return Seat(
+            id = id,
+            flightId = flightId,
+            seatNumber = seatNumber,
+            type = seatType,
+            isOccupied = getBoolean("isOccupied") ?: false
+        )
+    }
+
+    private fun DocumentSnapshot.toBoardingPass(): BoardingPass = BoardingPass(
+        id = id,
+        bookingId = getString("bookingId") ?: "",
+        passengerId = getString("passengerId") ?: "",
+        flightNumber = getString("flightNumber") ?: "",
+        seatNumber = getString("seatNumber") ?: "",
+        gate = getString("gate") ?: "",
+        boardingTime = getString("boardingTime") ?: "",
+        qrCode = getString("qrCode") ?: "",
+        isDownloaded = getBoolean("isDownloaded") ?: false
+    )
+}
+
+============================================================
+FILE: app/src/main/java/com/airline/checkin/data/repository/MockDataStore.kt
+============================================================
+package com.airline.checkin.data.repository
+
+import com.airline.checkin.domain.model.BoardingPass
+import kotlinx.coroutines.delay
+
+object MockDataStore {
+    // This simulates fetching data from an external database
+    suspend fun getMockBoardingPass(bookingId: String): BoardingPass {
+        delay(1000) // Simulates a 1-second network loading time
+        
+        return BoardingPass(
+            id = "mock_bp_001",
+            bookingId = bookingId,
+            passengerId = "Yanouche Sari",
+            flightNumber = "IDN16821",
+            seatNumber = "5B",
+            gate = "12",
+            boardingTime = "16:55",
+            qrCode = "PNR: $bookingId | Flight: IDN16821 | Seat: 5B | Name: Yanouche Sari",
+            isDownloaded = false
+        )
     }
 }
 
@@ -433,6 +636,9 @@ import android.content.Context
 import androidx.room.Room
 import com.airline.checkin.data.local.AppDatabase
 import com.airline.checkin.data.local.dao.*
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.storage.FirebaseStorage
 
 import dagger.Module
 import dagger.Provides
@@ -466,7 +672,17 @@ object DatabaseModule {
 @Module
 @InstallIn(SingletonComponent::class)
 object FirebaseModule {
-    // TODO: restore when google-services.json is available
+    @Provides
+    @Singleton
+    fun provideFirebaseAuth(): FirebaseAuth = FirebaseAuth.getInstance()
+
+    @Provides
+    @Singleton
+    fun provideFirestore(): FirebaseFirestore = FirebaseFirestore.getInstance()
+
+    @Provides
+    @Singleton
+    fun provideFirebaseStorage(): FirebaseStorage = FirebaseStorage.getInstance()
 }
 
 
@@ -550,6 +766,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 
@@ -561,15 +780,71 @@ fun LoginScreen(
     onGoToRegister: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
-    // TODO Member 1: implement login UI
+    val uiState by viewModel.uiState.collectAsState()
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+
+    LaunchedEffect(uiState.isSuccess) {
+        if (uiState.isSuccess) {
+            onLoginSuccess()
+            viewModel.clearStatus()
+        }
+    }
+
     Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Login Screen", style = MaterialTheme.typography.headlineMedium)
+        Text("Welcome back", style = MaterialTheme.typography.headlineMedium)
+        Spacer(Modifier.height(24.dp))
+
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Password") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            visualTransformation = PasswordVisualTransformation()
+        )
+
+        Spacer(Modifier.height(20.dp))
+
+        Button(
+            onClick = { viewModel.signIn(email.trim(), password) },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = email.isNotBlank() && password.isNotBlank() && !uiState.isLoading
+        ) {
+            if (uiState.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp),
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text("Login")
+            }
+        }
+
+        uiState.error?.let { error ->
+            Spacer(Modifier.height(12.dp))
+            Text(text = error, color = MaterialTheme.colorScheme.error)
+        }
+
         Spacer(Modifier.height(16.dp))
-        Button(onClick = onLoginSuccess) { Text("Login (placeholder)") }
         TextButton(onClick = onGoToRegister) { Text("Register") }
     }
 }
@@ -582,15 +857,71 @@ fun RegisterScreen(
     onGoToLogin: () -> Unit,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
-    // TODO Member 1: implement register UI
+    val uiState by viewModel.uiState.collectAsState()
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+
+    LaunchedEffect(uiState.isSuccess) {
+        if (uiState.isSuccess) {
+            onRegisterSuccess()
+            viewModel.clearStatus()
+        }
+    }
+
     Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Register Screen", style = MaterialTheme.typography.headlineMedium)
+        Text("Create account", style = MaterialTheme.typography.headlineMedium)
+        Spacer(Modifier.height(24.dp))
+
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+        )
+
+        Spacer(Modifier.height(12.dp))
+
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Password") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            visualTransformation = PasswordVisualTransformation()
+        )
+
+        Spacer(Modifier.height(20.dp))
+
+        Button(
+            onClick = { viewModel.register(email.trim(), password) },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = email.isNotBlank() && password.isNotBlank() && !uiState.isLoading
+        ) {
+            if (uiState.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp),
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text("Register")
+            }
+        }
+
+        uiState.error?.let { error ->
+            Spacer(Modifier.height(12.dp))
+            Text(text = error, color = MaterialTheme.colorScheme.error)
+        }
+
         Spacer(Modifier.height(16.dp))
-        Button(onClick = onRegisterSuccess) { Text("Register (placeholder)") }
         TextButton(onClick = onGoToLogin) { Text("Back to Login") }
     }
 }
@@ -647,6 +978,10 @@ class AuthViewModel @Inject constructor(
             }
         }
     }
+
+    fun clearStatus() {
+        _uiState.value = AuthUiState()
+    }
 }
 
 
@@ -655,13 +990,479 @@ FILE: app/src/main/java/com/airline/checkin/ui/boardingpass/BoardingPassScreen.k
 ============================================================
 package com.airline.checkin.ui.boardingpass
 
+import android.Manifest
+import android.app.DownloadManager
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.net.Uri
+import android.os.Build
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Flight
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import kotlinx.coroutines.launch
+
+private val PurplePrimary = Color(0xFF8B5CF6)
+private val PurpleLight = Color(0xFFEDE9FE)
+private val GrayLabel = Color(0xFF9CA3AF)
+private val GrayDivider = Color(0xFFE5E7EB)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BoardingPassScreen(
+    bookingId: String,
+    onBackClick: () -> Unit = {},
+    onBackToHome: () -> Unit = {},
+    viewModel: BoardingPassViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    var showSuccessDialog by remember { mutableStateOf(false) }
+    var showQrFullScreen by remember { mutableStateOf(false) }
+    var savedPdfUri by remember { mutableStateOf<String?>(null) }
+
+    val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val storageGranted = permissions[Manifest.permission.WRITE_EXTERNAL_STORAGE] ?: true
+        if (storageGranted || Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            coroutineScope.launch {
+                val uriString = PdfGenerator.generateAndSavePdf(context, uiState.boardingPass!!, uiState.qrCodeBitmap)
+                if (uriString != null) {
+                    savedPdfUri = uriString
+                    showSuccessDialog = true
+                    showDownloadNotification(context, uriString)
+                }
+            }
+        } else {
+            Toast.makeText(context, "Storage permission is required.", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    val downloadTicket: () -> Unit = {
+        val permissionsToRequest = mutableListOf<String>()
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            permissionsToRequest.add(Manifest.permission.POST_NOTIFICATIONS)
+        }
+
+        if (permissionsToRequest.isNotEmpty()) {
+            permissionLauncher.launch(permissionsToRequest.toTypedArray())
+        } else {
+            coroutineScope.launch {
+                val uriString = PdfGenerator.generateAndSavePdf(context, uiState.boardingPass!!, uiState.qrCodeBitmap)
+                if (uriString != null) {
+                    savedPdfUri = uriString
+                    showSuccessDialog = true
+                    showDownloadNotification(context, uriString)
+                }
+            }
+        }
+    }
+
+    LaunchedEffect(bookingId) { viewModel.loadBoardingPass(bookingId) }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Boarding Pass", fontWeight = FontWeight.SemiBold) },
+                navigationIcon = {
+                    IconButton(onClick = onBackClick) { Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back") }
+                },
+                actions = {
+                    IconButton(onClick = { }) { Icon(Icons.Default.MoreVert, "More options") }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+            )
+        },
+        containerColor = Color(0xFFF9FAFB)
+    ) { paddingValues ->
+        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+            when {
+                uiState.isLoading -> CircularProgressIndicator(modifier = Modifier.align(Alignment.Center), color = PurplePrimary)
+                uiState.error != null -> {
+                    Column(modifier = Modifier.align(Alignment.Center).padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(uiState.error ?: "Error", color = MaterialTheme.colorScheme.error)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = { viewModel.loadBoardingPass(bookingId) }, colors = ButtonDefaults.buttonColors(containerColor = PurplePrimary)) { Text("Retry") }
+                    }
+                }
+                uiState.boardingPass != null -> {
+                    BoardingPassContent(
+                        boardingPass = uiState.boardingPass!!,
+                        qrCodeBitmap = uiState.qrCodeBitmap,
+                        onDownloadClick = downloadTicket,
+                        onViewQrFullScreen = { showQrFullScreen = true }
+                    )
+                }
+            }
+        }
+    }
+
+    if (showSuccessDialog) {
+        SuccessDialog(
+            onSeeTicket = {
+                showSuccessDialog = false
+                openPdf(context, savedPdfUri)
+            },
+            onBackToHome = { showSuccessDialog = false; onBackToHome() }
+        )
+    }
+
+    if (showQrFullScreen && uiState.qrCodeBitmap != null) {
+        Dialog(
+            onDismissRequest = { showQrFullScreen = false },
+            properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
+        ) {
+            Surface(modifier = Modifier.fillMaxSize(), color = Color.White) {
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Text("Scan at Gate", fontWeight = FontWeight.Bold, fontSize = 32.sp, color = Color.Black)
+                    Spacer(modifier = Modifier.height(48.dp))
+                    Image(
+                        bitmap = uiState.qrCodeBitmap!!.asImageBitmap(),
+                        contentDescription = "Full Screen QR",
+                        modifier = Modifier.fillMaxWidth().aspectRatio(1f)
+                    )
+                    Spacer(modifier = Modifier.height(64.dp))
+                    Button(
+                        onClick = { showQrFullScreen = false },
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        shape = RoundedCornerShape(28.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = PurplePrimary)
+                    ) { Text("Close Full Screen", fontSize = 18.sp, fontWeight = FontWeight.SemiBold) }
+                }
+            }
+        }
+    }
+}
+
+// --- Helper Functions to Open PDF directly ---
+private fun openPdf(context: Context, uriString: String?) {
+    if (uriString != null && uriString.startsWith("content://")) {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(Uri.parse(uriString), "application/pdf")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+        } catch (e: Exception) {
+            context.startActivity(Intent(DownloadManager.ACTION_VIEW_DOWNLOADS).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) })
+        }
+    } else {
+        try {
+            context.startActivity(Intent(DownloadManager.ACTION_VIEW_DOWNLOADS).apply { addFlags(Intent.FLAG_ACTIVITY_NEW_TASK) })
+        } catch (e: Exception) {
+            Toast.makeText(context, "Saved to Downloads", Toast.LENGTH_SHORT).show()
+        }
+    }
+}
+
+private fun showDownloadNotification(context: Context, uriString: String?) {
+    val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    val channelId = "boarding_pass_downloads"
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val channel = NotificationChannel(channelId, "Downloads", NotificationManager.IMPORTANCE_DEFAULT)
+        notificationManager.createNotificationChannel(channel)
+    }
+
+    val intent = if (uriString != null && uriString.startsWith("content://")) {
+        Intent(Intent.ACTION_VIEW).apply {
+            setDataAndType(Uri.parse(uriString), "application/pdf")
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+    } else {
+        Intent(DownloadManager.ACTION_VIEW_DOWNLOADS)
+    }
+
+    val pendingIntent = PendingIntent.getActivity(
+        context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+    )
+
+    val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        android.app.Notification.Builder(context, channelId)
+    } else {
+        @Suppress("DEPRECATION")
+        android.app.Notification.Builder(context)
+    }
+
+    builder.setSmallIcon(android.R.drawable.stat_sys_download_done)
+        .setContentTitle("Boarding Pass Saved")
+        .setContentText("Tap to view your ticket")
+        .setContentIntent(pendingIntent)
+        .setAutoCancel(true)
+
+    try {
+        notificationManager.notify(System.currentTimeMillis().toInt(), builder.build())
+    } catch (e: SecurityException) {
+        // Ignored
+    }
+}
+
+@Composable
+private fun BoardingPassContent(
+    boardingPass: com.airline.checkin.domain.model.BoardingPass,
+    qrCodeBitmap: Bitmap?,
+    onDownloadClick: () -> Unit,
+    onViewQrFullScreen: () -> Unit
+) {
+    // We removed verticalScroll() entirely and use weight(1f) to stretch perfectly
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        // Ticket Card takes all remaining vertical space above the buttons
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 20.dp, vertical = 16.dp)
+            ) {
+                // Info Section: Takes majority of the card space, evenly spacing the rows
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    FlightRouteSection(
+                        origin = "CGK", originCity = "Jakarta",
+                        destination = "DPS", destinationCity = "Bali",
+                        duration = "1h 50m"
+                    )
+
+                    Column {
+                        InfoLabel(label = "Passenger Name")
+                        Text(
+                            text = boardingPass.passengerId.ifEmpty { "Yanouche Sari" },
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color.Black
+                        )
+                    }
+
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            InfoLabel(label = "Date")
+                            Text("Mon, May 7", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            InfoLabel(label = "Class")
+                            Text("Economy", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                        }
+                    }
+
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            InfoLabel(label = "Departure")
+                            Text(boardingPass.boardingTime.ifEmpty { "16:55" }, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            InfoLabel(label = "Arrival")
+                            Text("18:45", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                        }
+                    }
+
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            InfoLabel(label = "Flight no")
+                            Text(boardingPass.flightNumber.ifEmpty { "IDN16821" }, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                        }
+                        Column(modifier = Modifier.weight(0.6f)) {
+                            InfoLabel(label = "Gate")
+                            Text(boardingPass.gate.ifEmpty { "12" }, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                        }
+                        Column(modifier = Modifier.weight(0.6f)) {
+                            InfoLabel(label = "Seat")
+                            Text(boardingPass.seatNumber.ifEmpty { "5B" }, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+                DashedDivider()
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // QR Code Section: Scales dynamically but takes less space than the info section
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(0.55f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (qrCodeBitmap != null) {
+                        Image(
+                            bitmap = qrCodeBitmap.asImageBitmap(),
+                            contentDescription = "QR Code",
+                            modifier = Modifier
+                                .fillMaxHeight() 
+                                .aspectRatio(1f) 
+                        )
+                    } else {
+                        CircularProgressIndicator(color = PurplePrimary)
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Fixed size buttons at the bottom
+        Button(
+            onClick = onDownloadClick,
+            modifier = Modifier.fillMaxWidth().height(50.dp),
+            shape = RoundedCornerShape(25.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = PurplePrimary)
+        ) { Text("Download", fontSize = 16.sp, fontWeight = FontWeight.SemiBold) }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        OutlinedButton(
+            onClick = onViewQrFullScreen,
+            modifier = Modifier.fillMaxWidth().height(50.dp),
+            shape = RoundedCornerShape(25.dp),
+            border = ButtonDefaults.outlinedButtonBorder(enabled = true).copy(brush = SolidColor(PurplePrimary))
+        ) { Text("View QR code full screen", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = PurplePrimary) }
+    }
+}
+
+@Composable
+private fun FlightRouteSection(origin: String, originCity: String, destination: String, destinationCity: String, duration: String) {
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Top) {
+        Column(horizontalAlignment = Alignment.Start) {
+            Text(origin, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+            Text(originCity, fontSize = 12.sp, color = GrayLabel)
+        }
+        Box(modifier = Modifier.weight(1f).height(50.dp), contentAlignment = Alignment.Center) { FlightArc(duration) }
+        Column(horizontalAlignment = Alignment.End) {
+            Text(destination, fontSize = 28.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+            Text(destinationCity, fontSize = 12.sp, color = GrayLabel)
+        }
+    }
+}
+
+@Composable
+private fun FlightArc(duration: String) {
+    Box(modifier = Modifier.fillMaxWidth().height(50.dp), contentAlignment = Alignment.Center) {
+        Canvas(modifier = Modifier.fillMaxWidth().height(30.dp)) {
+            val strokeWidth = 2.dp.toPx()
+            val dashEffect = PathEffect.dashPathEffect(floatArrayOf(8f, 8f), 0f)
+            drawArc(
+                color = PurplePrimary, startAngle = 180f, sweepAngle = 180f, useCenter = false,
+                topLeft = Offset(size.width * 0.1f, 0f),
+                size = androidx.compose.ui.geometry.Size(size.width * 0.8f, size.height * 2f),
+                style = Stroke(width = strokeWidth, pathEffect = dashEffect)
+            )
+        }
+        Icon(Icons.Default.Flight, null, modifier = Modifier.size(20.dp).rotate(90f), tint = PurplePrimary)
+        Text(duration, fontSize = 10.sp, fontWeight = FontWeight.Medium, color = PurplePrimary, modifier = Modifier.offset(y = 20.dp))
+    }
+}
+
+@Composable
+private fun InfoLabel(label: String) {
+    Text(label, fontSize = 12.sp, color = GrayLabel, modifier = Modifier.padding(bottom = 2.dp))
+}
+
+@Composable
+private fun DashedDivider() {
+    Canvas(modifier = Modifier.fillMaxWidth().height(1.dp)) {
+        drawLine(
+            color = GrayDivider, start = Offset(0f, 0f), end = Offset(size.width, 0f), strokeWidth = 2f,
+            pathEffect = PathEffect.dashPathEffect(floatArrayOf(15f, 15f), 0f)
+        )
+    }
+}
+
+@Composable
+private fun SuccessDialog(onSeeTicket: () -> Unit, onBackToHome: () -> Unit) {
+    Dialog(onDismissRequest = { }) {
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            shape = RoundedCornerShape(24.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White)
+        ) {
+            Column(modifier = Modifier.fillMaxWidth().padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Box(modifier = Modifier.size(80.dp), contentAlignment = Alignment.Center) {
+                    Box(modifier = Modifier.size(80.dp).background(PurpleLight, CircleShape))
+                    Box(modifier = Modifier.size(60.dp).background(PurplePrimary, CircleShape), contentAlignment = Alignment.Center) {
+                        Icon(Icons.Default.Check, null, modifier = Modifier.size(36.dp), tint = Color.White)
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Text("Success!", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Your boarding pass has been downloaded successfully.", fontSize = 14.sp, color = GrayLabel, textAlign = TextAlign.Center)
+                Spacer(modifier = Modifier.height(24.dp))
+                Button(
+                    onClick = onSeeTicket, modifier = Modifier.fillMaxWidth().height(50.dp),
+                    shape = RoundedCornerShape(25.dp), colors = ButtonDefaults.buttonColors(containerColor = PurplePrimary)
+                ) { Text("See ticket", fontSize = 16.sp, fontWeight = FontWeight.SemiBold) }
+                Spacer(modifier = Modifier.height(8.dp))
+                TextButton(onClick = onBackToHome) { Text("Back to home", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = GrayLabel) }
+            }
+        }
+    }
+}
+
+============================================================
+FILE: app/src/main/java/com/airline/checkin/ui/boardingpass/BoardingPassViewModel.kt
+============================================================
+package com.airline.checkin.ui.boardingpass
+
+import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.airline.checkin.data.repository.BoardingPassRepository
@@ -672,49 +1473,253 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-// ---- ViewModel ----
+data class BoardingPassUiState(
+    val isLoading: Boolean = false,
+    val boardingPass: BoardingPass? = null,
+    val qrCodeBitmap: Bitmap? = null,
+    val error: String? = null
+)
 
 @HiltViewModel
 class BoardingPassViewModel @Inject constructor(
-    private val repository: BoardingPassRepository
+    private val boardingPassRepository: BoardingPassRepository
 ) : ViewModel() {
 
-    private val _boardingPass = MutableStateFlow<BoardingPass?>(null)
-    val boardingPass = _boardingPass.asStateFlow()
+    private val _uiState = MutableStateFlow(BoardingPassUiState())
+    val uiState = _uiState.asStateFlow()
 
-    fun load(bookingId: String) {
+    fun loadBoardingPass(bookingId: String) {
+        _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+
         viewModelScope.launch {
-            _boardingPass.value = repository.getBoardingPass(bookingId)
+            try {
+                val boardingPass = boardingPassRepository.getBoardingPass(bookingId)
+
+                if (boardingPass != null) {
+                    _uiState.value = _uiState.value.copy(boardingPass = boardingPass)
+
+                    val qrBitmap = QrCodeGenerator.generateQrCodeBitmap(boardingPass.qrCode)
+                    _uiState.value = _uiState.value.copy(qrCodeBitmap = qrBitmap)
+                } else {
+                    _uiState.value = _uiState.value.copy(
+                        error = "Boarding pass not found for booking: $bookingId"
+                    )
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    error = e.message ?: "An unexpected error occurred"
+                )
+            } finally {
+                _uiState.value = _uiState.value.copy(isLoading = false)
+            }
         }
     }
 }
 
-// ---- Screen ----
+============================================================
+FILE: app/src/main/java/com/airline/checkin/ui/boardingpass/PdfGenerator.kt
+============================================================
+package com.airline.checkin.ui.boardingpass
 
-@Composable
-fun BoardingPassScreen(
-    bookingId: String,
-    viewModel: BoardingPassViewModel = hiltViewModel()
-) {
-    val pass by viewModel.boardingPass.collectAsState()
+import android.content.ContentValues
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.DashPathEffect
+import android.graphics.Paint
+import android.graphics.Typeface
+import android.graphics.pdf.PdfDocument
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
+import com.airline.checkin.domain.model.BoardingPass
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
+import java.io.FileOutputStream
 
-    LaunchedEffect(bookingId) { viewModel.load(bookingId) }
+object PdfGenerator {
+    suspend fun generateAndSavePdf(
+        context: Context,
+        boardingPass: BoardingPass,
+        qrCodeBitmap: Bitmap?
+    ): String? = withContext(Dispatchers.IO) {
+        var pdfDocument: PdfDocument? = null
+        try {
+            pdfDocument = PdfDocument()
+            // Make the canvas much taller (1400) so the QR code never cuts off
+            val pageWidth = 800
+            val pageHeight = 1400
+            val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, 1).create()
+            val page = pdfDocument.startPage(pageInfo)
+            val canvas: Canvas = page.canvas
 
-    // TODO Member 4: implement boarding pass UI with QR code
-    Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("Boarding Pass", style = MaterialTheme.typography.headlineMedium)
-        pass?.let {
-            Text("Flight: ${it.flightNumber}")
-            Text("Seat: ${it.seatNumber}")
-            Text("Gate: ${it.gate}")
-        } ?: Text("Loading...")
+            // --- Setup Paints ---
+            val backgroundPaint = Paint().apply { color = Color.parseColor("#F3F4F6"); style = Paint.Style.FILL } // Light gray
+            val cardPaint = Paint().apply { color = Color.WHITE; style = Paint.Style.FILL; isAntiAlias = true }
+            val headerPaint = Paint().apply { color = Color.parseColor("#8B5CF6"); style = Paint.Style.FILL; isAntiAlias = true }
+
+            val whiteTitlePaint = Paint().apply { color = Color.WHITE; textSize = 36f; isFakeBoldText = true; isAntiAlias = true; textAlign = Paint.Align.CENTER }
+            val labelPaint = Paint().apply { color = Color.parseColor("#9CA3AF"); textSize = 20f; isAntiAlias = true }
+            val valuePaint = Paint().apply { color = Color.BLACK; textSize = 28f; typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD); isAntiAlias = true }
+            val hugeRoutePaint = Paint().apply { color = Color.BLACK; textSize = 70f; typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD); isAntiAlias = true }
+            val planePaint = Paint().apply { color = Color.parseColor("#8B5CF6"); textSize = 60f; isAntiAlias = true; textAlign = Paint.Align.CENTER }
+
+            val dashPaint = Paint().apply {
+                color = Color.parseColor("#E5E7EB")
+                style = Paint.Style.STROKE
+                strokeWidth = 5f
+                pathEffect = DashPathEffect(floatArrayOf(25f, 25f), 0f)
+            }
+
+            // --- Draw Background ---
+            canvas.drawRect(0f, 0f, pageWidth.toFloat(), pageHeight.toFloat(), backgroundPaint)
+
+            // --- Draw White Ticket Card (Rounded) ---
+            canvas.drawRoundRect(40f, 40f, 760f, 1360f, 40f, 40f, cardPaint)
+
+            // --- Draw Purple Header ---
+            canvas.drawRoundRect(40f, 40f, 760f, 200f, 40f, 40f, headerPaint)
+            canvas.drawRect(40f, 100f, 760f, 200f, headerPaint) // Fill bottom corners to make it flat at the bottom
+            canvas.drawText("BOARDING PASS", 400f, 135f, whiteTitlePaint)
+
+            // --- Draw Flight Route (CGK -> DPS) ---
+            canvas.drawText("CGK", 100f, 320f, hugeRoutePaint)
+            canvas.drawText("✈", 400f, 305f, planePaint) // Airplane symbol centered
+            canvas.drawText("DPS", 540f, 320f, hugeRoutePaint)
+
+            // --- Draw Grid Details ---
+            var currentY = 460f
+
+            // Row 1: Passenger
+            canvas.drawText("Passenger Name", 100f, currentY, labelPaint)
+            currentY += 40f
+            canvas.drawText(boardingPass.passengerId.ifEmpty { "Yanouche Sari" }, 100f, currentY, valuePaint)
+
+            currentY += 80f
+            // Row 2: Date & Class
+            canvas.drawText("Date", 100f, currentY, labelPaint)
+            canvas.drawText("Class", 450f, currentY, labelPaint)
+            currentY += 40f
+            canvas.drawText("Mon, May 7", 100f, currentY, valuePaint)
+            canvas.drawText("Economy", 450f, currentY, valuePaint)
+
+            currentY += 80f
+            // Row 3: Departure & Arrival
+            canvas.drawText("Departure", 100f, currentY, labelPaint)
+            canvas.drawText("Arrival", 450f, currentY, labelPaint)
+            currentY += 40f
+            canvas.drawText(boardingPass.boardingTime.ifEmpty { "16:55" }, 100f, currentY, valuePaint)
+            canvas.drawText("18:45", 450f, currentY, valuePaint)
+
+            currentY += 80f
+            // Row 4: Flight, Gate, Seat
+            canvas.drawText("Flight no", 100f, currentY, labelPaint)
+            canvas.drawText("Gate", 350f, currentY, labelPaint)
+            canvas.drawText("Seat", 550f, currentY, labelPaint)
+            currentY += 40f
+            canvas.drawText(boardingPass.flightNumber.ifEmpty { "IDN16821" }, 100f, currentY, valuePaint)
+            canvas.drawText(boardingPass.gate.ifEmpty { "12" }, 350f, currentY, valuePaint)
+            canvas.drawText(boardingPass.seatNumber.ifEmpty { "5B" }, 550f, currentY, valuePaint)
+
+            // --- Draw Dashed Divider ---
+            currentY += 100f
+            canvas.drawLine(80f, currentY, 720f, currentY, dashPaint)
+
+            // --- Draw Large Centered QR Code ---
+            currentY += 60f
+            qrCodeBitmap?.let {
+                val qrSize = 340 // Massive QR code
+                val scaledQr = Bitmap.createScaledBitmap(it, qrSize, qrSize, false)
+                val leftCenter = (800f - qrSize) / 2f
+                canvas.drawBitmap(scaledQr, leftCenter, currentY, null)
+            }
+
+            pdfDocument.finishPage(page)
+
+            // --- Save Logic ---
+            val fileName = "BoardingPass_${boardingPass.bookingId}.pdf"
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val resolver = context.contentResolver
+                val contentValues = ContentValues().apply {
+                    put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
+                    put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf")
+                    put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOWNLOADS)
+                }
+                val uri = resolver.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, contentValues)
+                if (uri != null) {
+                    resolver.openOutputStream(uri)?.use { outputStream ->
+                        pdfDocument.writeTo(outputStream)
+                    }
+                    return@withContext uri.toString()
+                }
+            } else {
+                val directory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+                if (!directory.exists()) directory.mkdirs()
+                val file = File(directory, fileName)
+                FileOutputStream(file).use { outputStream ->
+                    pdfDocument.writeTo(outputStream)
+                }
+                return@withContext file.absolutePath
+            }
+            return@withContext null
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return@withContext null
+        } finally {
+            pdfDocument?.close()
+        }
     }
 }
 
+============================================================
+FILE: app/src/main/java/com/airline/checkin/ui/boardingpass/QrCodeGenerator.kt
+============================================================
+package com.airline.checkin.ui.boardingpass
+
+import android.graphics.Bitmap
+import android.graphics.Color
+import android.util.Log
+import com.google.zxing.BarcodeFormat
+import com.google.zxing.MultiFormatWriter
+import com.google.zxing.WriterException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+
+object QrCodeGenerator {
+
+    private const val TAG = "QrCodeGenerator"
+
+    suspend fun generateQrCodeBitmap(data: String, size: Int = 800): Bitmap? {
+        return withContext(Dispatchers.Default) {
+            try {
+                val bitMatrix = MultiFormatWriter().encode(
+                    data,
+                    BarcodeFormat.QR_CODE,
+                    size,
+                    size
+                )
+
+                val pixels = IntArray(size * size)
+                for (y in 0 until size) {
+                    for (x in 0 until size) {
+                        pixels[y * size + x] = if (bitMatrix[x, y]) Color.BLACK else Color.WHITE
+                    }
+                }
+
+                Bitmap.createBitmap(pixels, size, size, Bitmap.Config.ARGB_8888)
+            } catch (e: WriterException) {
+                Log.e(TAG, "Error generating QR code: ${e.message}", e)
+                null
+            } catch (e: Exception) {
+                Log.e(TAG, "Unexpected error generating QR code: ${e.message}", e)
+                null
+            }
+        }
+    }
+}
 
 ============================================================
 FILE: app/src/main/java/com/airline/checkin/ui/checkin/CheckInScreens.kt
@@ -1542,7 +2547,6 @@ object Routes {
 @Composable
 fun AppNavGraph(navController: NavHostController = rememberNavController()) {
     NavHost(navController = navController, startDestination = Routes.LOGIN) {
-
         composable(Routes.LOGIN) {
             LoginScreen(
                 onLoginSuccess  = { navController.navigate(Routes.BOOKING_LOOKUP) },
@@ -1600,23 +2604,93 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.lifecycle.lifecycleScope
+import com.airline.checkin.data.remote.firebase.DatabaseSeeder
 import com.airline.checkin.ui.AppNavGraph
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.HiltAndroidApp
+import javax.inject.Inject
+import kotlinx.coroutines.launch
 
 @HiltAndroidApp
 class AirlineApp : Application()
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    @Inject lateinit var databaseSeeder: DatabaseSeeder
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        lifecycleScope.launch {
+            databaseSeeder.seedIfNeeded()
+        }
         setContent {
             AppNavGraph()
         }
     }
 }
+
+
+============================================================
+FILE: app/src/main/res/drawable/ic_launcher_background.xml
+============================================================
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#3DDC84"
+        android:pathData="M0,0h108v108h0z" />
+</vector>
+
+
+============================================================
+FILE: app/src/main/res/drawable/ic_launcher_foreground.xml
+============================================================
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M31,63.923c0,0 6.467-1.333 13.107-1.333c5.993,0 12.027,1.107 14.287,1.293l18.447-33.413c0.413-0.747 0.027-1.467-0.867-1.467L54.747,29c-0.453,0-0.893,0.227-1.187,0.6L31,63.923z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M71.24,63.513c0,0-7.04-1.187-13.4-1.187c-5.187,0-11.12,0.96-13.547,1.213l-9.293,23.12c-0.28,0.707 0.187,1.333 0.947,1.333l19.12,0c0.453,0 0.907-0.24 1.187-0.627L71.24,63.513z" />
+</vector>
+
+
+============================================================
+FILE: app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+============================================================
+<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@drawable/ic_launcher_background" />
+    <foreground android:drawable="@drawable/ic_launcher_foreground" />
+</adaptive-icon>
+
+
+============================================================
+FILE: app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
+============================================================
+<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@drawable/ic_launcher_background" />
+    <foreground android:drawable="@drawable/ic_launcher_foreground" />
+</adaptive-icon>
+
+
+============================================================
+FILE: app/src/main/res/values/strings.xml
+============================================================
+<resources>
+    <string name="app_name">Airline Checkin</string>
+</resources>
 
 
 ============================================================
@@ -1630,20 +2704,41 @@ FILE: app/src/main/res/values/themes.xml
 </resources>
 
 ============================================================
+FILE: app/src/main/res/xml/file_paths.xml
+============================================================
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <external-path name="external_files" path="." />
+    <external-cache-path name="external_cache" path="." />
+    <external-files-path name="external_downloads" path="Download" />
+</paths>
+
+
+============================================================
 FILE: app/src/main/AndroidManifest.xml
 ============================================================
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
         android:name=".AirlineApp"
         android:allowBackup="true"
-        android:label="BookingSpace"
-        android:theme="@style/Theme.AirlineCheckin"
-        android:supportsRtl="true">
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.AirlineCheckin">
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
         <activity
             android:name=".MainActivity"
@@ -1654,10 +2749,10 @@ FILE: app/src/main/AndroidManifest.xml
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
     </application>
 
 </manifest>
+
 
 ============================================================
 FILE: app/build.gradle.kts
@@ -1667,7 +2762,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt)
-    // alias(libs.plugins.google.services)  // TODO: add google-services.json from Auth task
+    alias(libs.plugins.google.services)
     alias(libs.plugins.ksp)
 }
 
@@ -1687,11 +2782,15 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+    
     buildFeatures {
         compose = true
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
     }
 }
 
@@ -1707,6 +2806,7 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.material.icons.extended)
     implementation(libs.androidx.compose.foundation)
     debugImplementation(libs.androidx.ui.tooling)
 
@@ -1724,13 +2824,17 @@ dependencies {
     ksp(libs.room.compiler)
 
     // Firebase
-    //implementation(platform(libs.firebase.bom))
-    //implementation(libs.firebase.auth)
-    //implementation(libs.firebase.firestore)
-    //implementation(libs.firebase.storage)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.storage)
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.play.services)
+
+    // QR Code generation
+    implementation(libs.zxing.core)
 }
 
 
@@ -1739,14 +2843,14 @@ FILE: app/google-services.json
 ============================================================
 {
   "project_info": {
-    "project_number": "509826767525",
-    "project_id": "organizers-app",
-    "storage_bucket": "organizers-app.firebasestorage.app"
+    "project_number": "364763326529",
+    "project_id": "airline-checkin-app-tdm",
+    "storage_bucket": "airline-checkin-app-tdm.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:509826767525:android:525ea532697b96657ccb4c",
+        "mobilesdk_app_id": "1:364763326529:android:6cf65e9cf595ea1c257ec0",
         "android_client_info": {
           "package_name": "com.airline.checkin"
         }
@@ -1754,7 +2858,7 @@ FILE: app/google-services.json
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyArYkcW5apd9CvryjwhGjhOqr4rC01CN0M"
+          "current_key": "AIzaSyABE4W3JiqOcd4VZCkKGPGcFHQJMYagcWI"
         }
       ],
       "services": {
@@ -1767,32 +2871,62 @@ FILE: app/google-services.json
   "configuration_version": "1"
 }
 
+============================================================
+FILE: gradle/wrapper/gradle-wrapper.properties
+============================================================
+distributionBase=GRADLE_USER_HOME
+distributionPath=wrapper/dists
+distributionUrl=https\://services.gradle.org/distributions/gradle-9.0.0-bin.zip
+networkTimeout=10000
+validateDistributionUrl=true
+zipStoreBase=GRADLE_USER_HOME
+zipStorePath=wrapper/dists
+
+
+============================================================
+FILE: gradle/gradle-daemon-jvm.properties
+============================================================
+#This file is generated by updateDaemonJvm
+toolchainUrl.FREE_BSD.AARCH64=https\://api.foojay.io/disco/v3.0/ids/536afcd1dff540251f85e5d2c80458cf/redirect
+toolchainUrl.FREE_BSD.X86_64=https\://api.foojay.io/disco/v3.0/ids/ecd23fd7707c683afbcd6052998cb6a9/redirect
+toolchainUrl.LINUX.AARCH64=https\://api.foojay.io/disco/v3.0/ids/536afcd1dff540251f85e5d2c80458cf/redirect
+toolchainUrl.LINUX.X86_64=https\://api.foojay.io/disco/v3.0/ids/ecd23fd7707c683afbcd6052998cb6a9/redirect
+toolchainUrl.MAC_OS.AARCH64=https\://api.foojay.io/disco/v3.0/ids/e99bae143b75f9a10ead10248f02055e/redirect
+toolchainUrl.MAC_OS.X86_64=https\://api.foojay.io/disco/v3.0/ids/04e088f8677de3b384108493cc9481d0/redirect
+toolchainUrl.UNIX.AARCH64=https\://api.foojay.io/disco/v3.0/ids/536afcd1dff540251f85e5d2c80458cf/redirect
+toolchainUrl.UNIX.X86_64=https\://api.foojay.io/disco/v3.0/ids/ecd23fd7707c683afbcd6052998cb6a9/redirect
+toolchainUrl.WINDOWS.AARCH64=https\://api.foojay.io/disco/v3.0/ids/2ddfb13e430f2b3a94c9c937d8d2f67e/redirect
+toolchainUrl.WINDOWS.X86_64=https\://api.foojay.io/disco/v3.0/ids/056dc25d3b9d168ede8b94d3d2f99942/redirect
+toolchainVendor=JETBRAINS
+toolchainVersion=21
+
 
 ============================================================
 FILE: gradle/libs.versions.toml
 ============================================================
 [versions]
-agp                     = "8.6.0"
-kotlin                  = "2.1.0"
-coreKtx                 = "1.13.1"
-lifecycleRuntimeKtx     = "2.8.4"
-activityCompose         = "1.9.1"
-composeBom              = "2024.08.00"
-navigationCompose       = "2.7.7"
-hilt                    = "2.51.1"
+agp                     = "8.7.2"
+kotlin                  = "2.0.21"
+coreKtx                 = "1.15.0"
+lifecycleRuntimeKtx     = "2.8.7"
+activityCompose         = "1.9.3"
+composeBom              = "2024.11.00"
+navigationCompose       = "2.8.4"
+hilt                    = "2.52"
 hiltNavigationCompose   = "1.2.0"
-room                    = "2.7.0"
-firebaseBom             = "33.1.2"
-coroutines              = "1.8.1"
+room                    = "2.6.1"
+firebaseBom             = "33.6.0"
+coroutines              = "1.9.0"
 googleServices          = "4.4.2"
-foundation              = "1.11.0"
-ksp                     = "2.1.0-1.0.29"
+zxing                   = "3.5.4"
+ksp                     = "2.0.21-1.0.28"
 
 [libraries]
 # Core
 androidx-core-ktx               = { group = "androidx.core",            name = "core-ktx",                      version.ref = "coreKtx" }
 androidx-lifecycle-runtime-ktx  = { group = "androidx.lifecycle",        name = "lifecycle-runtime-ktx",         version.ref = "lifecycleRuntimeKtx" }
 androidx-activity-compose        = { group = "androidx.activity",         name = "activity-compose",              version.ref = "activityCompose" }
+
 
 # Compose
 androidx-compose-bom             = { group = "androidx.compose",          name = "compose-bom",                  version.ref = "composeBom" }
@@ -1801,6 +2935,8 @@ androidx-ui-graphics             = { group = "androidx.compose.ui",       name =
 androidx-ui-tooling-preview      = { group = "androidx.compose.ui",       name = "ui-tooling-preview" }
 androidx-material3               = { group = "androidx.compose.material3",name = "material3" }
 androidx-ui-tooling              = { group = "androidx.compose.ui",       name = "ui-tooling" }
+androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
+androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }
 
 # Navigation
 androidx-navigation-compose      = { group = "androidx.navigation",       name = "navigation-compose",           version.ref = "navigationCompose" }
@@ -1815,24 +2951,29 @@ room-runtime                     = { group = "androidx.room",             name =
 room-ktx                         = { group = "androidx.room",             name = "room-ktx",                    version.ref = "room" }
 room-compiler                    = { group = "androidx.room",             name = "room-compiler",                version.ref = "room" }
 
-# Firebase
-firebase-bom                     = { group = "com.google.firebase",       name = "firebase-bom",                 version.ref = "firebaseBom" }
-firebase-auth                    = { group = "com.google.firebase",       name = "firebase-auth-ktx" }
-firebase-firestore               = { group = "com.google.firebase",       name = "firebase-firestore-ktx" }
-firebase-storage                 = { group = "com.google.firebase",       name = "firebase-storage-ktx" }
+# Firebase Libraries
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
+firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore-ktx" }
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth-ktx" }
+firebase-storage = { group = "com.google.firebase", name = "firebase-storage-ktx" }
+
 
 # Coroutines
 kotlinx-coroutines-android       = { group = "org.jetbrains.kotlinx",    name = "kotlinx-coroutines-android",   version.ref = "coroutines" }
-androidx-compose-foundation = { group = "androidx.compose.foundation", name = "foundation", version.ref = "foundation" }
+kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx",    name = "kotlinx-coroutines-play-services", version.ref = "coroutines" }
+
+# QR Code generation
+zxing-core                       = { group = "com.google.zxing",         name = "core",                         version.ref = "zxing" }
 
 [plugins]
 android-application  = { id = "com.android.application",            version.ref = "agp" }
 kotlin-android       = { id = "org.jetbrains.kotlin.android",       version.ref = "kotlin" }
 kotlin-compose       = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
-hilt                 = { id = "com.google.dagger.hilt.android",     version.ref = "hilt" }
-google-services      = { id = "com.google.gms.google-services",     version.ref = "googleServices" }
-ksp                  = { id = "com.google.devtools.ksp",            version.ref = "ksp" }
-
+kotlin-kapt          = { id = "org.jetbrains.kotlin.kapt",        version.ref = "kotlin" }
+hilt                 = { id = "com.google.dagger.hilt.android",   version.ref = "hilt" }
+google-services      = { id = "com.google.gms.google-services",   version.ref = "googleServices" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 
 ============================================================
 FILE: build.gradle.kts
@@ -1842,10 +2983,12 @@ plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.kotlin.compose) apply false
+    alias(libs.plugins.kotlin.kapt) apply false
     alias(libs.plugins.hilt) apply false
     alias(libs.plugins.google.services) apply false
-    id("com.google.devtools.ksp") version "2.1.0-1.0.29" apply false
+    alias(libs.plugins.ksp) apply false
 }
+
 
 ============================================================
 FILE: gradle.properties
@@ -1853,31 +2996,719 @@ FILE: gradle.properties
 android.useAndroidX=true
 android.enableJetifier=true
 
-org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m -XX:+HeapDumpOnOutOfMemoryError
 org.gradle.daemon=true
 org.gradle.parallel=true
+org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-8
+org.gradle.caching=true
+org.gradle.configuration-cache=true
+
+============================================================
+FILE: gradlew
+============================================================
+#!/bin/sh
+
+#
+# Copyright © 2015 the original authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+##############################################################################
+#
+#   Gradle start up script for POSIX generated by Gradle.
+#
+#   Important for running:
+#
+#   (1) You need a POSIX-compliant shell to run this script. If your /bin/sh is
+#       noncompliant, but you have some other compliant shell such as ksh or
+#       bash, then to run this script, type that shell name before the whole
+#       command line, like:
+#
+#           ksh Gradle
+#
+#       Busybox and similar reduced shells will NOT work, because this script
+#       requires all of these POSIX shell features:
+#         * functions;
+#         * expansions «$var», «${var}», «${var:-default}», «${var+SET}»,
+#           «${var#prefix}», «${var%suffix}», and «$( cmd )»;
+#         * compound commands having a testable exit status, especially «case»;
+#         * various built-in commands including «command», «set», and «ulimit».
+#
+#   Important for patching:
+#
+#   (2) This script targets any POSIX shell, so it avoids extensions provided
+#       by Bash, Ksh, etc; in particular arrays are avoided.
+#
+#       The "traditional" practice of packing multiple parameters into a
+#       space-separated string is a well documented source of bugs and security
+#       problems, so this is (mostly) avoided, by progressively accumulating
+#       options in "$@", and eventually passing that to Java.
+#
+#       Where the inherited environment variables (DEFAULT_JVM_OPTS, JAVA_OPTS,
+#       and GRADLE_OPTS) rely on word-splitting, this is performed explicitly;
+#       see the in-line comments for details.
+#
+#       There are tweaks for specific operating systems such as AIX, CygWin,
+#       Darwin, MinGW, and NonStop.
+#
+#   (3) This script is generated from the Groovy template
+#       https://github.com/gradle/gradle/blob/HEAD/platforms/jvm/plugins-application/src/main/resources/org/gradle/api/internal/plugins/unixStartScript.txt
+#       within the Gradle project.
+#
+#       You can find Gradle at https://github.com/gradle/gradle/.
+#
+##############################################################################
+
+# Attempt to set APP_HOME
+
+# Resolve links: $0 may be a link
+app_path=$0
+
+# Need this for daisy-chained symlinks.
+while
+    APP_HOME=${app_path%"${app_path##*/}"}  # leaves a trailing /; empty if no leading path
+    [ -h "$app_path" ]
+do
+    ls=$( ls -ld "$app_path" )
+    link=${ls#*' -> '}
+    case $link in             #(
+      /*)   app_path=$link ;; #(
+      *)    app_path=$APP_HOME$link ;;
+    esac
+done
+
+# This is normally unused
+# shellcheck disable=SC2034
+APP_BASE_NAME=${0##*/}
+# Discard cd standard output in case $CDPATH is set (https://github.com/gradle/gradle/issues/25036)
+APP_HOME=$( cd -P "${APP_HOME:-./}" > /dev/null && printf '%s\n' "$PWD" ) || exit
+
+# Use the maximum available, or set MAX_FD != -1 to use that value.
+MAX_FD=maximum
+
+warn () {
+    echo "$*"
+} >&2
+
+die () {
+    echo
+    echo "$*"
+    echo
+    exit 1
+} >&2
+
+# OS specific support (must be 'true' or 'false').
+cygwin=false
+msys=false
+darwin=false
+nonstop=false
+case "$( uname )" in                #(
+  CYGWIN* )         cygwin=true  ;; #(
+  Darwin* )         darwin=true  ;; #(
+  MSYS* | MINGW* )  msys=true    ;; #(
+  NONSTOP* )        nonstop=true ;;
+esac
+
+CLASSPATH="\\\"\\\""
+
+
+# Determine the Java command to use to start the JVM.
+if [ -n "$JAVA_HOME" ] ; then
+    if [ -x "$JAVA_HOME/jre/sh/java" ] ; then
+        # IBM's JDK on AIX uses strange locations for the executables
+        JAVACMD=$JAVA_HOME/jre/sh/java
+    else
+        JAVACMD=$JAVA_HOME/bin/java
+    fi
+    if [ ! -x "$JAVACMD" ] ; then
+        die "ERROR: JAVA_HOME is set to an invalid directory: $JAVA_HOME
+
+Please set the JAVA_HOME variable in your environment to match the
+location of your Java installation."
+    fi
+else
+    JAVACMD=java
+    if ! command -v java >/dev/null 2>&1
+    then
+        die "ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH.
+
+Please set the JAVA_HOME variable in your environment to match the
+location of your Java installation."
+    fi
+fi
+
+# Increase the maximum file descriptors if we can.
+if ! "$cygwin" && ! "$darwin" && ! "$nonstop" ; then
+    case $MAX_FD in #(
+      max*)
+        # In POSIX sh, ulimit -H is undefined. That's why the result is checked to see if it worked.
+        # shellcheck disable=SC2039,SC3045
+        MAX_FD=$( ulimit -H -n ) ||
+            warn "Could not query maximum file descriptor limit"
+    esac
+    case $MAX_FD in  #(
+      '' | soft) :;; #(
+      *)
+        # In POSIX sh, ulimit -n is undefined. That's why the result is checked to see if it worked.
+        # shellcheck disable=SC2039,SC3045
+        ulimit -n "$MAX_FD" ||
+            warn "Could not set maximum file descriptor limit to $MAX_FD"
+    esac
+fi
+
+# Collect all arguments for the java command, stacking in reverse order:
+#   * args from the command line
+#   * the main class name
+#   * -classpath
+#   * -D...appname settings
+#   * --module-path (only if needed)
+#   * DEFAULT_JVM_OPTS, JAVA_OPTS, and GRADLE_OPTS environment variables.
+
+# For Cygwin or MSYS, switch paths to Windows format before running java
+if "$cygwin" || "$msys" ; then
+    APP_HOME=$( cygpath --path --mixed "$APP_HOME" )
+    CLASSPATH=$( cygpath --path --mixed "$CLASSPATH" )
+
+    JAVACMD=$( cygpath --unix "$JAVACMD" )
+
+    # Now convert the arguments - kludge to limit ourselves to /bin/sh
+    for arg do
+        if
+            case $arg in                                #(
+              -*)   false ;;                            # don't mess with options #(
+              /?*)  t=${arg#/} t=/${t%%/*}              # looks like a POSIX filepath
+                    [ -e "$t" ] ;;                      #(
+              *)    false ;;
+            esac
+        then
+            arg=$( cygpath --path --ignore --mixed "$arg" )
+        fi
+        # Roll the args list around exactly as many times as the number of
+        # args, so each arg winds up back in the position where it started, but
+        # possibly modified.
+        #
+        # NB: a `for` loop captures its iteration list before it begins, so
+        # changing the positional parameters here affects neither the number of
+        # iterations, nor the values presented in `arg`.
+        shift                   # remove old arg
+        set -- "$@" "$arg"      # push replacement arg
+    done
+fi
+
+
+# Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
+DEFAULT_JVM_OPTS='"-Xmx64m" "-Xms64m"'
+
+# Collect all arguments for the java command:
+#   * DEFAULT_JVM_OPTS, JAVA_OPTS, and optsEnvironmentVar are not allowed to contain shell fragments,
+#     and any embedded shellness will be escaped.
+#   * For example: A user cannot expect ${Hostname} to be expanded, as it is an environment variable and will be
+#     treated as '${Hostname}' itself on the command line.
+
+set -- \
+        "-Dorg.gradle.appname=$APP_BASE_NAME" \
+        -classpath "$CLASSPATH" \
+        -jar "$APP_HOME/gradle/wrapper/gradle-wrapper.jar" \
+        "$@"
+
+# Stop when "xargs" is not available.
+if ! command -v xargs >/dev/null 2>&1
+then
+    die "xargs is not available"
+fi
+
+# Use "xargs" to parse quoted args.
+#
+# With -n1 it outputs one arg per line, with the quotes and backslashes removed.
+#
+# In Bash we could simply go:
+#
+#   readarray ARGS < <( xargs -n1 <<<"$var" ) &&
+#   set -- "${ARGS[@]}" "$@"
+#
+# but POSIX shell has neither arrays nor command substitution, so instead we
+# post-process each arg (as a line of input to sed) to backslash-escape any
+# character that might be a shell metacharacter, then use eval to reverse
+# that process (while maintaining the separation between arguments), and wrap
+# the whole thing up as a single "set" statement.
+#
+# This will of course break if any of these variables contains a newline or
+# an unmatched quote.
+#
+
+eval "set -- $(
+        printf '%s\n' "$DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS" |
+        xargs -n1 |
+        sed ' s~[^-[:alnum:]+,./:=@_]~\\&~g; ' |
+        tr '\n' ' '
+    )" '"$@"'
+
+exec "$JAVACMD" "$@"
+
 
 ============================================================
 FILE: gradlew.bat
 ============================================================
-@rem Gradle startup script for Windows
+@rem
+@rem Copyright 2015 the original author or authors.
+@rem
+@rem Licensed under the Apache License, Version 2.0 (the "License");
+@rem you may not use this file except in compliance with the License.
+@rem You may obtain a copy of the License at
+@rem
+@rem      https://www.apache.org/licenses/LICENSE-2.0
+@rem
+@rem Unless required by applicable law or agreed to in writing, software
+@rem distributed under the License is distributed on an "AS IS" BASIS,
+@rem WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+@rem See the License for the specific language governing permissions and
+@rem limitations under the License.
+@rem
+@rem SPDX-License-Identifier: Apache-2.0
+@rem
+
 @if "%DEBUG%"=="" @echo off
+@rem ##########################################################################
+@rem
+@rem  Gradle startup script for Windows
+@rem
+@rem ##########################################################################
+
 @rem Set local scope for the variables with windows NT shell
 if "%OS%"=="Windows_NT" setlocal
+
 set DIRNAME=%~dp0
 if "%DIRNAME%"=="" set DIRNAME=.
+@rem This is normally unused
 set APP_BASE_NAME=%~n0
 set APP_HOME=%DIRNAME%
 
+@rem Resolve any "." and ".." in APP_HOME to make it shorter.
+for %%i in ("%APP_HOME%") do set APP_HOME=%%~fi
+
+@rem Add default JVM options here. You can also use JAVA_OPTS and GRADLE_OPTS to pass JVM options to this script.
+set DEFAULT_JVM_OPTS="-Xmx64m" "-Xms64m"
+
 @rem Find java.exe
 if defined JAVA_HOME goto findJavaFromJavaHome
+
 set JAVA_EXE=java.exe
-goto execute
+%JAVA_EXE% -version >NUL 2>&1
+if %ERRORLEVEL% equ 0 goto execute
+
+echo. 1>&2
+echo ERROR: JAVA_HOME is not set and no 'java' command could be found in your PATH. 1>&2
+echo. 1>&2
+echo Please set the JAVA_HOME variable in your environment to match the 1>&2
+echo location of your Java installation. 1>&2
+
+goto fail
+
 :findJavaFromJavaHome
 set JAVA_HOME=%JAVA_HOME:"=%
-set JAVA_EXE=%JAVA_HOME%/bin/java.exe²
+set JAVA_EXE=%JAVA_HOME%/bin/java.exe
+
+if exist "%JAVA_EXE%" goto execute
+
+echo. 1>&2
+echo ERROR: JAVA_HOME is set to an invalid directory: %JAVA_HOME% 1>&2
+echo. 1>&2
+echo Please set the JAVA_HOME variable in your environment to match the 1>&2
+echo location of your Java installation. 1>&2
+
+goto fail
+
 :execute
-"%JAVA_EXE%" -classpath "%APP_HOME%\gradle\wrapper\gradle-wrapper.jar" org.gradle.wrapper.GradleWrapperMain %*
+@rem Setup the command line
+
+set CLASSPATH=
+
+
+@rem Execute Gradle
+"%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %GRADLE_OPTS% "-Dorg.gradle.appname=%APP_BASE_NAME%" -classpath "%CLASSPATH%" -jar "%APP_HOME%\gradle\wrapper\gradle-wrapper.jar" %*
+
+:end
+@rem End local scope for the variables with windows NT shell
+if %ERRORLEVEL% equ 0 goto mainEnd
+
+:fail
+rem Set variable GRADLE_EXIT_CONSOLE if you need the _script_ return code instead of
+rem the _cmd.exe /c_ return code!
+set EXIT_CODE=%ERRORLEVEL%
+if %EXIT_CODE% equ 0 set EXIT_CODE=1
+if not ""=="%GRADLE_EXIT_CONSOLE%" exit %EXIT_CODE%
+exit /b %EXIT_CODE%
+
+:mainEnd
+if "%OS%"=="Windows_NT" endlocal
+
+:omega
+
+
+============================================================
+FILE: hs_err_pid17596.log
+============================================================
+#
+# There is insufficient memory for the Java Runtime Environment to continue.
+# Native memory allocation (malloc) failed to allocate 1048576 bytes. Error detail: AllocateHeap
+# Possible reasons:
+#   The system is out of physical RAM or swap space
+#   This process is running with CompressedOops enabled, and the Java Heap may be blocking the growth of the native heap
+# Possible solutions:
+#   Reduce memory load on the system
+#   Increase physical memory or swap space
+#   Check if swap backing store is full
+#   Decrease Java heap size (-Xmx/-Xms)
+#   Decrease number of Java threads
+#   Decrease Java thread stack sizes (-Xss)
+#   Set larger code cache with -XX:ReservedCodeCacheSize=
+#   JVM is running with Unscaled Compressed Oops mode in which the Java heap is
+#     placed in the first 4GB address space. The Java Heap base address is the
+#     maximum limit for the native heap growth. Please use -XX:HeapBaseMinAddress
+#     to set the Java Heap base and to place the Java Heap above 4GB virtual address.
+# This output file may be truncated or incomplete.
+#
+#  Out of Memory Error (allocation.cpp:44), pid=17596, tid=4848
+#
+# JRE version:  (21.0.10+7) (build )
+# Java VM: OpenJDK 64-Bit Server VM (21.0.10+7-LTS, mixed mode, tiered, compressed oops, compressed class ptrs, parallel gc, windows-amd64)
+# No core dump will be written. Minidumps are not enabled by default on client versions of Windows
+#
+
+---------------  S U M M A R Y ------------
+
+Command Line: --add-modules=ALL-SYSTEM --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/sun.nio.fs=ALL-UNNAMED -Declipse.application=org.eclipse.jdt.ls.core.id1 -Dosgi.bundles.defaultStartLevel=4 -Declipse.product=org.eclipse.jdt.ls.core.product -Djava.import.generatesMetadataFilesAtProjectRoot=false -DDetectVMInstallationsJob.disabled=true -Dfile.encoding=utf8 -XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx2G -Xms100m -Xlog:disable -javaagent:c:\Users\s\.vscode\extensions\redhat.java-1.53.0-win32-x64\lombok\lombok-1.18.39-4050.jar -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=c:\Users\s\AppData\Roaming\Code\User\workspaceStorage\d88b8708f7bbef92fbce4640555d8064\redhat.java -Daether.dependencyCollector.impl=bf c:\Users\s\.vscode\extensions\redhat.java-1.53.0-win32-x64\server\plugins\org.eclipse.equinox.launcher_1.7.100.v20251111-0406.jar -configuration c:\Users\s\AppData\Roaming\Code\User\globalStorage\redhat.java\1.53.0\config_win -data c:\Users\s\AppData\Roaming\Code\User\workspaceStorage\d88b8708f7bbef92fbce4640555d8064\redhat.java\jdt_ws --pipe=\\.\pipe\lsp-2414d0d41f5b557b4cf6d4764fe11011-sock
+
+Host: Intel(R) Core(TM) i7-8650U CPU @ 1.90GHz, 8 cores, 15G,  Windows 11 , 64 bit Build 22621 (10.0.22621.5415)
+Time: Tue Mar 17 22:35:43 2026 W. Central Africa Standard Time elapsed time: 0.276351 seconds (0d 0h 0m 0s)
+
+---------------  T H R E A D  ---------------
+
+Current thread (0x000001fcc2e34c50):  JavaThread "Unknown thread" [_thread_in_vm, id=4848, stack(0x000000aaa7500000,0x000000aaa7600000) (1024K)]
+
+Stack: [0x000000aaa7500000,0x000000aaa7600000]
+Native frames: (J=compiled Java code, j=interpreted, Vv=VM code, C=native code)
+V  [jvm.dll+0x6d7a39]
+V  [jvm.dll+0x8b4b26]
+V  [jvm.dll+0x8b70de]
+V  [jvm.dll+0x8b77c3]
+V  [jvm.dll+0x284346]
+V  [jvm.dll+0xc1277]
+V  [jvm.dll+0x70ba02]
+V  [jvm.dll+0x70c73c]
+V  [jvm.dll+0x6e65d3]
+V  [jvm.dll+0x87f17c]
+V  [jvm.dll+0x3c49fc]
+V  [jvm.dll+0x867e6b]
+V  [jvm.dll+0x457b31]
+V  [jvm.dll+0x459721]
+C  [jli.dll+0x52d0]
+C  [ucrtbase.dll+0x29333]
+C  [KERNEL32.DLL+0x1259d]
+C  [ntdll.dll+0x5af78]
+
+
+---------------  P R O C E S S  ---------------
+
+Threads class SMR info:
+_java_thread_list=0x000001fcc2cbbbf0, length=1, elements={
+0x000001fcc2e34c50
+}
+
+Java Threads: ( => current thread )
+=>0x000001fcc2e34c50 JavaThread "Unknown thread"             [_thread_in_vm, id=4848, stack(0x000000aaa7500000,0x000000aaa7600000) (1024K)]
+Total: 1
+
+Other Threads:
+  0x000001fcc2cbca10 WatcherThread "VM Periodic Task Thread"        [id=34040, stack(0x000000aaa7700000,0x000000aaa7800000) (1024K)]
+  0x000001fcc2e51cf0 WorkerThread "GC Thread#0"                     [id=33736, stack(0x000000aaa7600000,0x000000aaa7700000) (1024K)]
+Total: 2
+
+Threads with active compile tasks:
+Total: 0
+
+VM state: not at safepoint (normal execution)
+
+VM Mutex/Monitor currently owned by a thread: None
+
+Heap address: 0x0000000080000000, size: 2048 MB, Compressed Oops mode: 32-bit
+
+CDS archive(s) not mapped
+Compressed class space mapped at: 0x0000000100000000-0x0000000140000000, reserved size: 1073741824
+Narrow klass base: 0x0000000000000000, Narrow klass shift: 3, Narrow klass range: 0x140000000
+
+GC Precious Log:
+ CardTable entry size: 512
+ CPUs: 8 total, 8 available
+ Memory: 16261M
+ Large Page Support: Disabled
+ NUMA Support: Disabled
+ Compressed Oops: Enabled (32-bit)
+ Alignments: Space 512K, Generation 512K, Heap 2M
+ Heap Min Capacity: 100M
+ Heap Initial Capacity: 100M
+ Heap Max Capacity: 2G
+ Pre-touch: Disabled
+ Parallel Workers: 8
+
+Heap:
+ PSYoungGen      total 29696K, used 512K [0x00000000d5580000, 0x00000000d7680000, 0x0000000100000000)
+  eden space 25600K, 2% used [0x00000000d5580000,0x00000000d5600070,0x00000000d6e80000)
+  from space 4096K, 0% used [0x00000000d7280000,0x00000000d7280000,0x00000000d7680000)
+  to   space 4096K, 0% used [0x00000000d6e80000,0x00000000d6e80000,0x00000000d7280000)
+ ParOldGen       total 68608K, used 0K [0x0000000080000000, 0x0000000084300000, 0x00000000d5580000)
+  object space 68608K, 0% used [0x0000000080000000,0x0000000080000000,0x0000000084300000)
+ Metaspace       used 1381K, committed 1408K, reserved 1114112K
+  class space    used 111K, committed 128K, reserved 1048576K
+
+Card table byte_map: [0x000001fcc27d0000,0x000001fcc2be0000] _byte_map_base: 0x000001fcc23d0000
+
+Marking Bits: (ParMarkBitMap*) 0x00007ffa931c3450
+ Begin Bits: [0x000001fcd52e0000, 0x000001fcd72e0000)
+ End Bits:   [0x000001fcd72e0000, 0x000001fcd92e0000)
+
+Polling page: 0x000001fcc0c70000
+
+Metaspace:
+
+Usage:
+  Non-class:      1.24 MB used.
+      Class:    111.10 KB used.
+       Both:      1.35 MB used.
+
+Virtual space:
+  Non-class space:       64.00 MB reserved,       1.25 MB (  2%) committed,  1 nodes.
+      Class space:        1.00 GB reserved,     128.00 KB ( <1%) committed,  1 nodes.
+             Both:        1.06 GB reserved,       1.38 MB ( <1%) committed. 
+
+Chunk freelists:
+   Non-Class:  12.00 MB
+       Class:  15.75 MB
+        Both:  27.75 MB
+
+MaxMetaspaceSize: unlimited
+CompressedClassSpaceSize: 1.00 GB
+Initial GC threshold: 21.00 MB
+Current GC threshold: 17179869184.00 GB
+CDS: off
+ - commit_granule_bytes: 65536.
+ - commit_granule_words: 8192.
+ - virtual_space_node_default_size: 8388608.
+ - enlarge_chunks_in_place: 1.
+ - use_allocation_guard: 0.
+
+
+Internal statistics:
+
+num_allocs_failed_limit: 0.
+num_arena_births: 2.
+num_arena_deaths: 0.
+num_vsnodes_births: 2.
+num_vsnodes_deaths: 0.
+num_space_committed: 22.
+num_space_uncommitted: 0.
+num_chunks_returned_to_freelist: 0.
+num_chunks_taken_from_freelist: 3.
+num_chunk_merges: 0.
+num_chunk_splits: 2.
+num_chunks_enlarged: 0.
+num_inconsistent_stats: 0.
+
+CodeHeap 'non-profiled nmethods': size=120000Kb used=0Kb max_used=0Kb free=120000Kb
+ bounds [0x000001fccdb00000, 0x000001fccdd70000, 0x000001fcd5030000]
+CodeHeap 'profiled nmethods': size=120000Kb used=0Kb max_used=0Kb free=120000Kb
+ bounds [0x000001fcc6030000, 0x000001fcc62a0000, 0x000001fccd560000]
+CodeHeap 'non-nmethods': size=5760Kb used=194Kb max_used=342Kb free=5565Kb
+ bounds [0x000001fccd560000, 0x000001fccd7d0000, 0x000001fccdb00000]
+CodeCache: size=245760Kb, used=194Kb, max_used=342Kb, free=245565Kb
+ total_blobs=70, nmethods=0, adapters=48, full_count=0
+Compilation: enabled, stopped_count=0, restarted_count=0
+
+Compilation events (0 events):
+No events
+
+GC Heap History (0 events):
+No events
+
+Dll operation events (2 events):
+Event: 0.031 Loaded shared library c:\Users\s\.vscode\extensions\redhat.java-1.53.0-win32-x64\jre\21.0.10-win32-x86_64\bin\java.dll
+Event: 0.070 Loaded shared library c:\Users\s\.vscode\extensions\redhat.java-1.53.0-win32-x64\jre\21.0.10-win32-x86_64\bin\zip.dll
+
+Deoptimization events (0 events):
+No events
+
+Classes loaded (20 events):
+Event: 0.261 Loading class java/util/Iterator
+Event: 0.261 Loading class java/util/Iterator done
+Event: 0.261 Loading class java/lang/reflect/RecordComponent
+Event: 0.261 Loading class java/lang/reflect/RecordComponent done
+Event: 0.261 Loading class jdk/internal/vm/vector/VectorSupport
+Event: 0.263 Loading class jdk/internal/vm/vector/VectorSupport done
+Event: 0.263 Loading class jdk/internal/vm/vector/VectorSupport$VectorPayload
+Event: 0.263 Loading class jdk/internal/vm/vector/VectorSupport$VectorPayload done
+Event: 0.263 Loading class jdk/internal/vm/vector/VectorSupport$Vector
+Event: 0.263 Loading class jdk/internal/vm/vector/VectorSupport$Vector done
+Event: 0.263 Loading class jdk/internal/vm/vector/VectorSupport$VectorMask
+Event: 0.263 Loading class jdk/internal/vm/vector/VectorSupport$VectorMask done
+Event: 0.263 Loading class jdk/internal/vm/vector/VectorSupport$VectorShuffle
+Event: 0.263 Loading class jdk/internal/vm/vector/VectorSupport$VectorShuffle done
+Event: 0.263 Loading class jdk/internal/vm/FillerObject
+Event: 0.264 Loading class jdk/internal/vm/FillerObject done
+Event: 0.270 Loading class java/lang/NullPointerException
+Event: 0.270 Loading class java/lang/NullPointerException done
+Event: 0.270 Loading class java/lang/ArithmeticException
+Event: 0.270 Loading class java/lang/ArithmeticException done
+
+Classes unloaded (0 events):
+No events
+
+Classes redefined (0 events):
+No events
+
+Internal exceptions (0 events):
+No events
+
+ZGC Phase Switch (0 events):
+No events
+
+VM Operations (0 events):
+No events
+
+Memory protections (0 events):
+No events
+
+Nmethod flushes (0 events):
+No events
+
+Events (1 events):
+Event: 0.065 Thread 0x000001fcc2e34c50 Thread added: 0x000001fcc2e34c50
+
+
+Dynamic libraries:
+0x00007ff783170000 - 0x00007ff78317e000 	c:\Users\s\.vscode\extensions\redhat.java-1.53.0-win32-x64\jre\21.0.10-win32-x86_64\bin\java.exe
+0x00007ffb64c90000 - 0x00007ffb64ea7000 	C:\WINDOWS\SYSTEM32\ntdll.dll
+0x00007ffb63c10000 - 0x00007ffb63cd4000 	C:\WINDOWS\System32\KERNEL32.DLL
+0x00007ffb61eb0000 - 0x00007ffb62282000 	C:\WINDOWS\System32\KERNELBASE.dll
+0x00007ffb62800000 - 0x00007ffb62911000 	C:\WINDOWS\System32\ucrtbase.dll
+0x00007ffb49880000 - 0x00007ffb49898000 	c:\Users\s\.vscode\extensions\redhat.java-1.53.0-win32-x64\jre\21.0.10-win32-x86_64\bin\jli.dll
+0x00007ffb64530000 - 0x00007ffb646e1000 	C:\WINDOWS\System32\USER32.dll
+0x00007ffb61d80000 - 0x00007ffb61da6000 	C:\WINDOWS\System32\win32u.dll
+0x00007ffb63ce0000 - 0x00007ffb63d09000 	C:\WINDOWS\System32\GDI32.dll
+0x00007ffb624f0000 - 0x00007ffb62613000 	C:\WINDOWS\System32\gdi32full.dll
+0x00007ffb62760000 - 0x00007ffb627fa000 	C:\WINDOWS\System32\msvcp_win.dll
+0x00007ffb4a7f0000 - 0x00007ffb4a80e000 	c:\Users\s\.vscode\extensions\redhat.java-1.53.0-win32-x64\jre\21.0.10-win32-x86_64\bin\VCRUNTIME140.dll
+0x00007ffb49dc0000 - 0x00007ffb4a05b000 	C:\WINDOWS\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.22621.5547_none_27104afb73855772\COMCTL32.dll
+0x00007ffb63b50000 - 0x00007ffb63bf7000 	C:\WINDOWS\System32\msvcrt.dll
+0x00007ffb64c10000 - 0x00007ffb64c41000 	C:\WINDOWS\System32\IMM32.DLL
+0x00007ffb59a00000 - 0x00007ffb59a0c000 	c:\Users\s\.vscode\extensions\redhat.java-1.53.0-win32-x64\jre\21.0.10-win32-x86_64\bin\vcruntime140_1.dll
+0x00007ffb12870000 - 0x00007ffb128fd000 	c:\Users\s\.vscode\extensions\redhat.java-1.53.0-win32-x64\jre\21.0.10-win32-x86_64\bin\msvcp140.dll
+0x00007ffa92500000 - 0x00007ffa932a1000 	c:\Users\s\.vscode\extensions\redhat.java-1.53.0-win32-x64\jre\21.0.10-win32-x86_64\bin\server\jvm.dll
+0x00007ffb642f0000 - 0x00007ffb643a1000 	C:\WINDOWS\System32\ADVAPI32.dll
+0x00007ffb63570000 - 0x00007ffb63618000 	C:\WINDOWS\System32\sechost.dll
+0x00007ffb62290000 - 0x00007ffb622b8000 	C:\WINDOWS\System32\bcrypt.dll
+0x00007ffb63a30000 - 0x00007ffb63b44000 	C:\WINDOWS\System32\RPCRT4.dll
+0x00007ffb64270000 - 0x00007ffb642e1000 	C:\WINDOWS\System32\WS2_32.dll
+0x00007ffb61c50000 - 0x00007ffb61c9d000 	C:\WINDOWS\SYSTEM32\POWRPROF.dll
+0x00007ffb4ecf0000 - 0x00007ffb4ecfa000 	C:\WINDOWS\SYSTEM32\VERSION.dll
+0x00007ffb56e80000 - 0x00007ffb56eb4000 	C:\WINDOWS\SYSTEM32\WINMM.dll
+0x00007ffb61c30000 - 0x00007ffb61c43000 	C:\WINDOWS\SYSTEM32\UMPDC.dll
+0x00007ffb60db0000 - 0x00007ffb60dc8000 	C:\WINDOWS\SYSTEM32\kernel.appcore.dll
+0x00007ffb59990000 - 0x00007ffb5999a000 	c:\Users\s\.vscode\extensions\redhat.java-1.53.0-win32-x64\jre\21.0.10-win32-x86_64\bin\jimage.dll
+0x00007ffb5f010000 - 0x00007ffb5f243000 	C:\WINDOWS\SYSTEM32\DBGHELP.DLL
+0x00007ffb63eb0000 - 0x00007ffb64243000 	C:\WINDOWS\System32\combase.dll
+0x00007ffb63840000 - 0x00007ffb63917000 	C:\WINDOWS\System32\OLEAUT32.dll
+0x00007ffb423f0000 - 0x00007ffb42422000 	C:\WINDOWS\SYSTEM32\dbgcore.DLL
+0x00007ffb61db0000 - 0x00007ffb61e2b000 	C:\WINDOWS\System32\bcryptPrimitives.dll
+0x00007ffb47f30000 - 0x00007ffb47f3f000 	c:\Users\s\.vscode\extensions\redhat.java-1.53.0-win32-x64\jre\21.0.10-win32-x86_64\bin\instrument.dll
+0x00007ffb461f0000 - 0x00007ffb46210000 	c:\Users\s\.vscode\extensions\redhat.java-1.53.0-win32-x64\jre\21.0.10-win32-x86_64\bin\java.dll
+0x00007ffb45eb0000 - 0x00007ffb45ec8000 	c:\Users\s\.vscode\extensions\redhat.java-1.53.0-win32-x64\jre\21.0.10-win32-x86_64\bin\zip.dll
+
+JVMTI agents:
+c:\Users\s\.vscode\extensions\redhat.java-1.53.0-win32-x64\lombok\lombok-1.18.39-4050.jar path:none, loaded, not initialized, instrumentlib options:none
+
+dbghelp: loaded successfully - version: 4.0.5 - missing functions: none
+symbol engine: initialized successfully - sym options: 0x614 - pdb path: .;c:\Users\s\.vscode\extensions\redhat.java-1.53.0-win32-x64\jre\21.0.10-win32-x86_64\bin;C:\WINDOWS\SYSTEM32;C:\WINDOWS\WinSxS\amd64_microsoft.windows.common-controls_6595b64144ccf1df_6.0.22621.5547_none_27104afb73855772;c:\Users\s\.vscode\extensions\redhat.java-1.53.0-win32-x64\jre\21.0.10-win32-x86_64\bin\server
+
+VM Arguments:
+jvm_args: --add-modules=ALL-SYSTEM --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/sun.nio.fs=ALL-UNNAMED -Declipse.application=org.eclipse.jdt.ls.core.id1 -Dosgi.bundles.defaultStartLevel=4 -Declipse.product=org.eclipse.jdt.ls.core.product -Djava.import.generatesMetadataFilesAtProjectRoot=false -DDetectVMInstallationsJob.disabled=true -Dfile.encoding=utf8 -XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx2G -Xms100m -Xlog:disable -javaagent:c:\Users\s\.vscode\extensions\redhat.java-1.53.0-win32-x64\lombok\lombok-1.18.39-4050.jar -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=c:\Users\s\AppData\Roaming\Code\User\workspaceStorage\d88b8708f7bbef92fbce4640555d8064\redhat.java -Daether.dependencyCollector.impl=bf 
+java_command: c:\Users\s\.vscode\extensions\redhat.java-1.53.0-win32-x64\server\plugins\org.eclipse.equinox.launcher_1.7.100.v20251111-0406.jar -configuration c:\Users\s\AppData\Roaming\Code\User\globalStorage\redhat.java\1.53.0\config_win -data c:\Users\s\AppData\Roaming\Code\User\workspaceStorage\d88b8708f7bbef92fbce4640555d8064\redhat.java\jdt_ws --pipe=\\.\pipe\lsp-2414d0d41f5b557b4cf6d4764fe11011-sock
+java_class_path (initial): c:\Users\s\.vscode\extensions\redhat.java-1.53.0-win32-x64\server\plugins\org.eclipse.equinox.launcher_1.7.100.v20251111-0406.jar
+Launcher Type: SUN_STANDARD
+
+[Global flags]
+    uintx AdaptiveSizePolicyWeight                 = 90                                        {product} {command line}
+     intx CICompilerCount                          = 4                                         {product} {ergonomic}
+    uintx GCTimeRatio                              = 4                                         {product} {command line}
+     bool HeapDumpOnOutOfMemoryError               = true                                   {manageable} {command line}
+    ccstr HeapDumpPath                             = c:\Users\s\AppData\Roaming\Code\User\workspaceStorage\d88b8708f7bbef92fbce4640555d8064\redhat.java         {manageable} {command line}
+   size_t InitialHeapSize                          = 104857600                                 {product} {command line}
+   size_t MaxHeapSize                              = 2147483648                                {product} {command line}
+   size_t MaxNewSize                               = 715653120                                 {product} {ergonomic}
+   size_t MinHeapDeltaBytes                        = 524288                                    {product} {ergonomic}
+   size_t MinHeapSize                              = 104857600                                 {product} {command line}
+   size_t NewSize                                  = 34603008                                  {product} {ergonomic}
+    uintx NonNMethodCodeHeapSize                   = 5839372                                {pd product} {ergonomic}
+    uintx NonProfiledCodeHeapSize                  = 122909434                              {pd product} {ergonomic}
+   size_t OldSize                                  = 70254592                                  {product} {ergonomic}
+    uintx ProfiledCodeHeapSize                     = 122909434                              {pd product} {ergonomic}
+    uintx ReservedCodeCacheSize                    = 251658240                              {pd product} {ergonomic}
+     bool SegmentedCodeCache                       = true                                      {product} {ergonomic}
+   size_t SoftMaxHeapSize                          = 2147483648                             {manageable} {ergonomic}
+     bool UseCompressedOops                        = true                           {product lp64_product} {ergonomic}
+     bool UseLargePagesIndividualAllocation        = false                                  {pd product} {ergonomic}
+     bool UseParallelGC                            = true                                      {product} {command line}
+
+Logging:
+Log output configuration:
+ #0: stdout all=off uptime,level,tags foldmultilines=false
+ #1: stderr all=off uptime,level,tags foldmultilines=false
+
+Release file:
+<release file has not been read>
+Environment Variables:
+PATH=C:\Program Files\Java\jdk-21\bin;C:\jdk-20.0.1\bin;C:\Program Files (x86)\VMware\VMware Workstation\bin\;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\texlive\2000\bin\win32;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\MinGW\bin;C:\flutter\bin;C:\Users\s\AppData\Local\Pub\Cache\bin;C:\Program Files\dotnet\;C:\Program Files\MySQL\MySQL Server 8.0\bin;C:\Users\s\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Program Files\Git\cmd;C:\Program Files\PuTTY\;C:\Users\s\AppData\Local\Muse Hub\lib;C:\Users\s\.local\bin;C:\Program Files\MiKTeX\miktex\bin\x64\;C:\Users\s\AppData\Local\Muse Hub\lib;C:\Users\s\Desktop\2CS\OGL_2023\TP\TP SonarQube\openjdk-11.0.2_windows-x64_bin\jdk-11.0.2\bin;C:\Users\s\Desktop\2CS\OGL_2023\TP\TP SonarQube\openjdk-11.0.2_windows-x64_bin\jdk-11.0.2\bin;C:\Users\s\Desktop\2CS\OGL_2023\TP\TP SonarQube\sonar-scanner-cli-4.6.0.2311-windows\sonar-scanner-4.6.0.2311-windows\bin;C:\Users\s\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\s\AppData\Local\Programs\Python\Python313;C:\flutter\bin;C:\msys64\mingw64\bin;C:\flex;C:\Android\cmdline-tools\latest\bin;C:\Android\platform-tools;C:\Windows\System32\curl.exe;C:\ProgramData\chocolatey\bin;C:\Program Files\Docker\Docker\resources\bin;C:\Users\s\AppData\Local\Programs\Antigravity\bin;C:\Program Files\Java\jdk-21\bin;C:\jdk-20.0.1\bin;C:\Program Files (x86)\VMware\VMware Workstation\bin\;C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler;C:\texlive\2000\bin\win32;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\MinGW\bin;C:\flutter\bin;C:\Users\s\AppData\Local\Pub\Cache\bin;C:\Program Files\dotnet\;C:\Program Files\MySQL\MySQL Server 8.0\bin;C:\Users\s\AppData\Roaming\nvm;C:\Program Files\nodejs;C:\Program Files\Git\cmd;C:\Program Files\PuTTY\;C:\Users\s\AppData\Local\Muse Hub\lib;C:\Users\s\.local\bin;C:\Program Files\MiKTeX\miktex\bin\x64\;C:\Users\s\AppData\Local\Muse Hub\lib;C:\Users\s\Desktop\2CS\OGL_2023\TP\TP SonarQube\openjdk-11.0.2_windows-x64_bin\jdk-11.0.2\bin;C:\Users\s\Desktop\2CS\OGL_2023\TP\TP SonarQube\openjdk-11.0.2_windows-x64_bin\jdk-11.0.2\bin;C:\Users\s\Desktop\2CS\OGL_2023\TP\TP SonarQube\sonar-scanner-cli-4.6.0.2311-windows\sonar-scanner-4.6.0.2311-windows\bin;C:\Users\s\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\s\AppData\Local\Programs\Python\Python313;C:\flutter\bin;C:\msys64\mingw64\bin;C:\flex;C:\Android\cmdline-tools\latest\bin;C:\Android\platform-tools;C:\Windows\System32\curl.exe;C:\ProgramData\chocolatey\bin;C:\Program Files\Docker\Docker\resources\bin;C:\Users\s\AppData\Local\Programs\Antigravity\bin;;C:\Users\s\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\s\AppData\Local\Programs\Qoder\bin;C:\Users\s\AppData\Local\Programs\Antigravity\bin;C:\Users\s\AppData\Local\Pandoc\
+USERNAME=s
+OS=Windows_NT
+PROCESSOR_IDENTIFIER=Intel64 Family 6 Model 142 Stepping 10, GenuineIntel
+TMP=C:\Users\s\AppData\Local\Temp
+TEMP=C:\Users\s\AppData\Local\Temp
+
+
+
+
+Periodic native trim disabled
+
+---------------  S Y S T E M  ---------------
+
+OS:
+ Windows 11 , 64 bit Build 22621 (10.0.22621.5415)
+OS uptime: 4 days 7:38 hours
+
+CPU: total 8 (initial active 8) (4 cores per cpu, 2 threads per core) family 6 model 142 stepping 10 microcode 0xe0, cx8, cmov, fxsr, ht, mmx, 3dnowpref, sse, sse2, sse3, ssse3, sse4.1, sse4.2, popcnt, lzcnt, tsc, tscinvbit, avx, avx2, aes, erms, clmul, bmi1, bmi2, rtm, adx, fma, vzeroupper, clflush, clflushopt, rdtscp, f16c
+Processor Information for the first 8 processors :
+  Max Mhz: 2112, Current Mhz: 1910, Mhz Limit: 1900
+
+Memory: 4k page, system-wide physical 16261M (564M free)
+TotalPageFile size 32848M (AvailPageFile size 21M)
+current process WorkingSet (physical memory assigned to process): 17M, peak: 17M
+current process commit charge ("private bytes"): 193M, peak: 194M
+
+vm_info: OpenJDK 64-Bit Server VM (21.0.10+7-LTS) for windows-amd64 JRE (21.0.10+7-LTS), built on 2026-01-20T00:00:00Z by "admin" with MS VC++ 17.12 (VS2022)
+
+END.
+
 
 ============================================================
 FILE: local.properties
@@ -2039,6 +3870,9 @@ pluginManagement {
         mavenCentral()
         gradlePluginPortal()
     }
+}
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)

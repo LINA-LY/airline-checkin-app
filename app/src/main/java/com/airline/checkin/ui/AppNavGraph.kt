@@ -1,21 +1,39 @@
 package com.airline.checkin.ui
 
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Flight
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.airline.checkin.ui.auth.LoginScreen
 import com.airline.checkin.ui.auth.RegisterScreen
 import com.airline.checkin.ui.boardingpass.BoardingPassScreen
 import com.airline.checkin.ui.checkin.BookingLookupScreen
 import com.airline.checkin.ui.checkin.CheckInScreen
+import com.airline.checkin.ui.home.BoardingPassHubScreen
+import com.airline.checkin.ui.home.HomeScreen
 import com.airline.checkin.ui.seat.SeatMapScreen
 
 object Routes {
     const val LOGIN          = "login"
     const val REGISTER       = "register"
+    const val HOME           = "home"
     const val BOOKING_LOOKUP = "booking_lookup"
+    const val PASSES         = "passes"
     const val CHECK_IN       = "check_in/{bookingId}"
     const val SEAT_MAP       = "seat_map/{flightId}"
     const val BOARDING_PASS  = "boarding_pass/{bookingId}"
@@ -23,49 +41,124 @@ object Routes {
 
 @Composable
 fun AppNavGraph(navController: NavHostController = rememberNavController()) {
-    NavHost(navController = navController, startDestination = Routes.LOGIN) {
-        composable(Routes.LOGIN) {
-            LoginScreen(
-                onLoginSuccess  = { navController.navigate(Routes.BOOKING_LOOKUP) },
-                onGoToRegister  = { navController.navigate(Routes.REGISTER) }
-            )
-        }
+    val backStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = backStackEntry?.destination?.route
 
-        composable(Routes.REGISTER) {
-            RegisterScreen(
-                onRegisterSuccess = { navController.navigate(Routes.BOOKING_LOOKUP) },
-                onGoToLogin       = { navController.popBackStack() }
-            )
-        }
+    val bottomNavItems = listOf(
+        BottomNavItem(route = Routes.HOME, label = "Home", icon = Icons.Default.Home),
+        BottomNavItem(route = Routes.BOOKING_LOOKUP, label = "Bookings", icon = Icons.Default.Search),
+        BottomNavItem(route = Routes.PASSES, label = "Passes", icon = Icons.Default.Flight)
+    )
+    val bottomBarRoutes = setOf(Routes.HOME, Routes.BOOKING_LOOKUP, Routes.PASSES)
+    val showBottomBar = currentRoute in bottomBarRoutes
 
-        composable(Routes.BOOKING_LOOKUP) {
-            BookingLookupScreen(
-                onBookingFound = { bookingId ->
-                    navController.navigate("check_in/$bookingId")
+    Scaffold(
+        bottomBar = {
+            if (showBottomBar) {
+                NavigationBar {
+                    bottomNavItems.forEach { item ->
+                        val selected = currentRoute == item.route
+                        NavigationBarItem(
+                            selected = selected,
+                            onClick = {
+                                navController.navigate(item.route) {
+                                    popUpTo(Routes.HOME) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            },
+                            icon = { Icon(item.icon, contentDescription = item.label) },
+                            label = { Text(item.label) }
+                        )
+                    }
                 }
-            )
+            }
         }
+    ) { paddingValues ->
+        NavHost(
+            navController = navController,
+            startDestination = Routes.LOGIN,
+            modifier = Modifier.padding(paddingValues)
+        ) {
+            composable(Routes.LOGIN) {
+                LoginScreen(
+                    onLoginSuccess  = {
+                        navController.navigate(Routes.HOME) {
+                            popUpTo(Routes.LOGIN) { inclusive = true }
+                        }
+                    },
+                    onGoToRegister  = { navController.navigate(Routes.REGISTER) }
+                )
+            }
 
-        composable(Routes.CHECK_IN) { backStack ->
-            val bookingId = backStack.arguments?.getString("bookingId") ?: ""
-            CheckInScreen(
-                bookingId  = bookingId,
-                onGoToSeat = { flightId -> navController.navigate("seat_map/$flightId") },
-                onDone     = { navController.navigate("boarding_pass/$bookingId") }
-            )
-        }
+            composable(Routes.REGISTER) {
+                RegisterScreen(
+                    onRegisterSuccess = {
+                        navController.navigate(Routes.HOME) {
+                            popUpTo(Routes.LOGIN) { inclusive = true }
+                        }
+                    },
+                    onGoToLogin       = { navController.popBackStack() }
+                )
+            }
 
-        composable(Routes.SEAT_MAP) { backStack ->
-            val flightId = backStack.arguments?.getString("flightId") ?: ""
-            SeatMapScreen(
-                flightId   = flightId,
-                onSeatPicked = { navController.popBackStack() }
-            )
-        }
+            composable(Routes.HOME) {
+                HomeScreen(
+                    onFindBooking = { navController.navigate(Routes.BOOKING_LOOKUP) },
+                    onViewPasses = { navController.navigate(Routes.PASSES) }
+                )
+            }
 
-        composable(Routes.BOARDING_PASS) { backStack ->
-            val bookingId = backStack.arguments?.getString("bookingId") ?: ""
-            BoardingPassScreen(bookingId = bookingId)
+            composable(Routes.BOOKING_LOOKUP) {
+                BookingLookupScreen(
+                    onBookingFound = { bookingId ->
+                        navController.navigate("check_in/$bookingId")
+                    }
+                )
+            }
+
+            composable(Routes.PASSES) {
+                BoardingPassHubScreen(
+                    onFindBooking = { navController.navigate(Routes.BOOKING_LOOKUP) }
+                )
+            }
+
+            composable(Routes.CHECK_IN) { backStack ->
+                val bookingId = backStack.arguments?.getString("bookingId") ?: ""
+                CheckInScreen(
+                    bookingId  = bookingId,
+                    onGoToSeat = { flightId -> navController.navigate("seat_map/$flightId") },
+                    onDone     = { navController.navigate("boarding_pass/$bookingId") }
+                )
+            }
+
+            composable(Routes.SEAT_MAP) { backStack ->
+                val flightId = backStack.arguments?.getString("flightId") ?: ""
+                SeatMapScreen(
+                    flightId   = flightId,
+                    onSeatPicked = { navController.popBackStack() }
+                )
+            }
+
+            composable(Routes.BOARDING_PASS) { backStack ->
+                val bookingId = backStack.arguments?.getString("bookingId") ?: ""
+                BoardingPassScreen(
+                    bookingId = bookingId,
+                    onBackClick = { navController.popBackStack() },
+                    onBackToHome = {
+                        navController.navigate(Routes.HOME) {
+                            popUpTo(Routes.HOME) { inclusive = false }
+                            launchSingleTop = true
+                        }
+                    }
+                )
+            }
         }
     }
 }
+
+private data class BottomNavItem(
+    val route: String,
+    val label: String,
+    val icon: ImageVector
+)
