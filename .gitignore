@@ -68,6 +68,7 @@ secrets.properties
 Thumbs.db
 desktop.ini
 
+.kotlin/
 *.hprof
 hs_err_pid*.log
 
