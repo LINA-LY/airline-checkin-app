@@ -19,6 +19,7 @@ androidx-core-ktx               = { group = "androidx.core",            name = "
 androidx-lifecycle-runtime-ktx  = { group = "androidx.lifecycle",        name = "lifecycle-runtime-ktx",         version.ref = "lifecycleRuntimeKtx" }
 androidx-activity-compose        = { group = "androidx.activity",         name = "activity-compose",              version.ref = "activityCompose" }
 
+
 # Compose
 androidx-compose-bom             = { group = "androidx.compose",          name = "compose-bom",                  version.ref = "composeBom" }
 androidx-ui                      = { group = "androidx.compose.ui",       name = "ui" }
@@ -40,11 +41,12 @@ room-runtime                     = { group = "androidx.room",             name =
 room-ktx                         = { group = "androidx.room",             name = "room-ktx",                    version.ref = "room" }
 room-compiler                    = { group = "androidx.room",             name = "room-compiler",                version.ref = "room" }
 
-# Firebase
-firebase-bom                     = { group = "com.google.firebase",       name = "firebase-bom",                 version.ref = "firebaseBom" }
-firebase-auth                    = { group = "com.google.firebase",       name = "firebase-auth-ktx" }
-firebase-firestore               = { group = "com.google.firebase",       name = "firebase-firestore-ktx" }
-firebase-storage                 = { group = "com.google.firebase",       name = "firebase-storage-ktx" }
+# Firebase Libraries
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
+firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore-ktx" }
+firebase-auth = { group = "com.google.firebase", name = "firebase-auth-ktx" }
+
 
 # Coroutines
 kotlinx-coroutines-android       = { group = "org.jetbrains.kotlinx",    name = "kotlinx-coroutines-android",   version.ref = "coroutines" }
@@ -54,4 +56,4 @@ android-application  = { id = "com.android.application",          version.ref = 
 kotlin-android       = { id = "org.jetbrains.kotlin.android",     version.ref = "kotlin" }
 kotlin-compose       = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 hilt                 = { id = "com.google.dagger.hilt.android",   version.ref = "hilt" }
-google-services      = { id = "com.google.gms.google-services",   version.ref = "googleServices" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
