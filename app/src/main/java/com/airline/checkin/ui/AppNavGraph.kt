@@ -19,8 +19,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.airline.checkin.ui.auth.LoginScreen
-import com.airline.checkin.ui.auth.RegisterScreen
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.airline.checkin.ui.auth.AuthViewModel
+import com.airline.checkin.ui.auth.CompleteProfileScreen
 import com.airline.checkin.ui.auth.WelcomeScreen
 import com.airline.checkin.ui.boardingpass.BoardingPassScreen
 import com.airline.checkin.ui.checkin.BookingLookupScreen
@@ -33,8 +34,7 @@ import com.airline.checkin.ui.seat.SeatMapScreen
 object Routes {
     const val ONBOARDING     = "onboarding"
     const val WELCOME        = "welcome"
-    const val LOGIN          = "login"
-    const val REGISTER       = "register"
+    const val COMPLETE_PROFILE = "complete_profile"
     const val HOME           = "home"
     const val BOOKING_LOOKUP = "booking_lookup"
     const val PASSES         = "passes"
@@ -101,37 +101,38 @@ fun AppNavGraph(
 
             composable(Routes.WELCOME) {
                 WelcomeScreen(
-                    onSignInWithPassword = { navController.navigate(Routes.LOGIN) },
-                    onGoToRegister = { navController.navigate(Routes.REGISTER) }
-                )
-            }
-
-            composable(Routes.LOGIN) {
-                LoginScreen(
-                    onLoginSuccess  = {
+                    onAuthSuccess = {
                         navController.navigate(Routes.HOME) {
                             popUpTo(Routes.WELCOME) { inclusive = true }
                         }
                     },
-                    onGoToRegister  = { navController.navigate(Routes.REGISTER) }
+                    onProfileRequired = {
+                        navController.navigate(Routes.COMPLETE_PROFILE)
+                    }
                 )
             }
 
-            composable(Routes.REGISTER) {
-                RegisterScreen(
-                    onRegisterSuccess = {
+            composable(Routes.COMPLETE_PROFILE) {
+                CompleteProfileScreen(
+                    onProfileSaved = {
                         navController.navigate(Routes.HOME) {
                             popUpTo(Routes.WELCOME) { inclusive = true }
                         }
-                    },
-                    onGoToLogin       = { navController.popBackStack() }
+                    }
                 )
             }
 
             composable(Routes.HOME) {
+                val authViewModel: AuthViewModel = hiltViewModel()
                 HomeScreen(
                     onFindBooking = { navController.navigate(Routes.BOOKING_LOOKUP) },
-                    onViewPasses = { navController.navigate(Routes.PASSES) }
+                    onViewPasses = { navController.navigate(Routes.PASSES) },
+                    onSignOut = {
+                        authViewModel.signOut()
+                        navController.navigate(Routes.WELCOME) {
+                            popUpTo(Routes.HOME) { inclusive = true }
+                        }
+                    }
                 )
             }
 

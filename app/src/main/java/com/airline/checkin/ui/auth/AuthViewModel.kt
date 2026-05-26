@@ -12,7 +12,8 @@ import javax.inject.Inject
 data class AuthUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
-    val isSuccess: Boolean = false
+    val isSuccess: Boolean = false,
+    val requiresProfile: Boolean = false
 )
 
 @HiltViewModel
@@ -35,16 +36,55 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun register(email: String, password: String) {
+    fun register(
+        email: String,
+        password: String,
+        firstName: String,
+        lastName: String,
+        phone: String
+    ) {
         viewModelScope.launch {
             _uiState.value = AuthUiState(isLoading = true)
             try {
-                repository.register(email, password)
+                repository.registerWithProfile(email, password, firstName, lastName, phone)
                 _uiState.value = AuthUiState(isSuccess = true)
             } catch (e: Exception) {
                 _uiState.value = AuthUiState(error = e.message)
             }
         }
+    }
+
+    fun signInWithGoogle(idToken: String) {
+        viewModelScope.launch {
+            _uiState.value = AuthUiState(isLoading = true)
+            try {
+                val result = repository.signInWithGoogle(idToken)
+                _uiState.value = if (result.isSuccess) {
+                    AuthUiState(isSuccess = !result.requiresProfile, requiresProfile = result.requiresProfile)
+                } else {
+                    AuthUiState(error = "Google sign-in failed")
+                }
+            } catch (e: Exception) {
+                _uiState.value = AuthUiState(error = e.message)
+            }
+        }
+    }
+
+    fun saveProfile(firstName: String, lastName: String, phone: String) {
+        viewModelScope.launch {
+            _uiState.value = AuthUiState(isLoading = true)
+            try {
+                repository.saveUserProfile(firstName, lastName, phone)
+                _uiState.value = AuthUiState(isSuccess = true)
+            } catch (e: Exception) {
+                _uiState.value = AuthUiState(error = e.message)
+            }
+        }
+    }
+
+    fun signOut() {
+        repository.signOut()
+        _uiState.value = AuthUiState()
     }
 
     fun clearStatus() {

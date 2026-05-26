@@ -2,6 +2,7 @@ package com.airline.checkin.data.remote.firebase
 
 import com.airline.checkin.domain.model.*
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
@@ -17,11 +18,18 @@ class FirebaseService @Inject constructor(
     private val storage: FirebaseStorage
 ) {
 
+    data class GoogleAuthResult(
+        val userId: String?,
+        val email: String?,
+        val isNewUser: Boolean
+    )
+
     private val bookings = firestore.collection("bookings")
     private val flights = firestore.collection("flights")
     private val seats = firestore.collection("seats")
     private val boardingPasses = firestore.collection("boarding_passes")
     private val baggageDeclarations = firestore.collection("baggage_declarations")
+    private val users = firestore.collection("users")
 
     // ---- Auth ----
     suspend fun signIn(email: String, password: String): Boolean {
@@ -32,6 +40,55 @@ class FirebaseService @Inject constructor(
     suspend fun register(email: String, password: String): Boolean {
         auth.createUserWithEmailAndPassword(email, password).await()
         return auth.currentUser != null
+    }
+
+    suspend fun registerWithProfile(
+        email: String,
+        password: String,
+        firstName: String,
+        lastName: String,
+        phone: String
+    ): Boolean {
+        auth.createUserWithEmailAndPassword(email, password).await()
+        val saved = saveUserProfile(firstName, lastName, phone)
+        return auth.currentUser != null && saved
+    }
+
+    suspend fun signInWithGoogle(idToken: String): GoogleAuthResult {
+        val credential = GoogleAuthProvider.getCredential(idToken, null)
+        val result = auth.signInWithCredential(credential).await()
+        return GoogleAuthResult(
+            userId = result.user?.uid,
+            email = result.user?.email,
+            isNewUser = result.additionalUserInfo?.isNewUser == true
+        )
+    }
+
+    suspend fun saveUserProfile(
+        firstName: String,
+        lastName: String,
+        phone: String
+    ): Boolean {
+        val user = auth.currentUser ?: return false
+        val fullName = listOf(firstName.trim(), lastName.trim()).joinToString(" ").trim()
+        val payload = mapOf(
+            "firstName" to firstName.trim(),
+            "lastName" to lastName.trim(),
+            "fullName" to fullName,
+            "phone" to phone.trim(),
+            "email" to (user.email ?: "")
+        )
+        users.document(user.uid).set(payload, SetOptions.merge()).await()
+        return true
+    }
+
+    suspend fun isProfileComplete(userId: String): Boolean {
+        val doc = users.document(userId).get().await()
+        if (!doc.exists()) return false
+        val firstName = doc.getString("firstName") ?: ""
+        val lastName = doc.getString("lastName") ?: ""
+        val phone = doc.getString("phone") ?: ""
+        return firstName.isNotBlank() && lastName.isNotBlank() && phone.isNotBlank()
     }
 
     fun signOut() {

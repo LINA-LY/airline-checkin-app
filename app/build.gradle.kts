@@ -40,6 +40,7 @@ dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.core.splashscreen)
 
     // Compose
     implementation(platform(libs.androidx.compose.bom))
@@ -72,6 +73,9 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
+
+    // Google Sign-In
+    implementation(libs.play.services.auth)
 
     // Coroutines
     implementation(libs.kotlinx.coroutines.android)
