@@ -1,0 +1,20 @@
+services:
+  flight-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: flight-worker
+    restart: unless-stopped
+    environment:
+      FIREBASE_PROJECT_ID: "airline-checkin-app-tdm"
+      GOOGLE_APPLICATION_CREDENTIALS: "/secrets/serviceAccount.json"
+      MIN_FLIGHTS: "6"
+      MAX_FLIGHTS: "12"
+      MIN_DAYS_AHEAD: "3"
+      MAX_DAYS_AHEAD: "10"
+      RUN_ON_START: "true"
+      RUN_SCHEDULED: "true"
+      SCHEDULE_HOUR_UTC: "2"
+      SCHEDULE_MINUTE_UTC: "0"
+    volumes:
+      - ./secrets/serviceAccount.json:/secrets/serviceAccount.json:ro

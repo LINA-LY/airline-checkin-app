@@ -54,6 +54,8 @@ keystore.properties
 # ============================================================
 secrets.properties
 .env
+secrets/
+node_modules/
 
 # ============================================================
 #  External native build

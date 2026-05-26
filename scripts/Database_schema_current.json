@@ -1,0 +1,181 @@
+{
+  "tables": [
+    {
+      "name": "users",
+      "columns": [
+        { "name": "id", "type": "integer", "constraints": ["primary key"] },
+        { "name": "name", "type": "varchar" },
+        { "name": "email", "type": "varchar", "constraints": ["unique"] },
+        { "name": "phone", "type": "varchar" },
+        { "name": "password_hash", "type": "varchar" },
+        { "name": "google_id", "type": "varchar", "note": "For Google quick sign-in" }
+      ],
+      "records": [
+        { "id": 1, "name": "Alice Smith", "email": "alice@example.com", "google_id": "g_12345" },
+        { "id": 2, "name": "Bob Jones", "email": "bob@example.com", "google_id": null }
+      ]
+    },
+    {
+      "name": "flights",
+      "columns": [
+        { "name": "id", "type": "integer", "constraints": ["primary key"] },
+        { "name": "flight_number", "type": "varchar" },
+        { "name": "origin", "type": "varchar" },
+        { "name": "destination", "type": "varchar" },
+        { "name": "departure_time", "type": "timestamp" },
+        { "name": "arrival_time", "type": "timestamp" },
+        { "name": "date_key", "type": "date", "note": "YYYY-MM-DD" },
+        { "name": "route_key", "type": "varchar", "note": "origin_destination unique per day" },
+        { "name": "aircraft_type", "type": "varchar" },
+        { "name": "seats_total", "type": "integer" },
+        { "name": "seats_by_type", "type": "json" },
+        { "name": "generated", "type": "boolean" },
+        { "name": "created_at", "type": "timestamp" }
+      ],
+      "records": [
+        {
+          "id": 1,
+          "flight_number": "AH1000",
+          "origin": "ALG",
+          "destination": "CDG",
+          "date_key": "2026-06-01",
+          "route_key": "ALG_CDG",
+          "aircraft_type": "A320",
+          "seats_total": 156,
+          "generated": true
+        },
+        {
+          "id": 2,
+          "flight_number": "AH1002",
+          "origin": "ALG",
+          "destination": "ORY",
+          "date_key": "2026-06-01",
+          "route_key": "ALG_ORY",
+          "aircraft_type": "B737",
+          "seats_total": 150,
+          "generated": true
+        }
+      ]
+    },
+    {
+      "name": "airports",
+      "columns": [
+        { "name": "code", "type": "varchar", "constraints": ["primary key"] },
+        { "name": "name", "type": "varchar" },
+        { "name": "city", "type": "varchar" },
+        { "name": "country", "type": "varchar" }
+      ],
+      "records": [
+        {
+          "code": "ALG",
+          "name": "Algiers International Airport",
+          "city": "Algiers",
+          "country": "Algeria"
+        }
+      ]
+    },
+    {
+      "name": "bookings",
+      "columns": [
+        { "name": "id", "type": "integer", "constraints": ["primary key"] },
+        { "name": "pnr", "type": "varchar", "constraints": ["unique"], "note": "Booking Reference (6 chars)" },
+        { "name": "user_id", "type": "integer" },
+        { "name": "flight_id", "type": "integer" },
+        { "name": "status", "type": "varchar", "note": "Confirmed, Cancelled" }
+      ],
+      "records": [
+        { "id": 1, "pnr": "ABCDEF", "user_id": 1, "flight_id": 1, "status": "Confirmed" },
+        { "id": 2, "pnr": "XYZ123", "user_id": 2, "flight_id": 2, "status": "Confirmed" }
+      ]
+    },
+    {
+      "name": "passengers",
+      "columns": [
+        { "name": "id", "type": "integer", "constraints": ["primary key"] },
+        { "name": "booking_id", "type": "integer" },
+        { "name": "first_name", "type": "varchar" },
+        { "name": "last_name", "type": "varchar" },
+        { "name": "passport_number", "type": "varchar", "note": "Extracted via OCR" },
+        { "name": "passport_expiry", "type": "date" },
+        { "name": "nationality", "type": "varchar" }
+      ],
+      "records": [
+        { "id": 1, "booking_id": 1, "first_name": "Alice", "last_name": "Smith", "passport_number": "P9876543" },
+        { "id": 2, "booking_id": 2, "first_name": "Bob", "last_name": "Jones", "passport_number": "P1234567" }
+      ]
+    },
+    {
+      "name": "seats",
+      "columns": [
+        { "name": "id", "type": "integer", "constraints": ["primary key"] },
+        { "name": "flight_id", "type": "integer" },
+        { "name": "seat_number", "type": "varchar" },
+        { "name": "seat_type", "type": "varchar", "note": "Standard, Premium" },
+        { "name": "is_available", "type": "boolean" }
+      ],
+      "records": [
+        { "id": 1, "flight_id": 1, "seat_number": "12A", "seat_type": "Standard", "is_available": false },
+        { "id": 2, "flight_id": 1, "seat_number": "12B", "seat_type": "Standard", "is_available": true },
+        { "id": 3, "flight_id": 2, "seat_number": "1A", "seat_type": "Premium", "is_available": false }
+      ]
+    },
+    {
+      "name": "check_ins",
+      "columns": [
+        { "name": "id", "type": "integer", "constraints": ["primary key"] },
+        { "name": "passenger_id", "type": "integer", "constraints": ["unique"] },
+        { "name": "seat_id", "type": "integer", "constraints": ["unique"] },
+        { "name": "baggage_count", "type": "integer" },
+        { "name": "baggage_type", "type": "varchar" },
+        { "name": "dietary_preference", "type": "varchar" },
+        { "name": "assistance_needs", "type": "varchar" },
+        { "name": "infant_pet_declaration", "type": "varchar" },
+        { "name": "is_completed", "type": "boolean" },
+        { "name": "sync_status", "type": "varchar", "note": "Enum: SYNCED, PENDING_UPDATE" },
+        { "name": "last_updated", "type": "timestamp", "note": "For conflict resolution" }
+      ],
+      "records": [
+        { "id": 1, "passenger_id": 1, "seat_id": 1, "is_completed": true, "sync_status": "PENDING_UPDATE" }
+      ]
+    },
+    {
+      "name": "boarding_passes",
+      "columns": [
+        { "name": "id", "type": "integer", "constraints": ["primary key"] },
+        { "name": "check_in_id", "type": "integer", "constraints": ["unique"] },
+        { "name": "qr_code_data", "type": "varchar" },
+        { "name": "local_pdf_path", "type": "varchar", "note": "Local URI for offline PDF" },
+        { "name": "sync_status", "type": "varchar", "note": "Enum: SYNCED, PENDING_UPDATE" },
+        { "name": "last_updated", "type": "timestamp" }
+      ],
+      "records": [
+        { "id": 1, "check_in_id": 1, "qr_code_data": "QR_DATA_ALICE_12A", "local_pdf_path": "file://local/path/bp_alice.pdf", "sync_status": "PENDING_UPDATE" }
+      ]
+    },
+    {
+      "name": "baggage_declarations",
+      "columns": [
+        { "name": "id", "type": "varchar", "constraints": ["primary key"] },
+        { "name": "booking_id", "type": "varchar" },
+        { "name": "cabin_bags", "type": "integer" },
+        { "name": "checked_bags", "type": "integer" },
+        { "name": "special_items", "type": "varchar" }
+      ],
+      "records": [
+        { "id": "mock_booking_id", "booking_id": "mock_booking_id", "cabin_bags": 1, "checked_bags": 0, "special_items": "" }
+      ]
+    }
+  ],
+  "relationships": [
+    { "from": "bookings.user_id", "to": "users.id", "type": "many-to-one" },
+    { "from": "bookings.flight_id", "to": "flights.id", "type": "many-to-one" },
+    { "from": "flights.origin", "to": "airports.code", "type": "many-to-one" },
+    { "from": "flights.destination", "to": "airports.code", "type": "many-to-one" },
+    { "from": "seats.flight_id", "to": "flights.id", "type": "many-to-one" },
+    { "from": "passengers.booking_id", "to": "bookings.id", "type": "many-to-one" },
+    { "from": "check_ins.passenger_id", "to": "passengers.id", "type": "one-to-one" },
+    { "from": "check_ins.seat_id", "to": "seats.id", "type": "one-to-one" },
+    { "from": "boarding_passes.check_in_id", "to": "check_ins.id", "type": "one-to-one" },
+    { "from": "baggage_declarations.booking_id", "to": "bookings.id", "type": "many-to-one" }
+  ]
+}

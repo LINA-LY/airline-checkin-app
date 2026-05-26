@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "flights-generator": "airline-checkin-app-tdm",
+    "airline": "airline-checkin-app-tdm"
+  },
+  "targets": {},
+  "etags": {}
+}

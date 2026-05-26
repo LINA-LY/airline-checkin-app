@@ -1,0 +1,14 @@
+{
+  "name": "airline-checkin-worker",
+  "private": true,
+  "main": "index.js",
+  "engines": {
+    "node": "18"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.1.0"
+  }
+}
