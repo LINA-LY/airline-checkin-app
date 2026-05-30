@@ -9,6 +9,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.airline.checkin.data.local.OnboardingPreferences
 import com.airline.checkin.data.remote.firebase.DatabaseSeeder
+import com.airline.checkin.data.repository.AuthRepository
 import com.airline.checkin.ui.AppNavGraph
 import com.airline.checkin.ui.Routes
 import dagger.hilt.android.AndroidEntryPoint
@@ -23,6 +24,7 @@ class AirlineApp : Application()
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @Inject lateinit var databaseSeeder: DatabaseSeeder
+    @Inject lateinit var authRepository: AuthRepository
     private var keepSplashScreen = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -36,10 +38,18 @@ class MainActivity : ComponentActivity() {
         val onboardingPreferences = OnboardingPreferences(applicationContext)
         lifecycleScope.launch {
             val hasOnboarded = onboardingPreferences.hasOnboarded.first()
+            val isLoggedIn = authRepository.isLoggedIn()
+
+            val startDest = when {
+                !hasOnboarded -> Routes.ONBOARDING
+                isLoggedIn    -> Routes.HOME
+                else          -> Routes.WELCOME
+            }
+
             keepSplashScreen = false
             setContent {
                 AppNavGraph(
-                    startDestination = if (hasOnboarded) Routes.WELCOME else Routes.ONBOARDING,
+                    startDestination = startDest,
                     onOnboardingComplete = {
                         lifecycleScope.launch { onboardingPreferences.setHasOnboarded(true) }
                     }

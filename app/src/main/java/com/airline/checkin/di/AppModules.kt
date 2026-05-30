@@ -26,7 +26,7 @@ object DatabaseModule {
             context,
             AppDatabase::class.java,
             "airline_checkin_db"
-        ).build()
+        ).fallbackToDestructiveMigration().build()
 
     @Provides fun provideUserDao(db: AppDatabase): UserDao = db.userDao()
     @Provides fun provideFlightDao(db: AppDatabase): FlightDao = db.flightDao()
@@ -35,6 +35,7 @@ object DatabaseModule {
     @Provides fun provideSeatDao(db: AppDatabase): SeatDao = db.seatDao()
     @Provides fun provideBoardingPassDao(db: AppDatabase): BoardingPassDao = db.boardingPassDao()
     @Provides fun provideBaggageDao(db: AppDatabase): BaggageDeclarationDao = db.baggageDeclarationDao()
+    @Provides fun provideSavedPassengerDao(db: AppDatabase): SavedPassengerDao = db.savedPassengerDao()
 }
 
 @Module

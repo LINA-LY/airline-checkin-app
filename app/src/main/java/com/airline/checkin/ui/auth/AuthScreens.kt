@@ -145,7 +145,13 @@ fun WelcomeScreen(
             iconRes = R.drawable.google,
             enabled = !uiState.isLoading && webClientId.isNotBlank(),
             isLoading = uiState.isLoading,
-            onClick = { googleLauncher.launch(googleSignInClient.signInIntent) }
+            onClick = {
+                // Sign out from the Google client first so the account picker always shows,
+                // preventing auto-selection of a previously cached Google account.
+                googleSignInClient.signOut().addOnCompleteListener {
+                    googleLauncher.launch(googleSignInClient.signInIntent)
+                }
+            }
         )
 
         Spacer(Modifier.height(18.dp))

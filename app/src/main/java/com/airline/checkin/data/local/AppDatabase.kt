@@ -13,9 +13,10 @@ import com.airline.checkin.data.local.entity.*
         PassengerEntity::class,
         SeatEntity::class,
         BoardingPassEntity::class,
-        BaggageDeclarationEntity::class
+        BaggageDeclarationEntity::class,
+        SavedPassengerEntity::class
     ],
-    version = 1,
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -26,4 +27,5 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun seatDao(): SeatDao
     abstract fun boardingPassDao(): BoardingPassDao
     abstract fun baggageDeclarationDao(): BaggageDeclarationDao
+    abstract fun savedPassengerDao(): SavedPassengerDao
 }

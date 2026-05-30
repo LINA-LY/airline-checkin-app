@@ -24,7 +24,25 @@ class DatabaseSeeder @Inject constructor(
                 "destination" to "DPS",
                 "departureTime" to "16:55",
                 "arrivalTime" to "18:45",
-                "status" to "On Time"
+                "status" to "On Time",
+                "dateKey" to "2026-06-01",
+                "routeKey" to "CGK_DPS",
+                "aircraftType" to "A320",
+                "aircraftId" to "A320",
+                "airline" to "Airline Asia",
+                "stops" to 0,
+                "checkedBagsIncluded" to 1,
+                "carryOnIncluded" to 1,
+                "emissionsKg" to 150,
+                "price" to 120,
+                "currency" to "USD",
+                "durationMinutes" to 110,
+                "pricingSummary" to mapOf(
+                    "ECONOMY" to mapOf("price" to 120, "seatsAvailable" to 120),
+                    "PREMIUM_ECONOMY" to mapOf("price" to 168, "seatsAvailable" to 24),
+                    "BUSINESS" to mapOf("price" to 300, "seatsAvailable" to 12),
+                    "meta" to mapOf("currency" to "USD", "carryOnIncluded" to 1)
+                )
             )
         )
 
@@ -34,7 +52,12 @@ class DatabaseSeeder @Inject constructor(
                 "reference" to "ABCDEF",
                 "flightId" to "FL001",
                 "passengerId" to "mock-user-001",
-                "checkInStatus" to false
+                "checkInStatus" to false,
+                "ticketsCount" to 1,
+                "totalPrice" to 120,
+                "currency" to "USD",
+                "paymentStatus" to "PAID",
+                "cabinClass" to "ECONOMY"
             )
         )
 

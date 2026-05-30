@@ -11,50 +11,26 @@ admin.initializeApp({
 
 const db = admin.firestore();
 
-const AIRCRAFT_TEMPLATES = [
-  {
-    id: "A320",
-    name: "Airbus A320",
-    businessRows: 1,
-    premiumRows: 1,
-    economyRows: 8,
-    seatLetters: ["A", "B", "C", "D"]
-  },
-  {
-    id: "B737",
-    name: "Boeing 737",
-    businessRows: 1,
-    premiumRows: 1,
-    economyRows: 7,
-    seatLetters: ["A", "B", "C", "D"]
-  },
-  {
-    id: "A220",
-    name: "Airbus A220",
-    businessRows: 1,
-    premiumRows: 1,
-    economyRows: 6,
-    seatLetters: ["A", "B", "C", "D"]
-  },
-  {
-    id: "E190",
-    name: "Embraer 190",
-    businessRows: 1,
-    premiumRows: 1,
-    economyRows: 6,
-    seatLetters: ["A", "B", "C", "D"]
-  },
-  {
-    id: "ATR72",
-    name: "ATR 72",
-    businessRows: 1,
-    premiumRows: 1,
-    economyRows: 5,
-    seatLetters: ["A", "B", "C", "D"]
-  }
-];
+const AIRCRAFT_TEMPLATES = require("./data/aircrafts.json");
+
+const REGION_DATA = require("./data/regions.json");
+const REGION_CODES = REGION_DATA.regionCodes;
+// keys in countryRegionMap are lowercase. We'll normalize incoming country names.
+const COUNTRY_REGION_MAP = Object.assign({}, REGION_DATA.countryRegionMap);
 
 const FLIGHT_PREFIXES = ["AH", "AF", "BA", "DL", "UA", "AA", "EK", "QR", "LH", "AZ"];
+const AIRLINES = [
+  "Airline Asia",
+  "SkyConnect",
+  "BlueWings",
+  "Atlas Air",
+  "NileJet",
+  "Nordic Air",
+  "Sahara Air",
+  "Aurora Airlines",
+  "Coastal Express",
+  "Mountain Air"
+];
 
 const MIN_FLIGHTS = envInt("MIN_FLIGHTS", 6);
 const MAX_FLIGHTS = envInt("MAX_FLIGHTS", 12);
@@ -68,6 +44,7 @@ const BATCH_LIMIT = 450;
 
 async function runOnce() {
   await seedAirportsIfEmpty();
+  await backfillAirportRegionsIfNeeded();
 
   const airports = await loadAirports();
   if (airports.length < 2) {
@@ -103,8 +80,10 @@ async function runOnce() {
 
   while (created < targetCount && attempts < maxAttempts) {
     attempts += 1;
-    const origin = pickOne(airports).code;
-    const destination = pickOne(airports).code;
+    const originAirport = pickOne(airports);
+    const destinationAirport = pickOne(airports);
+    const origin = originAirport.code;
+    const destination = destinationAirport.code;
 
     if (!origin || !destination || origin === destination) {
       continue;
@@ -118,10 +97,21 @@ async function runOnce() {
     const flightId = `${dateKey}_${origin}_${destination}`;
     const flightNumber = randomFlightNumber();
     const aircraft = pickOne(AIRCRAFT_TEMPLATES);
+    const airline = pickOne(AIRLINES);
+    const stops = randomStops();
     const departure = randomDepartureDateTime(targetDate);
     const arrival = addMinutes(departure, randomInt(60, 240));
+    const durationMinutes = Math.max(30, Math.round((arrival - departure) / 60000));
+    const checkedBagsIncluded = randomInt(0, 1);
+    const emissionsKg = estimateEmissions(durationMinutes, stops);
+    // Determine regions for pricing
+    const originRegion = regionForAirport(originAirport);
+    const destinationRegion = regionForAirport(destinationAirport);
+    const basePrice = estimatePrice(durationMinutes, stops);
+    const regionMultiplier = regionDistanceMultiplier(originRegion, destinationRegion);
+    const price = Math.max(10, Math.round(basePrice * regionMultiplier));
 
-    const { seats, counts } = buildSeats(flightId, aircraft);
+    const seatCapacity = buildSeatCapacity(aircraft);
 
     const flightPayload = {
       flightNumber,
@@ -133,9 +123,14 @@ async function runOnce() {
       status: "Scheduled",
       dateKey,
       routeKey,
-      aircraftType: aircraft.id,
-      seatsTotal: seats.length,
-      seatsByType: counts,
+      aircraftId: aircraft.id,
+      carryOnIncluded: 1,
+      pricingSummary: buildPricingSummary(price, seatCapacity),
+      airline,
+      stops,
+      checkedBagsIncluded,
+      emissionsKg,
+      durationMinutes,
       generated: true,
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     };
@@ -149,12 +144,99 @@ async function runOnce() {
       throw error;
     }
 
-    await writeSeats(seats);
+    // if stops, create flight_stops entries
+    if (stops > 0) {
+      await createFlightStops(flightId, stops, originAirport, destinationAirport, airports, departure);
+    }
     usedRoutes.add(routeKey);
     created += 1;
   }
 
   log(`Generated ${created} flights for ${dateKey}.`);
+}
+
+function regionForAirport(airport) {
+  if (!airport) return REGION_CODES.EUROPE;
+  if (airport.region) return airport.region;
+  const country = (airport.country || "").toString();
+  const normalized = country.trim().toLowerCase();
+  return COUNTRY_REGION_MAP[normalized] || REGION_CODES.EUROPE;
+}
+
+async function backfillAirportRegionsIfNeeded() {
+  const doBackfill = envBool("BACKFILL_AIRPORT_REGIONS", false);
+  if (!doBackfill) return;
+  log("Backfilling airport regions into Firestore (BACKFILL_AIRPORT_REGIONS=true)");
+  const snapshot = await db.collection("airports").get();
+  let batch = db.batch();
+  let count = 0;
+  for (const doc of snapshot.docs) {
+    const data = doc.data();
+    if (data && data.region) continue;
+    const region = regionForAirport(data || { country: doc.get("country") });
+    batch.set(db.collection("airports").doc(doc.id), { region }, { merge: true });
+    count += 1;
+    if (count >= BATCH_LIMIT) {
+      await batch.commit();
+      batch = db.batch();
+      count = 0;
+    }
+  }
+  if (count > 0) await batch.commit();
+}
+
+function regionDistanceMultiplier(originRegion, destinationRegion) {
+  if (!originRegion || !destinationRegion) return 1.2;
+  if (originRegion === destinationRegion) return 1.0;
+
+  // Simple heuristics
+  const americas = [REGION_CODES.NORTH_AMERICA, REGION_CODES.SOUTH_AMERICA];
+  const africa = [REGION_CODES.NORTH_AFRICA, REGION_CODES.SOUTHERN_AFRICA];
+
+  if (americas.includes(originRegion) && americas.includes(destinationRegion)) return 1.2;
+  if (africa.includes(originRegion) && africa.includes(destinationRegion)) return 1.15;
+  if ((originRegion === REGION_CODES.OCEANIA && destinationRegion === REGION_CODES.EAST_ASIA_SE_ASIA)
+    || (destinationRegion === REGION_CODES.OCEANIA && originRegion === REGION_CODES.EAST_ASIA_SE_ASIA)) return 1.2;
+
+  // North Africa <-> Europe or Middle East are shorter
+  if ((originRegion === REGION_CODES.NORTH_AFRICA && [REGION_CODES.EUROPE, REGION_CODES.MIDDLE_EAST].includes(destinationRegion))
+    || (destinationRegion === REGION_CODES.NORTH_AFRICA && [REGION_CODES.EUROPE, REGION_CODES.MIDDLE_EAST].includes(originRegion))) return 1.1;
+
+  // default long-range multiplier
+  return 1.45;
+}
+
+async function createFlightStops(flightId, stops, originAirport, destinationAirport, airports, departure) {
+  // simple approach: pick random intermediate airports (not origin/destination)
+  const candidates = airports.filter(a => a.code !== originAirport.code && a.code !== destinationAirport.code);
+  const chosen = [];
+  for (let i = 0; i < stops; i++) {
+    const pick = pickOne(candidates);
+    // avoid duplicates
+    if (chosen.find(c => c.code === pick.code)) continue;
+    chosen.push(pick);
+  }
+
+  let currentDeparture = new Date(departure.getTime());
+  let seq = 1;
+  for (const stop of chosen) {
+    const flightSegmentMinutes = randomInt(45, 240);
+    const arrival = addMinutes(currentDeparture, flightSegmentMinutes);
+    const layover = randomInt(30, 180);
+    const departureNext = addMinutes(arrival, layover);
+    const docId = `${flightId}_stop_${seq}`;
+    await db.collection("flight_stops").doc(docId).set({
+      id: docId,
+      flightId,
+      stopSequence: seq,
+      airportCode: stop.code,
+      layoverMinutes: layover,
+      arrivalTime: arrival.toISOString(),
+      departureTime: departureNext.toISOString()
+    }, { merge: true });
+    seq += 1;
+    currentDeparture = departureNext;
+  }
 }
 
 async function startWorker() {
@@ -202,7 +284,8 @@ async function seedAirportsIfEmpty() {
       continue;
     }
     const docRef = airportsRef.doc(airport.code);
-    batch.set(docRef, airport, { merge: true });
+    const region = regionForAirport(airport);
+    batch.set(docRef, { ...airport, region }, { merge: true });
     batchCount += 1;
 
     if (batchCount >= BATCH_LIMIT) {
@@ -244,41 +327,55 @@ async function writeSeats(seats) {
   }
 }
 
-function buildSeats(flightId, aircraft) {
-  const seats = [];
-  const counts = { business: 0, premium: 0, economy: 0 };
-  let rowNumber = 1;
+function buildSeatCapacity(aircraft) {
+  const business = (aircraft.businessRows || 0) * (aircraft.seatLetters || []).length;
+  const premium = (aircraft.premiumRows || 0) * (aircraft.seatLetters || []).length;
+  const economy = (aircraft.economyRows || 0) * (aircraft.seatLetters || []).length;
+  return { business, premium, economy, total: business + premium + economy };
+}
 
-  const addRows = (rows, type, countKey) => {
-    for (let i = 0; i < rows; i += 1) {
-      for (const letter of aircraft.seatLetters) {
-        const seatNumber = `${rowNumber}${letter}`;
-        const seatId = `${flightId}_${seatNumber}`;
-        seats.push({
-          id: seatId,
-          data: {
-            flightId,
-            seatNumber,
-            type,
-            isOccupied: false
-          }
-        });
-        counts[countKey] += 1;
-      }
-      rowNumber += 1;
+function buildPricingSummary(basePrice, seatCapacity) {
+  return {
+    ECONOMY: {
+      price: basePrice,
+      seatsAvailable: seatCapacity.economy
+    },
+    PREMIUM_ECONOMY: {
+      price: Math.round(basePrice * 1.4),
+      seatsAvailable: seatCapacity.premium
+    },
+    BUSINESS: {
+      price: Math.round(basePrice * 2.5),
+      seatsAvailable: seatCapacity.business
+    },
+    meta: {
+      currency: "USD",
+      totalSeats: seatCapacity.total,
+      carryOnIncluded: true
     }
   };
-
-  addRows(aircraft.businessRows, "BUSINESS", "business");
-  addRows(aircraft.premiumRows, "PREMIUM", "premium");
-  addRows(aircraft.economyRows, "ECONOMY", "economy");
-
-  return { seats, counts };
 }
 
 function randomFlightNumber() {
   const prefix = pickOne(FLIGHT_PREFIXES);
   return `${prefix}${randomInt(100, 9999)}`;
+}
+
+function randomStops() {
+  const roll = randomInt(1, 100);
+  if (roll <= 70) return 0;
+  if (roll <= 90) return 1;
+  return 2;
+}
+
+function estimateEmissions(durationMinutes, stops) {
+  const base = Math.round(durationMinutes * 1.2);
+  return base + stops * 40;
+}
+
+function estimatePrice(durationMinutes, stops) {
+  const base = 50 + durationMinutes * 0.8;
+  return Math.round(base + stops * 30);
 }
 
 function randomDepartureDateTime(baseDate) {

@@ -288,15 +288,15 @@ private fun BoardingPassContent(
                     verticalArrangement = Arrangement.SpaceEvenly
                 ) {
                     FlightRouteSection(
-                        origin = "CGK", originCity = "Jakarta",
-                        destination = "DPS", destinationCity = "Bali",
-                        duration = "1h 50m"
+                        origin = boardingPass.origin.ifBlank { "—" }, originCity = "—",
+                        destination = boardingPass.destination.ifBlank { "—" }, destinationCity = "—",
+                        duration = "N/A"
                     )
 
                     Column {
-                        InfoLabel(label = "Passenger Name")
+                        InfoLabel(label = "Traveler Name")
                         Text(
-                            text = boardingPass.passengerId.ifEmpty { "Yanouche Sari" },
+                            text = boardingPass.passengerName.ifBlank { boardingPass.passengerId }.ifEmpty { "—" },
                             fontSize = 18.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = Color.Black
@@ -306,37 +306,55 @@ private fun BoardingPassContent(
                     Row(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.weight(1f)) {
                             InfoLabel(label = "Date")
-                            Text("Mon, May 7", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                            val displayDate = try {
+                                if (boardingPass.boardingTime.isNotBlank()) {
+                                    val instant = java.time.Instant.parse(boardingPass.boardingTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
+                                    val localDate = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
+                                    localDate.format(java.time.format.DateTimeFormatter.ofPattern("EEE, MMM d"))
+                                } else "—"
+                            } catch (e: Exception) {
+                                "—"
+                            }
+                            Text(displayDate, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
                         }
                         Column(modifier = Modifier.weight(1f)) {
                             InfoLabel(label = "Class")
-                            Text("Economy", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                            Text(boardingPass.cabinClass.ifBlank { "Economy" }, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
                         }
                     }
 
                     Row(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.weight(1f)) {
                             InfoLabel(label = "Departure")
-                            Text(boardingPass.boardingTime.ifEmpty { "16:55" }, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                            val displayTime = try {
+                                if (boardingPass.boardingTime.isNotBlank()) {
+                                    val instant = java.time.Instant.parse(boardingPass.boardingTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
+                                    val localDate = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
+                                    localDate.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
+                                } else "—"
+                            } catch (e: Exception) {
+                                "—"
+                            }
+                            Text(displayTime, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
                         }
                         Column(modifier = Modifier.weight(1f)) {
                             InfoLabel(label = "Arrival")
-                            Text("18:45", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                            Text("TBD", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
                         }
                     }
 
                     Row(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.weight(1f)) {
                             InfoLabel(label = "Flight no")
-                            Text(boardingPass.flightNumber.ifEmpty { "IDN16821" }, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                            Text(boardingPass.flightNumber.ifEmpty { "N/A" }, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
                         }
                         Column(modifier = Modifier.weight(0.6f)) {
                             InfoLabel(label = "Gate")
-                            Text(boardingPass.gate.ifEmpty { "12" }, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                            Text(boardingPass.gate.ifEmpty { "N/A" }, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
                         }
                         Column(modifier = Modifier.weight(0.6f)) {
                             InfoLabel(label = "Seat")
-                            Text(boardingPass.seatNumber.ifEmpty { "5B" }, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                            Text(boardingPass.seatNumber.ifEmpty { "N/A" }, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
                         }
                     }
                 }

@@ -55,12 +55,15 @@ data class BoardingPassEntity(
     @PrimaryKey val id: String,
     val bookingId: String,
     val passengerId: String,
+    val passengerName: String = "",
     val flightNumber: String,
     val seatNumber: String,
     val gate: String,
     val boardingTime: String,
     val qrCode: String,
-    val isDownloaded: Boolean
+    val isDownloaded: Boolean,
+    val origin: String = "",
+    val destination: String = ""
 )
 
 @Entity(tableName = "baggage_declarations")

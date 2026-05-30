@@ -21,8 +21,15 @@ This worker runs on your VM (Docker). It does not use Firebase Cloud Functions.
    - `mkdir -p secrets`
    - Copy the service account JSON file to `secrets/serviceAccount.json`
 4) Update `docker-compose.worker.yml` with your Firebase project id if needed.
-5) Start the worker:
-   - `docker compose -f docker-compose.worker.yml up -d --build`
+5) Run a one-off job:
+   - `docker compose -f docker-compose.worker.yml run --rm flight-worker`
+
+## Cron (Debian 11)
+Run once per day at 02:00 UTC:
+
+```
+0 2 * * * cd /home/sariyanouche7_gmail_com/other/flight-worker && docker compose -f docker-compose.worker.yml run --rm flight-worker >> worker.log 2>&1
+```
 
 ## Useful commands
 - View logs: `docker compose -f docker-compose.worker.yml logs -f`
@@ -57,6 +64,13 @@ To run only once and exit, set:
 - `dateKey` (YYYY-MM-DD)
 - `routeKey` (origin_destination)
 - `aircraftType`
+- `airline`
+- `stops`
+- `checkedBagsIncluded`
+- `emissionsKg`
+- `price`
+- `currency`
+- `durationMinutes`
 - `seatsTotal`
 - `seatsByType` (object)
 - `generated` (boolean)

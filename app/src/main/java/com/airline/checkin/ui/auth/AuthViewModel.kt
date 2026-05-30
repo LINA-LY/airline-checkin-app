@@ -24,11 +24,25 @@ class AuthViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState = _uiState.asStateFlow()
 
+    private val _displayName = MutableStateFlow<String?>(null)
+    val displayName = _displayName.asStateFlow()
+
+    init {
+        loadDisplayName()
+    }
+
+    fun loadDisplayName() {
+        viewModelScope.launch {
+            _displayName.value = repository.getUserDisplayName()
+        }
+    }
+
     fun signIn(email: String, password: String) {
         viewModelScope.launch {
             _uiState.value = AuthUiState(isLoading = true)
             try {
                 repository.signIn(email, password)
+                loadDisplayName()
                 _uiState.value = AuthUiState(isSuccess = true)
             } catch (e: Exception) {
                 _uiState.value = AuthUiState(error = e.message)
@@ -47,6 +61,7 @@ class AuthViewModel @Inject constructor(
             _uiState.value = AuthUiState(isLoading = true)
             try {
                 repository.registerWithProfile(email, password, firstName, lastName, phone)
+                loadDisplayName()
                 _uiState.value = AuthUiState(isSuccess = true)
             } catch (e: Exception) {
                 _uiState.value = AuthUiState(error = e.message)
@@ -59,6 +74,7 @@ class AuthViewModel @Inject constructor(
             _uiState.value = AuthUiState(isLoading = true)
             try {
                 val result = repository.signInWithGoogle(idToken)
+                if (result.isSuccess) loadDisplayName()
                 _uiState.value = if (result.isSuccess) {
                     AuthUiState(isSuccess = !result.requiresProfile, requiresProfile = result.requiresProfile)
                 } else {
@@ -75,6 +91,7 @@ class AuthViewModel @Inject constructor(
             _uiState.value = AuthUiState(isLoading = true)
             try {
                 repository.saveUserProfile(firstName, lastName, phone)
+                loadDisplayName()
                 _uiState.value = AuthUiState(isSuccess = true)
             } catch (e: Exception) {
                 _uiState.value = AuthUiState(error = e.message)
@@ -84,6 +101,7 @@ class AuthViewModel @Inject constructor(
 
     fun signOut() {
         repository.signOut()
+        _displayName.value = null
         _uiState.value = AuthUiState()
     }
 

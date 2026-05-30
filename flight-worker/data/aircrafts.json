@@ -1,0 +1,42 @@
+[
+  {
+    "id": "A320",
+    "name": "Airbus A320",
+    "businessRows": 1,
+    "premiumRows": 1,
+    "economyRows": 8,
+    "seatLetters": ["A", "B", "C", "D"]
+  },
+  {
+    "id": "B737",
+    "name": "Boeing 737",
+    "businessRows": 1,
+    "premiumRows": 1,
+    "economyRows": 7,
+    "seatLetters": ["A", "B", "C", "D"]
+  },
+  {
+    "id": "A220",
+    "name": "Airbus A220",
+    "businessRows": 1,
+    "premiumRows": 1,
+    "economyRows": 6,
+    "seatLetters": ["A", "B", "C", "D"]
+  },
+  {
+    "id": "E190",
+    "name": "Embraer 190",
+    "businessRows": 1,
+    "premiumRows": 1,
+    "economyRows": 6,
+    "seatLetters": ["A", "B", "C", "D"]
+  },
+  {
+    "id": "ATR72",
+    "name": "ATR 72",
+    "businessRows": 1,
+    "premiumRows": 1,
+    "economyRows": 5,
+    "seatLetters": ["A", "B", "C", "D"]
+  }
+]

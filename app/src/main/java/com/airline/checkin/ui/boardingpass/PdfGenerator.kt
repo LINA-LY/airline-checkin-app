@@ -63,34 +63,53 @@ object PdfGenerator {
             canvas.drawRect(40f, 100f, 760f, 200f, headerPaint) // Fill bottom corners to make it flat at the bottom
             canvas.drawText("BOARDING PASS", 400f, 135f, whiteTitlePaint)
 
-            // --- Draw Flight Route (CGK -> DPS) ---
-            canvas.drawText("CGK", 100f, 320f, hugeRoutePaint)
+            // --- Draw Flight Route (Origin -> Destination) ---
+            canvas.drawText(boardingPass.origin.ifEmpty { "—" }, 100f, 320f, hugeRoutePaint)
             canvas.drawText("✈", 400f, 305f, planePaint) // Airplane symbol centered
-            canvas.drawText("DPS", 540f, 320f, hugeRoutePaint)
+            canvas.drawText(boardingPass.destination.ifEmpty { "—" }, 540f, 320f, hugeRoutePaint)
 
             // --- Draw Grid Details ---
             var currentY = 460f
 
             // Row 1: Passenger
-            canvas.drawText("Passenger Name", 100f, currentY, labelPaint)
+            canvas.drawText("Traveler Name", 100f, currentY, labelPaint)
             currentY += 40f
-            canvas.drawText(boardingPass.passengerId.ifEmpty { "Yanouche Sari" }, 100f, currentY, valuePaint)
+            canvas.drawText(boardingPass.passengerName.ifBlank { boardingPass.passengerId }.ifEmpty { "—" }, 100f, currentY, valuePaint)
 
             currentY += 80f
             // Row 2: Date & Class
             canvas.drawText("Date", 100f, currentY, labelPaint)
             canvas.drawText("Class", 450f, currentY, labelPaint)
             currentY += 40f
-            canvas.drawText("Mon, May 7", 100f, currentY, valuePaint)
-            canvas.drawText("Economy", 450f, currentY, valuePaint)
+            // Try formatting boarding time to get the date portion.
+            val displayDate = try {
+                if (boardingPass.boardingTime.isNotBlank()) {
+                    val instant = java.time.Instant.parse(boardingPass.boardingTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
+                    val localDate = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
+                    localDate.format(java.time.format.DateTimeFormatter.ofPattern("EEE, MMM d"))
+                } else "—"
+            } catch (e: Exception) {
+                "—"
+            }
+            canvas.drawText(displayDate, 100f, currentY, valuePaint)
+            canvas.drawText(boardingPass.cabinClass.ifBlank { "Economy" }, 450f, currentY, valuePaint)
 
             currentY += 80f
             // Row 3: Departure & Arrival
             canvas.drawText("Departure", 100f, currentY, labelPaint)
             canvas.drawText("Arrival", 450f, currentY, labelPaint)
             currentY += 40f
-            canvas.drawText(boardingPass.boardingTime.ifEmpty { "16:55" }, 100f, currentY, valuePaint)
-            canvas.drawText("18:45", 450f, currentY, valuePaint)
+            val displayTime = try {
+                if (boardingPass.boardingTime.isNotBlank()) {
+                    val instant = java.time.Instant.parse(boardingPass.boardingTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
+                    val localDate = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
+                    localDate.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
+                } else "—"
+            } catch (e: Exception) {
+                "—"
+            }
+            canvas.drawText(displayTime, 100f, currentY, valuePaint)
+            canvas.drawText("TBD", 450f, currentY, valuePaint)
 
             currentY += 80f
             // Row 4: Flight, Gate, Seat
@@ -98,9 +117,9 @@ object PdfGenerator {
             canvas.drawText("Gate", 350f, currentY, labelPaint)
             canvas.drawText("Seat", 550f, currentY, labelPaint)
             currentY += 40f
-            canvas.drawText(boardingPass.flightNumber.ifEmpty { "IDN16821" }, 100f, currentY, valuePaint)
-            canvas.drawText(boardingPass.gate.ifEmpty { "12" }, 350f, currentY, valuePaint)
-            canvas.drawText(boardingPass.seatNumber.ifEmpty { "5B" }, 550f, currentY, valuePaint)
+            canvas.drawText(boardingPass.flightNumber.ifEmpty { "N/A" }, 100f, currentY, valuePaint)
+            canvas.drawText(boardingPass.gate.ifEmpty { "N/A" }, 350f, currentY, valuePaint)
+            canvas.drawText(boardingPass.seatNumber.ifEmpty { "N/A" }, 550f, currentY, valuePaint)
 
             // --- Draw Dashed Divider ---
             currentY += 100f

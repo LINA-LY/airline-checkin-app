@@ -35,6 +35,9 @@ interface BookingDao {
 
     @Query("UPDATE bookings SET checkInStatus = 1 WHERE id = :id")
     suspend fun markCheckedIn(id: String)
+
+    @Query("SELECT * FROM bookings WHERE passengerId = :userId")
+    fun getByUserFlow(userId: String): Flow<List<BookingEntity>>
 }
 
 @Dao
