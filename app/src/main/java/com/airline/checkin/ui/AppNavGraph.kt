@@ -6,6 +6,8 @@ import androidx.compose.material.icons.filled.Flight
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.FlightTakeoff
+import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -71,10 +73,11 @@ fun AppNavGraph(
 
     val bottomNavItems = listOf(
         BottomNavItem(route = Routes.HOME, label = "Home", icon = Icons.Default.Home),
-        BottomNavItem(route = Routes.MY_BOOKINGS, label = "Bookings", icon = Icons.Default.Search),
+        BottomNavItem(route = Routes.BOOK_FLIGHT, label = "Book", icon = Icons.Default.FlightTakeoff),
+        BottomNavItem(route = Routes.MY_BOOKINGS, label = "Passes", icon = Icons.Default.ConfirmationNumber),
         BottomNavItem(route = Routes.PROFILE, label = "Profile", icon = Icons.Default.Person)
     )
-    val bottomBarRoutes = setOf(Routes.HOME, Routes.MY_BOOKINGS, Routes.PROFILE)
+    val bottomBarRoutes = setOf(Routes.HOME, Routes.BOOK_FLIGHT, Routes.MY_BOOKINGS, Routes.PROFILE)
     val showBottomBar = currentRoute in bottomBarRoutes
 
     Scaffold(

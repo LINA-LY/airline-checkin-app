@@ -311,7 +311,11 @@ class FirebaseService @Inject constructor(
                 "passengerName" to p.passengerName,
                 "seatId" to p.seatId,
                 "seatNumber" to p.seatNumber,
-                "cabinClass" to p.cabinClass
+                "cabinClass" to p.cabinClass,
+                "hasCheckedBags" to p.hasCheckedBags,
+                "hasCarryOn" to p.hasCarryOn,
+                "hasPet" to p.hasPet,
+                "needsWheelchair" to p.needsWheelchair
             )
             passengerColl.document(pid).set(ppayload).await()
             if (p.seatId.isNotBlank()) {

@@ -35,7 +35,11 @@ data class BookingPassenger(
     val passengerName: String = "",
     val seatId: String = "",
     val seatNumber: String = "",
-    val cabinClass: String = ""
+    val cabinClass: String = "",
+    val hasCheckedBags: Boolean = false,
+    val hasCarryOn: Boolean = false,
+    val hasPet: Boolean = false,
+    val needsWheelchair: Boolean = false
 )
 
 data class CabinPricing(

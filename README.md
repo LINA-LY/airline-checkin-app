@@ -1,6 +1,17 @@
 # Airline Online Check-In App
 
-Android mobile application for online check-in built with Kotlin & Jetpack Compose.
+A comprehensive Android mobile application for booking flights, managing passengers, and seamless online check-in. Built entirely with modern Android development practices using **Kotlin** and **Jetpack Compose**.
+
+---
+
+## Features
+
+- **Flight Booking System**: Search for flights with advanced date-range filtering, view detailed itineraries (including multi-stop logic), and select your preferred cabin class.
+- **Passenger Management**: Add multiple passengers to a booking, securely save traveler profiles to your account, and auto-fill details for future flights.
+- **Dynamic Seat Selection**: Interactive graphical seat map allowing users to select seats per passenger with real-time price calculation based on cabin class and seat type.
+- **Offline-First Boarding Passes**: Generate boarding passes dynamically. Passes are securely cached locally using Room, allowing users to view their passes and QR codes even without an active internet connection.
+- **PDF Generation**: Export boarding passes directly to PDF format for easy sharing or printing.
+- **Baggage & Special Requests**: Declare checked/carry-on bags and request special assistance directly within the app during the booking process.
 
 ---
 
@@ -8,42 +19,40 @@ Android mobile application for online check-in built with Kotlin & Jetpack Compo
 
 | Layer          | Technology                        |
 |----------------|-----------------------------------|
-| Language       | Kotlin                            |
-| UI             | Jetpack Compose                   |
-| Architecture   | MVVM + Clean Architecture         |
-| Local DB       | Room                              |
-| Cloud / Auth   | Firebase (Firestore + Auth)       |
-| DI             | Hilt                              |
-| Async          | Kotlin Coroutines + StateFlow     |
-| Navigation     | Jetpack Navigation Compose        |
-| OCR            | Google ML Kit                     |
-| QR Code        | ZXing                             |
+| **Language**   | Kotlin                            |
+| **UI**         | Jetpack Compose, Material 3       |
+| **Architecture**| MVVM + Clean Architecture        |
+| **Local DB**   | Room (Offline Caching)            |
+| **Cloud / Auth**| Firebase (Firestore + Auth)      |
+| **DI**         | Dagger Hilt                       |
+| **Async**      | Kotlin Coroutines + StateFlow     |
+| **Navigation** | Jetpack Navigation Compose        |
+| **QR Code**    | ZXing Core                        |
 
 ---
 
 ## Project Structure
 
-```
+```text
 app/src/main/java/com/airline/checkin/
 ├── data/
-│   ├── local/
-│   │   ├── dao/          # Room DAOs
-│   │   ├── entity/       # Room Entities
-│   │   └── AppDatabase.kt
-│   ├── remote/
-│   │   └── firebase/     # FirebaseService
-│   └── repository/       # Repositories
+│   ├── local/            # Room DAOs, Entities, and AppDatabase
+│   ├── remote/           # Firebase Services (Auth, Firestore)
+│   └── repository/       # Repositories (Offline-first data sync)
+├── di/                   # Hilt Dependency Injection Modules
 ├── domain/
-│   └── model/            # Data classes
-├── ui/
-│   ├── auth/             # Login, Register (Member 1)
-│   ├── checkin/          # Check-in flow (Member 2)
-│   ├── seat/             # Seat map (Member 3)
-│   ├── boardingpass/     # Boarding pass (Member 4)
-│   ├── common/           # Shared UI components
-│   └── AppNavGraph.kt    # Navigation
-├── di/                   # Hilt modules
-└── MainActivity.kt
+│   └── model/            # Core business models
+├── ui/                   # Jetpack Compose UI layer (MVVM pattern)
+│   ├── auth/             # Login, Registration, Complete Profile
+│   ├── boardingpass/     # Boarding pass display and PDF generation
+│   ├── booking/          # Flight search, results, passenger info, payment
+│   ├── checkin/          # My Bookings and online check-in flows
+│   ├── common/           # Reusable shared UI components
+│   ├── home/             # Main dashboard
+│   ├── onboarding/       # App introduction walkthrough
+│   ├── profile/          # User profile and saved travelers management
+│   └── seat/             # Interactive graphical seat map
+└── MainActivity.kt       # Application entry point
 ```
 
 ---
@@ -54,80 +63,38 @@ app/src/main/java/com/airline/checkin/
 - Android Studio Hedgehog or later
 - JDK 17 (bundled with Android Studio)
 - Android SDK API 26+
-- Git
 
-### Setup
+### Setup Instructions
 
-1. Clone the repository
-```bash
-git clone https://github.com/YOUR_USERNAME/airline-checkin-app.git
-```
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/airline-checkin-app.git
+   ```
 
-2. Open in Android Studio
-   - Launch Android Studio
-   - Click **Open**
-   - Select the cloned folder
-   - Wait for Gradle sync to finish
+2. **Open in Android Studio**
+   - Launch Android Studio, click **Open**, and select the cloned folder.
+   - Wait for the initial Gradle sync to complete.
 
-3. Add Firebase config
-   - Go to [Firebase Console](https://console.firebase.google.com)
-   - Create a project → Add Android app
-   - Package name: `com.airline.checkin`
-   - Download `google-services.json`
-   - Place it in the `app/` folder
+3. **Configure Firebase**
+   - Go to the [Firebase Console](https://console.firebase.google.com).
+   - Create a new project or select an existing one.
+   - Add an Android app with the package name: `com.airline.checkin`.
+   - Download the generated `google-services.json` file.
+   - Place `google-services.json` into the project's `app/` directory.
+   - *(Note: Ensure Firestore and Firebase Authentication are enabled in your console).*
 
-4. Run the app
-   - Connect a device or start an emulator (API 26+)
-   - Click **Run** or press `Shift + F10`
+4. **Run the App**
+   - Connect a physical device or start an Android Emulator (API 26+).
+   - Click **Run** or press `Shift + F10`.
 
 ---
 
-## Branch Strategy
+## Architecture Overview
 
-| Branch                  | Purpose                  | Owner        |
-|-------------------------|--------------------------|--------------|
-| `main`                  | Stable code              | Team Lead    |
-| `dev`                   | Integration branch       | Everyone     |
-| `feature/auth`          | Auth screens             | Member 1     |
-| `feature/checkin`       | Check-in flow            | Member 2     |
-| `feature/seatmap`       | Seat map                 | Member 3     |
-| `feature/boardingpass`  | Boarding pass & QR       | Member 4     |
+This project follows **Clean Architecture** principles and the **MVVM (Model-View-ViewModel)** pattern:
 
-**Rules:**
-- Never push directly to `main`
-- Create your branch from `main`
-- Open a Pull Request to `dev` when your feature is ready
-- At least 1 member must review before merging
+- **UI Layer**: Composed of Jetpack Compose screens and ViewModels. ViewModels manage UI state and interact with the Domain/Data layers.
+- **Domain Layer**: Contains business models (`domain/model/`) that are independent of any specific framework.
+- **Data Layer**: Responsible for data fetching and persistence. It uses the Repository pattern to abstract data sources (Room for local caching and Firebase for remote storage). 
 
----
-
-## Commit Convention
-
-```
-feat:      new feature or screen
-fix:       bug fix
-ui:        UI / layout changes
-refactor:  code restructure, no behaviour change
-docs:      documentation only
-test:      adding or fixing tests
-chore:     gradle, dependencies, config
-```
-
-**Examples:**
-```
-feat: add passport OCR scan screen
-fix: boarding pass not loading offline
-ui: update seat map colors for premium seats
-chore: add ZXing dependency
-```
-
----
-
-## Team
-
-| Member   | Role                              |
-|----------|-----------------------------------|
-| Member 1 | Team Lead — Architecture & Auth   |
-| Member 2 | Check-In Flow & Booking Lookup    |
-| Member 3 | Seat Map & UI/UX                  |
-| Member 4 | Boarding Pass, QR Code & Research |
+This clear separation of concerns ensures that the codebase is highly maintainable, testable, and scalable.

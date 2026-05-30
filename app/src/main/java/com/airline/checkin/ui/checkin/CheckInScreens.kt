@@ -155,12 +155,12 @@ fun MyBookingsScreen(
         modifier = Modifier.fillMaxSize().padding(24.dp)
     ) {
         Spacer(Modifier.height(40.dp))
-        Text("My Bookings", style = MaterialTheme.typography.headlineMedium)
+        Text("Passes", style = MaterialTheme.typography.headlineMedium)
         Spacer(Modifier.height(24.dp))
 
         if (bookings.isEmpty()) {
             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("No bookings found.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("No passes found.", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         } else {
             androidx.compose.foundation.lazy.LazyColumn(
@@ -170,11 +170,7 @@ fun MyBookingsScreen(
                     val booking = bookings[index]
                     Card(
                         modifier = Modifier.fillMaxWidth().clickable {
-                            if (booking.checkInStatus) {
-                                onNavigateToBoardingPass(booking.id)
-                            } else {
-                                onNavigateToCheckIn(booking.id)
-                            }
+                            onNavigateToBoardingPass(booking.id)
                         },
                         elevation = CardDefaults.cardElevation(4.dp)
                     ) {
@@ -182,8 +178,8 @@ fun MyBookingsScreen(
                             Text("Reference: ${booking.reference}", style = MaterialTheme.typography.titleMedium)
                             Text("Flight: ${booking.flightId}", style = MaterialTheme.typography.bodyMedium)
                             Text(
-                                text = if (booking.checkInStatus) "Checked In" else "Not checked in",
-                                color = if (booking.checkInStatus) Color(0xFF4CAF50) else Color(0xFFFF9800),
+                                text = "Pass Ready",
+                                color = Color(0xFF4CAF50),
                                 style = MaterialTheme.typography.bodySmall
                             )
                         }

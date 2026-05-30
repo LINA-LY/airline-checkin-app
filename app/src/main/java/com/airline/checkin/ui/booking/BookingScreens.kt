@@ -1915,7 +1915,29 @@ fun PassengerListScreen(
                                         Text("Enter details manually")
                                     }
                                 } else {
+                                    var checkedBags by remember(index) { mutableStateOf(p.hasCheckedBags) }
+                                    var carryOn by remember(index) { mutableStateOf(p.hasCarryOn) }
+                                    var pet by remember(index) { mutableStateOf(p.hasPet) }
+                                    var wheelchair by remember(index) { mutableStateOf(p.needsWheelchair) }
+
                                     Text(p.passengerName, fontWeight = FontWeight.Bold)
+
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Checkbox(checked = carryOn, onCheckedChange = { carryOn = it })
+                                        Text("Carry-on bag (7kg)", style = MaterialTheme.typography.bodySmall)
+                                    }
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Checkbox(checked = checkedBags, onCheckedChange = { checkedBags = it })
+                                        Text("Checked bag (20kg)", style = MaterialTheme.typography.bodySmall)
+                                    }
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Checkbox(checked = pet, onCheckedChange = { pet = it })
+                                        Text("Traveling with pet", style = MaterialTheme.typography.bodySmall)
+                                    }
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Checkbox(checked = wheelchair, onCheckedChange = { wheelchair = it })
+                                        Text("Wheelchair assistance", style = MaterialTheme.typography.bodySmall)
+                                    }
 
                                     if (p.seatNumber.isNotBlank()) {
                                         Text("Seat: ${p.seatNumber}", style = MaterialTheme.typography.bodyMedium)
@@ -1926,7 +1948,10 @@ fun PassengerListScreen(
 
                                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                         Button(
-                                            onClick = { if (index < slotModes.size) slotModes[index] = PassengerSlotMode.CONFIRMED },
+                                            onClick = { 
+                                                viewModel.setPassengerRequests(index, checkedBags, carryOn, pet, wheelchair)
+                                                if (index < slotModes.size) slotModes[index] = PassengerSlotMode.CONFIRMED 
+                                            },
                                             enabled = true
                                         ) { Text("Confirm") }
                                         TextButton(onClick = { viewModel.clearPassenger(index) }) { Text("Change traveler") }
@@ -1985,6 +2010,28 @@ fun PassengerListScreen(
                                     )
                                 }
 
+                                var checkedBags by remember(index) { mutableStateOf(p.hasCheckedBags) }
+                                var carryOn by remember(index) { mutableStateOf(p.hasCarryOn) }
+                                var pet by remember(index) { mutableStateOf(p.hasPet) }
+                                var wheelchair by remember(index) { mutableStateOf(p.needsWheelchair) }
+
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Checkbox(checked = carryOn, onCheckedChange = { carryOn = it })
+                                    Text("Carry-on bag (7kg)", style = MaterialTheme.typography.bodySmall)
+                                }
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Checkbox(checked = checkedBags, onCheckedChange = { checkedBags = it })
+                                    Text("Checked bag (20kg)", style = MaterialTheme.typography.bodySmall)
+                                }
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Checkbox(checked = pet, onCheckedChange = { pet = it })
+                                    Text("Traveling with pet", style = MaterialTheme.typography.bodySmall)
+                                }
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Checkbox(checked = wheelchair, onCheckedChange = { wheelchair = it })
+                                    Text("Wheelchair assistance", style = MaterialTheme.typography.bodySmall)
+                                }
+
                                 if (p.seatNumber.isNotBlank()) {
                                     Text("Seat: ${p.seatNumber}", style = MaterialTheme.typography.bodyMedium)
                                     TextButton(onClick = { 
@@ -2002,6 +2049,7 @@ fun PassengerListScreen(
                                     Button(
                                         onClick = {
                                             viewModel.setPassengerName(index, localFirstName.trim(), localLastName.trim())
+                                            viewModel.setPassengerRequests(index, checkedBags, carryOn, pet, wheelchair)
 
                                             if (saveToAccount) {
                                                 val userId = try {
@@ -2054,8 +2102,15 @@ fun PassengerListScreen(
                                             },
                                             fontWeight = FontWeight.Bold
                                         )
+                                        val reqs = listOfNotNull(
+                                            if (p.hasCarryOn) "Carry-on" else null,
+                                            if (p.hasCheckedBags) "Bag" else null,
+                                            if (p.hasPet) "Pet" else null,
+                                            if (p.needsWheelchair) "Wheelchair" else null
+                                        ).joinToString(", ")
+                                        val reqStr = if (reqs.isNotBlank()) " · $reqs" else ""
                                         Text(
-                                            "${p.cabinClass.ifBlank { cabin.name }.lowercase().replaceFirstChar { it.uppercase() }} · Seat: ${p.seatNumber.ifBlank { "No seat selected" }}",
+                                            "${p.cabinClass.ifBlank { cabin.name }.lowercase().replaceFirstChar { it.uppercase() }} · Seat: ${p.seatNumber.ifBlank { "No seat selected" }}$reqStr",
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.onSurfaceVariant
                                         )

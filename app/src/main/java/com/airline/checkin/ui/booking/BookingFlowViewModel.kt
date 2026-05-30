@@ -17,7 +17,11 @@ data class PassengerDraft(
     val passengerName: String = "",
     val seatId: String = "",
     val seatNumber: String = "",
-    val cabinClass: String = ""
+    val cabinClass: String = "",
+    val hasCheckedBags: Boolean = false,
+    val hasCarryOn: Boolean = false,
+    val hasPet: Boolean = false,
+    val needsWheelchair: Boolean = false
 )
 
 data class BookingDraft(
@@ -140,6 +144,18 @@ class BookingFlowViewModel @Inject constructor() : ViewModel() {
         _draft.value = current.copy(passengerDrafts = updated)
     }
 
+    fun setPassengerRequests(index: Int, hasCheckedBags: Boolean, hasCarryOn: Boolean, hasPet: Boolean, needsWheelchair: Boolean) {
+        val current = _draft.value
+        val updated = current.passengerDrafts.map {
+            if (it.index == index) {
+                it.copy(hasCheckedBags = hasCheckedBags, hasCarryOn = hasCarryOn, hasPet = hasPet, needsWheelchair = needsWheelchair)
+            } else {
+                it
+            }
+        }
+        _draft.value = current.copy(passengerDrafts = updated)
+    }
+
     fun toBookingPassengers(): List<BookingPassenger> {
         return _draft.value.passengerDrafts.map { d ->
             BookingPassenger(
@@ -151,7 +167,11 @@ class BookingFlowViewModel @Inject constructor() : ViewModel() {
                 passengerName = d.passengerName,
                 seatId = d.seatId,
                 seatNumber = d.seatNumber,
-                cabinClass = d.cabinClass
+                cabinClass = d.cabinClass,
+                hasCheckedBags = d.hasCheckedBags,
+                hasCarryOn = d.hasCarryOn,
+                hasPet = d.hasPet,
+                needsWheelchair = d.needsWheelchair
             )
         }
     }
