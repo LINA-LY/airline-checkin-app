@@ -59,6 +59,34 @@ class CheckInViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(CheckInUiState())
     val uiState = _uiState.asStateFlow()
 
+    fun loadBookingById(bookingId: String) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            try {
+                val booking = bookingRepository.getBookingById(bookingId)
+                if (booking == null) {
+                    _uiState.value = _uiState.value.copy(isLoading = false, error = "Booking not found")
+                    return@launch
+                }
+
+                val flight = flightRepository.getFlight(booking.flightId)
+                if (flight == null) {
+                    _uiState.value = _uiState.value.copy(isLoading = false, error = "Flight not found")
+                    return@launch
+                }
+
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    booking = booking,
+                    flight = flight,
+                    error = null
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
+            }
+        }
+    }
+
     fun lookupBooking(reference: String, lastName: String) {
         viewModelScope.launch {
             _uiState.value = CheckInUiState(isLoading = true)
@@ -104,6 +132,34 @@ class CheckInViewModel @Inject constructor(
         )
     }
 
+    fun submitCheckIn(onSuccess: () -> Unit) {
+        val bookingId = _uiState.value.booking?.id
+        if (bookingId.isNullOrBlank()) {
+            _uiState.value = _uiState.value.copy(error = "Booking not loaded")
+            return
+        }
+
+        val baggage = BaggageDeclaration(
+            id = bookingId,
+            bookingId = bookingId,
+            carryOnIncluded = 0,
+            cabinBags = _uiState.value.baggageList.sumOf { it.cabinBags },
+            checkedBags = _uiState.value.baggageList.sumOf { it.checkedBags },
+            specialItems = _uiState.value.baggageList.joinToString(", ") { it.specialItems }
+        )
+
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            try {
+                bookingRepository.submitCheckIn(bookingId, baggage)
+                _uiState.value = _uiState.value.copy(isLoading = false)
+                onSuccess()
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
+            }
+        }
+    }
+
     fun nextStep() {
         _uiState.value = _uiState.value.copy(currentStep = _uiState.value.currentStep + 1)
     }
@@ -111,6 +167,48 @@ class CheckInViewModel @Inject constructor(
     fun prevStep() {
         if (_uiState.value.currentStep > 1) {
             _uiState.value = _uiState.value.copy(currentStep = _uiState.value.currentStep - 1)
+        }
+    }
+}
+
+data class BookingLookupUiState(
+    val reference: String = "",
+    val lastName: String = "",
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val result: Booking? = null
+)
+
+@HiltViewModel
+class BookingLookupViewModel @Inject constructor(
+    private val bookingRepository: BookingRepository
+) : ViewModel() {
+    private val _uiState = MutableStateFlow(BookingLookupUiState())
+    val uiState = _uiState.asStateFlow()
+
+    fun updateReference(value: String) {
+        _uiState.value = _uiState.value.copy(reference = value, error = null, result = null)
+    }
+
+    fun updateLastName(value: String) {
+        _uiState.value = _uiState.value.copy(lastName = value, error = null, result = null)
+    }
+
+    fun lookup() {
+        viewModelScope.launch {
+            val reference = _uiState.value.reference.trim()
+            val lastName = _uiState.value.lastName.trim()
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null, result = null)
+            try {
+                val booking = bookingRepository.getBooking(reference, lastName)
+                _uiState.value = if (booking != null) {
+                    _uiState.value.copy(isLoading = false, result = booking)
+                } else {
+                    _uiState.value.copy(isLoading = false, error = "Booking not found")
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
+            }
         }
     }
 }
@@ -170,24 +268,246 @@ fun MyBookingsScreen(
                     val booking = bookings[index]
                     Card(
                         modifier = Modifier.fillMaxWidth().clickable {
-                            onNavigateToBoardingPass(booking.id)
+                            if (booking.checkInStatus) {
+                                onNavigateToBoardingPass(booking.id)
+                            } else {
+                                onNavigateToCheckIn(booking.id)
+                            }
                         },
                         elevation = CardDefaults.cardElevation(4.dp)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text("Reference: ${booking.reference}", style = MaterialTheme.typography.titleMedium)
                             Text("Flight: ${booking.flightId}", style = MaterialTheme.typography.bodyMedium)
-                            Text(
-                                text = "Pass Ready",
-                                color = Color(0xFF4CAF50),
-                                style = MaterialTheme.typography.bodySmall
-                            )
+                            if (booking.checkInStatus) {
+                                Text(
+                                    text = "Checked In · Pass Ready",
+                                    color = Color(0xFF4CAF50),
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            } else {
+                                Text(
+                                    text = "Check-In Open",
+                                    color = Color(0xFFFFC107),
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
                         }
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+fun BookingLookupScreen(
+    onBookingFound: (String) -> Unit,
+    viewModel: BookingLookupViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(uiState.result?.id) {
+        uiState.result?.id?.let(onBookingFound)
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text("Online Check-In", style = MaterialTheme.typography.headlineMedium)
+        Spacer(Modifier.height(24.dp))
+
+        OutlinedTextField(
+            value = uiState.reference,
+            onValueChange = viewModel::updateReference,
+            label = { Text("Booking Reference") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+        Spacer(Modifier.height(12.dp))
+
+        OutlinedTextField(
+            value = uiState.lastName,
+            onValueChange = viewModel::updateLastName,
+            label = { Text("Last Name") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        uiState.error?.let {
+            Spacer(Modifier.height(12.dp))
+            Text(it, color = MaterialTheme.colorScheme.error)
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        Button(
+            onClick = viewModel::lookup,
+            enabled = !uiState.isLoading && uiState.reference.isNotBlank() && uiState.lastName.isNotBlank(),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            if (uiState.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+                Spacer(Modifier.width(12.dp))
+                Text("Finding...")
+            } else {
+                Text("Find Booking")
+            }
+        }
+    }
+}
+
+@Composable
+fun BookingFoundScreen(
+    bookingId: String,
+    onStartCheckIn: (String) -> Unit,
+    onViewBoardingPass: (String) -> Unit,
+    onBack: () -> Unit,
+    viewModel: CheckInViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(bookingId) {
+        viewModel.loadBookingById(bookingId)
+    }
+
+    val booking = uiState.booking
+    val flight = uiState.flight
+    val departureInstant = remember(flight?.id, flight?.departureTime, flight?.dateKey) {
+        resolveDepartureInstant(flight)
+    }
+    val checkInOpen = departureInstant?.let {
+        val timeUntilDeparture = java.time.Duration.between(java.time.Instant.now(), it)
+        timeUntilDeparture > java.time.Duration.ZERO && timeUntilDeparture <= java.time.Duration.ofHours(24)
+    } ?: false
+
+    when {
+        uiState.isLoading -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+
+        uiState.error != null -> {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = uiState.error ?: "Unable to load booking",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
+
+        booking == null || flight == null -> {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Booking not found",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
+
+        else -> {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(24.dp)
+            ) {
+                Text("Booking Found", style = MaterialTheme.typography.headlineMedium)
+                Spacer(Modifier.height(20.dp))
+
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("Flight: ${flight.flightNumber}", style = MaterialTheme.typography.titleMedium)
+                        Text("${flight.origin} → ${flight.destination}")
+                        Text("Departure: ${formatDepartureDisplay(flight)}")
+                        Text("Passenger: ${booking.passengerName.ifBlank { "Unknown" }}")
+                        Text("Cabin class: ${booking.cabinClass.ifBlank { "Unknown" }}")
+
+                        Spacer(Modifier.height(16.dp))
+
+                        if (booking.checkInStatus) {
+                            Text(
+                                text = "Already Checked In",
+                                color = Color(0xFF4CAF50),
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Spacer(Modifier.height(12.dp))
+                            Button(
+                                onClick = { onViewBoardingPass(booking.id) },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("View Boarding Pass")
+                            }
+                        } else if (checkInOpen) {
+                            Button(
+                                onClick = { onStartCheckIn(booking.id) },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+                            ) {
+                                Text("Start Check-In")
+                            }
+                        } else {
+                            Text(
+                                text = "Check-in opens 24 hours before departure",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(16.dp))
+                OutlinedButton(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
+                    Text("Back")
+                }
+            }
+        }
+    }
+}
+
+private fun resolveDepartureInstant(flight: com.airline.checkin.domain.model.Flight?): java.time.Instant? {
+    val departureTime = flight?.departureTime?.trim().orEmpty()
+    if (departureTime.isBlank()) return null
+
+    runCatching {
+        val normalized = if (!departureTime.endsWith("Z") && !departureTime.contains("+")) {
+            "${departureTime}Z"
+        } else departureTime
+        java.time.Instant.parse(normalized)
+    }.getOrNull()?.let { return it }
+
+    val dateKey = flight?.dateKey?.trim().orEmpty()
+    if (dateKey.isBlank()) return null
+
+    val date = runCatching { java.time.LocalDate.parse(dateKey) }.getOrNull() ?: return null
+    val time = runCatching { java.time.LocalTime.parse(departureTime) }
+        .getOrNull() ?: java.time.LocalTime.MIDNIGHT
+    return date.atTime(time).atZone(java.time.ZoneId.systemDefault()).toInstant()
+}
+
+private fun formatDepartureDisplay(flight: com.airline.checkin.domain.model.Flight?): String {
+    val departureInstant = resolveDepartureInstant(flight) ?: return flight?.departureTime?.ifBlank { "Unknown" } ?: "Unknown"
+    val localDateTime = java.time.LocalDateTime.ofInstant(departureInstant, java.time.ZoneId.systemDefault())
+    val datePart = localDateTime.format(java.time.format.DateTimeFormatter.ofPattern("EEE, MMM d"))
+    val timePart = localDateTime.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
+    return "$datePart • $timePart"
 }
 
 // ---- Check-In Flow Screen ----
@@ -201,38 +521,71 @@ fun CheckInScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    when (uiState.currentStep) {
-        1 -> PassportScanStep(onNext = { viewModel.nextStep() })
-        2 -> PassengerDetailsStep(
-            passenger = uiState.passenger,
-            flight = uiState.flight,
-            onUpdate = { viewModel.updatePassenger(it) },
-            onNext = { viewModel.nextStep() },
-            onBack = { viewModel.prevStep() }
-        )
-        3 -> BaggageStep(
-            baggageList = uiState.baggageList,
-            onAdd = { viewModel.addBaggage(it) },
-            onRemove = { viewModel.removeBaggage(it) },
-            onNext = { viewModel.nextStep() },
-            onBack = { viewModel.prevStep() }
-        )
-        4 -> SpecialRequestsStep(
-            meal = uiState.mealPreference,
-            wheelchair = uiState.needsWheelchair,
-            infant = uiState.travelingWithInfant,
-            pet = uiState.travelingWithPet,
-            onUpdate = { meal, wc, inf, pet ->
-                viewModel.updateSpecialRequests(meal, wc, inf, pet)
-            },
-            onNext = { viewModel.nextStep() },
-            onBack = { viewModel.prevStep() }
-        )
-        5 -> ConfirmationStep(
-            uiState = uiState,
-            onConfirm = { onDone() },
-            onBack = { viewModel.prevStep() }
-        )
+    LaunchedEffect(bookingId) {
+        viewModel.loadBookingById(bookingId)
+    }
+
+    when {
+        uiState.isLoading -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    CircularProgressIndicator()
+                    Spacer(Modifier.height(12.dp))
+                    Text("Loading check-in...", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+
+        uiState.error != null -> {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = uiState.error ?: "Something went wrong",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
+
+        else -> when (uiState.currentStep) {
+            1 -> PassportScanStep(onNext = { viewModel.nextStep() })
+            2 -> PassengerDetailsStep(
+                passenger = uiState.passenger,
+                flight = uiState.flight,
+                onUpdate = { viewModel.updatePassenger(it) },
+                onNext = { viewModel.nextStep() },
+                onBack = { viewModel.prevStep() }
+            )
+            3 -> BaggageStep(
+                baggageList = uiState.baggageList,
+                onAdd = { viewModel.addBaggage(it) },
+                onRemove = { viewModel.removeBaggage(it) },
+                onNext = { viewModel.nextStep() },
+                onBack = { viewModel.prevStep() }
+            )
+            4 -> SpecialRequestsStep(
+                meal = uiState.mealPreference,
+                wheelchair = uiState.needsWheelchair,
+                infant = uiState.travelingWithInfant,
+                pet = uiState.travelingWithPet,
+                onUpdate = { meal, wc, inf, pet ->
+                    viewModel.updateSpecialRequests(meal, wc, inf, pet)
+                },
+                onNext = { viewModel.nextStep() },
+                onBack = { viewModel.prevStep() }
+            )
+            5 -> ConfirmationStep(
+                uiState = uiState,
+                viewModel = viewModel,
+                onConfirm = { onDone() },
+                onBack = { viewModel.prevStep() }
+            )
+        }
     }
 }
 
@@ -685,6 +1038,7 @@ fun SpecialRequestsStep(
 @Composable
 fun ConfirmationStep(
     uiState: CheckInUiState,
+    viewModel: CheckInViewModel,
     onConfirm: () -> Unit,
     onBack: () -> Unit
 ) {
@@ -782,14 +1136,15 @@ fun ConfirmationStep(
             text = { Text("Your booking has been saved successfully") },
             confirmButton = {
                 Button(onClick = {
-                    showDialog = false
-                    onConfirm()
+                    viewModel.submitCheckIn {
+                        showDialog = false
+                        onConfirm()
+                    }
                 }) { Text("See Ticket") }
             },
             dismissButton = {
                 TextButton(onClick = {
                     showDialog = false
-                    onConfirm()
                 }) { Text("Back to home") }
             }
         )

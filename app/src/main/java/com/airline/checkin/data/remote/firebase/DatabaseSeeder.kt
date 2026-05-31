@@ -10,9 +10,13 @@ class DatabaseSeeder @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
     suspend fun seedIfNeeded() {
+        val existingBooking = firestore.collection("bookings")
+            .whereEqualTo("reference", "ABCDEF")
+            .get()
+            .await()
+        if (!existingBooking.isEmpty) return
+
         val flightRef = firestore.collection("flights").document("FL001")
-        val existing = flightRef.get().await()
-        if (existing.exists()) return
 
         val batch = firestore.batch()
 
@@ -47,11 +51,30 @@ class DatabaseSeeder @Inject constructor(
         )
 
         batch.set(
-            firestore.collection("bookings").document("mock_booking_id"),
+            firestore.collection("bookings").document("booking_abc123"),
             mapOf(
                 "reference" to "ABCDEF",
+                "lastName" to "Smith",
+                "passengerName" to "John Smith",
                 "flightId" to "FL001",
                 "passengerId" to "mock-user-001",
+                "checkInStatus" to false,
+                "ticketsCount" to 1,
+                "totalPrice" to 120,
+                "currency" to "USD",
+                "paymentStatus" to "PAID",
+                "cabinClass" to "ECONOMY"
+            )
+        )
+
+        batch.set(
+            firestore.collection("bookings").document("booking_xyz789"),
+            mapOf(
+                "reference" to "XYZABC",
+                "lastName" to "Doe",
+                "passengerName" to "Jane Doe",
+                "flightId" to "FL001",
+                "passengerId" to "mock-user-002",
                 "checkInStatus" to false,
                 "ticketsCount" to 1,
                 "totalPrice" to 120,
@@ -85,20 +108,6 @@ class DatabaseSeeder @Inject constructor(
         seatDocs.forEach { (id, data) ->
             batch.set(firestore.collection("seats").document(id), data)
         }
-
-        batch.set(
-            firestore.collection("boarding_passes").document("BP001"),
-            mapOf(
-                "bookingId" to "mock_booking_id",
-                "passengerId" to "mock-user-001",
-                "flightNumber" to "IDN16821",
-                "seatNumber" to "5B",
-                "gate" to "12",
-                "boardingTime" to "16:55",
-                "qrCode" to "PNR: mock_booking_id | Flight: IDN16821 | Seat: 5B",
-                "isDownloaded" to false
-            )
-        )
 
         batch.commit().await()
     }

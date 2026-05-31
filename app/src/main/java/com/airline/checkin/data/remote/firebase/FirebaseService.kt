@@ -133,6 +133,13 @@ class FirebaseService @Inject constructor(
     }
 
     // ---- Bookings ----
+    suspend fun getBookingById(bookingId: String): Booking? {
+        if (bookingId.isBlank()) return null
+        val doc = bookings.document(bookingId).get().await()
+        if (!doc.exists()) return null
+        return doc.toBooking()
+    }
+
     suspend fun getUserBookings(userId: String): List<Booking> {
         if (userId.isBlank()) return emptyList()
         val snapshot = bookings.whereEqualTo("passengerId", userId).get().await()
@@ -143,39 +150,12 @@ class FirebaseService @Inject constructor(
         if (ref.isBlank()) return null
         val baseQuery = bookings.whereEqualTo("reference", ref)
         val snapshot = if (lastName.isNotBlank()) {
-            val withLastName = baseQuery.whereEqualTo("lastName", lastName).get().await()
-            if (withLastName.isEmpty) baseQuery.get().await() else withLastName
+            baseQuery.whereEqualTo("lastName", lastName).get().await()
         } else {
             baseQuery.get().await()
         }
         val doc = snapshot.documents.firstOrNull() ?: return null
         return doc.toBooking()
-    }
-
-    suspend fun createBooking(
-        flightId: String,
-        ticketsCount: Int,
-        totalPrice: Int,
-        currency: String,
-        cabinClass: String
-    ): BookingConfirmation {
-        val bookingId = bookings.document().id
-        val reference = generateBookingReference()
-        val passengerId = currentUserId() ?: "guest"
-        val payload = mapOf(
-            "reference" to reference,
-            "flightId" to flightId,
-            "passengerId" to passengerId,
-            "checkInStatus" to false,
-            "ticketsCount" to ticketsCount,
-            "totalPrice" to totalPrice,
-            "currency" to currency,
-            "paymentStatus" to "PAID",
-            "cabinClass" to cabinClass,
-            "createdAt" to FieldValue.serverTimestamp()
-        )
-        bookings.document(bookingId).set(payload).await()
-        return BookingConfirmation(id = bookingId, reference = reference)
     }
 
     // ---- Flights ----
@@ -184,28 +164,6 @@ class FirebaseService @Inject constructor(
         val doc = flights.document(flightId).get().await()
         if (!doc.exists()) return null
         return doc.toFlight()
-    }
-
-    suspend fun searchFlights(origin: String, destination: String, startDate: String, endDate: String): List<Flight> {
-        if (origin.isBlank() || destination.isBlank() || startDate.isBlank()) return emptyList()
-        val start = startDate.trim()
-        val end = endDate.trim().ifBlank { start }
-        val snapshot = flights
-            .whereGreaterThanOrEqualTo("dateKey", start)
-            .whereLessThanOrEqualTo("dateKey", end)
-            .get()
-            .await()
-        return snapshot.documents.mapNotNull { it.toFlight() }
-            .filter {
-                it.origin.equals(origin, ignoreCase = true) &&
-                    it.destination.equals(destination, ignoreCase = true)
-            }
-    }
-
-    // ---- Airports ----
-    suspend fun getAirports(): List<Airport> {
-        val snapshot = airports.get().await()
-        return snapshot.documents.mapNotNull { it.toAirport() }
     }
 
     // ---- Seats ----
@@ -262,97 +220,6 @@ class FirebaseService @Inject constructor(
         return doc.copy(id = id, fullName = fullName)
     }
 
-    // ---- Create booking and booking passengers atomically-ish ----
-    suspend fun createBookingWithPassengers(
-        flightId: String,
-        ticketsCount: Int,
-        totalPrice: Int,
-        currency: String,
-        cabinClass: String,
-        passengers: List<BookingPassenger>
-    ): BookingConfirmation {
-        val bookingId = bookings.document().id
-        val reference = generateBookingReference()
-        val passengerId = currentUserId() ?: "guest"
-        val flightSnapshot = flights.document(flightId).get().await()
-        val flightNumber = flightSnapshot.getString("flight_number")
-            ?: flightSnapshot.getString("flightNumber")
-            ?: flightId
-        val departureTime = flightSnapshot.getString("departureTime")
-            ?: flightSnapshot.getString("departure_time")
-            ?: ""
-        val origin = flightSnapshot.getString("origin") ?: ""
-        val destination = flightSnapshot.getString("destination") ?: ""
-        val payload = mapOf(
-            "reference" to reference,
-            "flightId" to flightId,
-            "passengerId" to passengerId,
-            "checkInStatus" to false,
-            "ticketsCount" to ticketsCount,
-            "totalPrice" to totalPrice,
-            "currency" to currency,
-            "paymentStatus" to "PAID",
-            "cabinClass" to cabinClass,
-            "createdAt" to FieldValue.serverTimestamp()
-        )
-        bookings.document(bookingId).set(payload).await()
-
-        // Create per-passenger booking records and mark seats occupied
-        val passengerColl = firestore.collection("booking_passengers")
-        for (p in passengers) {
-            val pid = passengerColl.document().id
-            val seatNumber = p.seatNumber.ifBlank { p.seatId.substringAfterLast('_').ifBlank { "TBD" } }
-            val boardingPassId = boardingPasses.document().id
-            val ppayload = mapOf(
-                "bookingId" to bookingId,
-                "passengerId" to p.passengerId,
-                "firstName" to p.firstName,
-                "lastName" to p.lastName,
-                "passengerName" to p.passengerName,
-                "seatId" to p.seatId,
-                "seatNumber" to p.seatNumber,
-                "cabinClass" to p.cabinClass,
-                "hasCheckedBags" to p.hasCheckedBags,
-                "hasCarryOn" to p.hasCarryOn,
-                "hasPet" to p.hasPet,
-                "needsWheelchair" to p.needsWheelchair
-            )
-            passengerColl.document(pid).set(ppayload).await()
-            if (p.seatId.isNotBlank()) {
-                val seatNumber = p.seatNumber.ifBlank { p.seatId.substringAfterLast('_').ifBlank { p.seatId } }
-                seats.document(p.seatId).set(
-                    mapOf(
-                        "flightId" to flightId,
-                        "seatNumber" to seatNumber,
-                        "type" to p.cabinClass.uppercase(),
-                        "isOccupied" to true
-                    ),
-                    SetOptions.merge()
-                ).await()
-            }
-
-            boardingPasses.document(boardingPassId).set(
-                mapOf(
-                    "bookingId" to bookingId,
-                    "passengerId" to p.passengerId,
-                    "passengerName" to p.passengerName,
-                    "flightNumber" to flightNumber,
-                    "seatNumber" to seatNumber,
-                    "gate" to "TBD",
-                    "boardingTime" to departureTime,
-                    "qrCode" to "PNR: $reference | Passenger: ${p.passengerName} | Flight: $flightNumber | Seat: $seatNumber",
-                    "isDownloaded" to false,
-                    "origin" to origin,
-                    "destination" to destination,
-                    "createdAt" to FieldValue.serverTimestamp()
-                ),
-                SetOptions.merge()
-            ).await()
-        }
-
-        return BookingConfirmation(id = bookingId, reference = reference)
-    }
-
     // ---- Boarding Pass ----
     suspend fun getBoardingPass(bookingId: String): BoardingPass? {
         if (bookingId.isBlank()) return null
@@ -390,6 +257,8 @@ class FirebaseService @Inject constructor(
         reference = getString("reference") ?: "",
         flightId = getString("flightId") ?: "",
         passengerId = getString("passengerId") ?: "",
+        passengerName = getString("passengerName") ?: "",
+        cabinClass = getString("cabinClass") ?: "",
         checkInStatus = getBoolean("checkInStatus") ?: false,
         ticketsCount = (getLong("ticketsCount") ?: 1L).toInt(),
         totalPrice = (getLong("totalPrice") ?: getDouble("totalPrice")?.toLong() ?: 0L).toInt(),
@@ -404,6 +273,7 @@ class FirebaseService @Inject constructor(
         destination = getString("destination") ?: "",
         departureTime = getString("departureTime") ?: "",
         arrivalTime = getString("arrivalTime") ?: "",
+        dateKey = getString("dateKey") ?: "",
         status = getString("status") ?: "",
         airline = getString("airline") ?: "",
         stops = (getLong("stops") ?: 0L).toInt(),
@@ -413,8 +283,7 @@ class FirebaseService @Inject constructor(
         price = (getLong("price") ?: getDouble("price")?.toLong() ?: 0L).toInt(),
         currency = getString("currency") ?: "USD",
         durationMinutes = (getLong("durationMinutes") ?: 0L).toInt(),
-        aircraftId = getString("aircraftId") ?: getString("aircraft_id") ?: "",
-        pricingSummary = parsePricingSummary(get("pricingSummary"))
+        aircraftId = getString("aircraftId") ?: getString("aircraft_id") ?: ""
     )
 
     private fun DocumentSnapshot.toSeat(): Seat? {
@@ -430,28 +299,6 @@ class FirebaseService @Inject constructor(
             type = seatType,
             isOccupied = getBoolean("isOccupied") ?: false
         )
-    }
-
-    private fun parsePricingSummary(raw: Any?): Map<String, CabinPricing> {
-        val summary = mutableMapOf<String, CabinPricing>()
-        val map = raw as? Map<*, *> ?: return emptyMap()
-        map.forEach { (key, value) ->
-            val cabin = key?.toString()?.uppercase().orEmpty()
-            if (cabin == "META" || cabin.isBlank()) return@forEach
-            val valueMap = value as? Map<*, *> ?: return@forEach
-            val price = when (val rawPrice = valueMap["price"]) {
-                is Number -> rawPrice.toInt()
-                is String -> rawPrice.toIntOrNull() ?: 0
-                else -> 0
-            }
-            val seatsAvailable = when (val rawSeats = valueMap["seatsAvailable"]) {
-                is Number -> rawSeats.toInt()
-                is String -> rawSeats.toIntOrNull() ?: 0
-                else -> 0
-            }
-            summary[cabin] = CabinPricing(price = price, seatsAvailable = seatsAvailable)
-        }
-        return summary
     }
 
     private fun DocumentSnapshot.toBoardingPass(): BoardingPass = BoardingPass(

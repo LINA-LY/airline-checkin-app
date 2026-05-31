@@ -46,7 +46,10 @@ DIRECTORY STRUCTURE
 |   |   +---05ca39f4-1172-4e21-a70f-4c822fc1ca5f/
 |   |   +---09b39a4c-2fe3-42bd-8397-6888ea46dd39/
 |   |   +---13f872ba-d24a-457e-a4a5-cb1588aa4760/
+|   |   +---16f1b364-beed-414c-81e3-abd91cb74493/
+|   |   +---18b79f1a-1f9d-41fe-9d1a-b0fb396446d5/
 |   |   +---21ddf8e5-a9ff-4a19-867c-a84bd9e4081a/
+|   |   +---270c7477-4c3e-412e-b737-1f72b6d8a8de/
 |   |   +---28687b88-fd5c-4560-98c2-611e47756098/
 |   |   +---2bcb7858-2e1a-4458-aa33-77aaccc5d160/
 |   |   +---2d13a05b-2ef9-4738-a08a-f2fef8cd557b/
@@ -65,20 +68,27 @@ DIRECTORY STRUCTURE
 |   |   +---5cf26f80-4c47-4832-bfc4-49ec5159e960/
 |   |   +---5d5ad22e-5b0a-4771-947a-c4d985b58910/
 |   |   +---5d77c1ec-6110-483d-8991-990ec2df782d/
+|   |   +---5eb9ae7f-7892-4b07-b8ee-1ea900a986a9/
 |   |   +---5tx95t8y4lfunsr8c2cse8jx2/
 |   |   +---696c8c0c-5bb5-402d-933a-2d21e13d6a13/
 |   |   +---6997a640-a083-419a-8544-6da3a25274c5/
 |   |   +---6a1c7702-71af-4c6e-a56c-203a2b112298/
 |   |   +---6b72713b-d1dd-4a2d-98cc-202f47839f24/
 |   |   +---704e35da-da13-41d9-894e-00da299d8711/
+|   |   +---830a2c57-5512-46f6-b3e8-8ea6e047eeb0/
+|   |   +---8f6ec34b-6fbb-44ad-8ec5-eb8086d09298/
 |   |   +---8fb65980-636d-4f7d-9a8d-6333b43291f5/
 |   |   +---929e75c1-72a1-4d25-aa6e-e36df069194a/
 |   |   +---934f3fd6-4669-4229-80ef-a734ebb9e51e/
+|   |   +---96d418f5-4b5a-4667-92c8-84f0f8b0ec00/
 |   |   +---a36dd9ab-0c46-406f-afc7-a1d316e7e639/
 |   |   +---a4a355c7-dd35-4b55-93c6-b8ce233fea89/
 |   |   +---a5e355c2-c04c-4775-a40c-f3ad9f56e5bb/
 |   |   +---a5ffbc01-a25b-4be2-9697-e8d314a7297f/
+|   |   +---aa27ba42-954c-4b6b-bf19-3a3ce4cd0422/
+|   |   +---ac932f2b-853c-4097-b417-7c495f278d71/
 |   |   +---bpgwimf0a7rq6mwp0goa5abq9/
+|   |   +---bz5zxzg97cega7hqellilpc41/
 |   |   +---c17c920a-1bf1-4ccd-be3d-bd73c346d650/
 |   |   +---c8e6db8c-018c-42a8-be59-6c77810dd013/
 |   |   +---c9ae6ace-0d1f-4fdf-9a4b-5b097ad1d259/
@@ -107,6 +117,7 @@ DIRECTORY STRUCTURE
 |   |   +---errors-1779726054278.log
 |   |   \---errors-1780172183190.log
 |   \---sessions/
+|       \---kotlin-compiler-5418445583920314157.salive
 +---.vscode/
 |   \---settings.json
 +---app/
@@ -149,8 +160,6 @@ DIRECTORY STRUCTURE
 |   |       |               |   |   +---PdfGenerator.kt
 |   |       |               |   |   \---QrCodeGenerator.kt
 |   |       |               |   +---booking/
-|   |       |               |   |   +---BookingFlowViewModel.kt
-|   |       |               |   |   \---BookingScreens.kt
 |   |       |               |   +---checkin/
 |   |       |               |   |   \---CheckInScreens.kt
 |   |       |               |   +---home/
@@ -208,6 +217,9 @@ DIRECTORY STRUCTURE
 |       |   |   +---eqxsx1ktrq2tm98a2sl9a69jv/
 |       |   |   |   \---configuration-cache-report.html
 |       |   |   \---ywb7m6oe1v3bss4hrkrqrbsn/
+|       |   |       \---configuration-cache-report.html
+|       |   +---bz5zxzg97cega7hqellilpc41/
+|       |   |   \---6zfyontz5jadae6el65mspl4n/
 |       |   |       \---configuration-cache-report.html
 |       |   +---d8ba45mt6vlhtnugr5if1hw60/
 |       |   |   +---2jjd9q4v7t6kja41x49xy40uh/
@@ -511,6 +523,9 @@ interface BookingDao {
 
     @Query("UPDATE bookings SET checkInStatus = 1 WHERE id = :id")
     suspend fun markCheckedIn(id: String)
+
+    @Query("SELECT * FROM bookings WHERE passengerId = :userId")
+    fun getByUserFlow(userId: String): Flow<List<BookingEntity>>
 }
 
 @Dao
@@ -766,9 +781,13 @@ class DatabaseSeeder @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
     suspend fun seedIfNeeded() {
+        val existingBooking = firestore.collection("bookings")
+            .whereEqualTo("reference", "ABCDEF")
+            .get()
+            .await()
+        if (!existingBooking.isEmpty) return
+
         val flightRef = firestore.collection("flights").document("FL001")
-        val existing = flightRef.get().await()
-        if (existing.exists()) return
 
         val batch = firestore.batch()
 
@@ -803,11 +822,30 @@ class DatabaseSeeder @Inject constructor(
         )
 
         batch.set(
-            firestore.collection("bookings").document("mock_booking_id"),
+            firestore.collection("bookings").document("booking_abc123"),
             mapOf(
                 "reference" to "ABCDEF",
+                "lastName" to "Smith",
+                "passengerName" to "John Smith",
                 "flightId" to "FL001",
                 "passengerId" to "mock-user-001",
+                "checkInStatus" to false,
+                "ticketsCount" to 1,
+                "totalPrice" to 120,
+                "currency" to "USD",
+                "paymentStatus" to "PAID",
+                "cabinClass" to "ECONOMY"
+            )
+        )
+
+        batch.set(
+            firestore.collection("bookings").document("booking_xyz789"),
+            mapOf(
+                "reference" to "XYZABC",
+                "lastName" to "Doe",
+                "passengerName" to "Jane Doe",
+                "flightId" to "FL001",
+                "passengerId" to "mock-user-002",
                 "checkInStatus" to false,
                 "ticketsCount" to 1,
                 "totalPrice" to 120,
@@ -841,20 +879,6 @@ class DatabaseSeeder @Inject constructor(
         seatDocs.forEach { (id, data) ->
             batch.set(firestore.collection("seats").document(id), data)
         }
-
-        batch.set(
-            firestore.collection("boarding_passes").document("BP001"),
-            mapOf(
-                "bookingId" to "mock_booking_id",
-                "passengerId" to "mock-user-001",
-                "flightNumber" to "IDN16821",
-                "seatNumber" to "5B",
-                "gate" to "12",
-                "boardingTime" to "16:55",
-                "qrCode" to "PNR: mock_booking_id | Flight: IDN16821 | Seat: 5B",
-                "isDownloaded" to false
-            )
-        )
 
         batch.commit().await()
     }
@@ -999,43 +1023,29 @@ class FirebaseService @Inject constructor(
     }
 
     // ---- Bookings ----
+    suspend fun getBookingById(bookingId: String): Booking? {
+        if (bookingId.isBlank()) return null
+        val doc = bookings.document(bookingId).get().await()
+        if (!doc.exists()) return null
+        return doc.toBooking()
+    }
+
+    suspend fun getUserBookings(userId: String): List<Booking> {
+        if (userId.isBlank()) return emptyList()
+        val snapshot = bookings.whereEqualTo("passengerId", userId).get().await()
+        return snapshot.documents.map { it.toBooking() }
+    }
+
     suspend fun getBookingByReference(ref: String, lastName: String): Booking? {
         if (ref.isBlank()) return null
         val baseQuery = bookings.whereEqualTo("reference", ref)
         val snapshot = if (lastName.isNotBlank()) {
-            val withLastName = baseQuery.whereEqualTo("lastName", lastName).get().await()
-            if (withLastName.isEmpty) baseQuery.get().await() else withLastName
+            baseQuery.whereEqualTo("lastName", lastName).get().await()
         } else {
             baseQuery.get().await()
         }
         val doc = snapshot.documents.firstOrNull() ?: return null
         return doc.toBooking()
-    }
-
-    suspend fun createBooking(
-        flightId: String,
-        ticketsCount: Int,
-        totalPrice: Int,
-        currency: String,
-        cabinClass: String
-    ): BookingConfirmation {
-        val bookingId = bookings.document().id
-        val reference = generateBookingReference()
-        val passengerId = currentUserId() ?: "guest"
-        val payload = mapOf(
-            "reference" to reference,
-            "flightId" to flightId,
-            "passengerId" to passengerId,
-            "checkInStatus" to false,
-            "ticketsCount" to ticketsCount,
-            "totalPrice" to totalPrice,
-            "currency" to currency,
-            "paymentStatus" to "PAID",
-            "cabinClass" to cabinClass,
-            "createdAt" to FieldValue.serverTimestamp()
-        )
-        bookings.document(bookingId).set(payload).await()
-        return BookingConfirmation(id = bookingId, reference = reference)
     }
 
     // ---- Flights ----
@@ -1044,28 +1054,6 @@ class FirebaseService @Inject constructor(
         val doc = flights.document(flightId).get().await()
         if (!doc.exists()) return null
         return doc.toFlight()
-    }
-
-    suspend fun searchFlights(origin: String, destination: String, startDate: String, endDate: String): List<Flight> {
-        if (origin.isBlank() || destination.isBlank() || startDate.isBlank()) return emptyList()
-        val start = startDate.trim()
-        val end = endDate.trim().ifBlank { start }
-        val snapshot = flights
-            .whereGreaterThanOrEqualTo("dateKey", start)
-            .whereLessThanOrEqualTo("dateKey", end)
-            .get()
-            .await()
-        return snapshot.documents.mapNotNull { it.toFlight() }
-            .filter {
-                it.origin.equals(origin, ignoreCase = true) &&
-                    it.destination.equals(destination, ignoreCase = true)
-            }
-    }
-
-    // ---- Airports ----
-    suspend fun getAirports(): List<Airport> {
-        val snapshot = airports.get().await()
-        return snapshot.documents.mapNotNull { it.toAirport() }
     }
 
     // ---- Seats ----
@@ -1122,93 +1110,6 @@ class FirebaseService @Inject constructor(
         return doc.copy(id = id, fullName = fullName)
     }
 
-    // ---- Create booking and booking passengers atomically-ish ----
-    suspend fun createBookingWithPassengers(
-        flightId: String,
-        ticketsCount: Int,
-        totalPrice: Int,
-        currency: String,
-        cabinClass: String,
-        passengers: List<BookingPassenger>
-    ): BookingConfirmation {
-        val bookingId = bookings.document().id
-        val reference = generateBookingReference()
-        val passengerId = currentUserId() ?: "guest"
-        val flightSnapshot = flights.document(flightId).get().await()
-        val flightNumber = flightSnapshot.getString("flight_number")
-            ?: flightSnapshot.getString("flightNumber")
-            ?: flightId
-        val departureTime = flightSnapshot.getString("departureTime")
-            ?: flightSnapshot.getString("departure_time")
-            ?: ""
-        val origin = flightSnapshot.getString("origin") ?: ""
-        val destination = flightSnapshot.getString("destination") ?: ""
-        val payload = mapOf(
-            "reference" to reference,
-            "flightId" to flightId,
-            "passengerId" to passengerId,
-            "checkInStatus" to false,
-            "ticketsCount" to ticketsCount,
-            "totalPrice" to totalPrice,
-            "currency" to currency,
-            "paymentStatus" to "PAID",
-            "cabinClass" to cabinClass,
-            "createdAt" to FieldValue.serverTimestamp()
-        )
-        bookings.document(bookingId).set(payload).await()
-
-        // Create per-passenger booking records and mark seats occupied
-        val passengerColl = firestore.collection("booking_passengers")
-        for (p in passengers) {
-            val pid = passengerColl.document().id
-            val seatNumber = p.seatNumber.ifBlank { p.seatId.substringAfterLast('_').ifBlank { "TBD" } }
-            val boardingPassId = boardingPasses.document().id
-            val ppayload = mapOf(
-                "bookingId" to bookingId,
-                "passengerId" to p.passengerId,
-                "firstName" to p.firstName,
-                "lastName" to p.lastName,
-                "passengerName" to p.passengerName,
-                "seatId" to p.seatId,
-                "seatNumber" to p.seatNumber,
-                "cabinClass" to p.cabinClass
-            )
-            passengerColl.document(pid).set(ppayload).await()
-            if (p.seatId.isNotBlank()) {
-                val seatNumber = p.seatNumber.ifBlank { p.seatId.substringAfterLast('_').ifBlank { p.seatId } }
-                seats.document(p.seatId).set(
-                    mapOf(
-                        "flightId" to flightId,
-                        "seatNumber" to seatNumber,
-                        "type" to p.cabinClass.uppercase(),
-                        "isOccupied" to true
-                    ),
-                    SetOptions.merge()
-                ).await()
-            }
-
-            boardingPasses.document(boardingPassId).set(
-                mapOf(
-                    "bookingId" to bookingId,
-                    "passengerId" to p.passengerId,
-                    "passengerName" to p.passengerName,
-                    "flightNumber" to flightNumber,
-                    "seatNumber" to seatNumber,
-                    "gate" to "TBD",
-                    "boardingTime" to departureTime,
-                    "qrCode" to "PNR: $reference | Passenger: ${p.passengerName} | Flight: $flightNumber | Seat: $seatNumber",
-                    "isDownloaded" to false,
-                    "origin" to origin,
-                    "destination" to destination,
-                    "createdAt" to FieldValue.serverTimestamp()
-                ),
-                SetOptions.merge()
-            ).await()
-        }
-
-        return BookingConfirmation(id = bookingId, reference = reference)
-    }
-
     // ---- Boarding Pass ----
     suspend fun getBoardingPass(bookingId: String): BoardingPass? {
         if (bookingId.isBlank()) return null
@@ -1246,6 +1147,8 @@ class FirebaseService @Inject constructor(
         reference = getString("reference") ?: "",
         flightId = getString("flightId") ?: "",
         passengerId = getString("passengerId") ?: "",
+        passengerName = getString("passengerName") ?: "",
+        cabinClass = getString("cabinClass") ?: "",
         checkInStatus = getBoolean("checkInStatus") ?: false,
         ticketsCount = (getLong("ticketsCount") ?: 1L).toInt(),
         totalPrice = (getLong("totalPrice") ?: getDouble("totalPrice")?.toLong() ?: 0L).toInt(),
@@ -1260,6 +1163,7 @@ class FirebaseService @Inject constructor(
         destination = getString("destination") ?: "",
         departureTime = getString("departureTime") ?: "",
         arrivalTime = getString("arrivalTime") ?: "",
+        dateKey = getString("dateKey") ?: "",
         status = getString("status") ?: "",
         airline = getString("airline") ?: "",
         stops = (getLong("stops") ?: 0L).toInt(),
@@ -1269,8 +1173,7 @@ class FirebaseService @Inject constructor(
         price = (getLong("price") ?: getDouble("price")?.toLong() ?: 0L).toInt(),
         currency = getString("currency") ?: "USD",
         durationMinutes = (getLong("durationMinutes") ?: 0L).toInt(),
-        aircraftId = getString("aircraftId") ?: getString("aircraft_id") ?: "",
-        pricingSummary = parsePricingSummary(get("pricingSummary"))
+        aircraftId = getString("aircraftId") ?: getString("aircraft_id") ?: ""
     )
 
     private fun DocumentSnapshot.toSeat(): Seat? {
@@ -1286,28 +1189,6 @@ class FirebaseService @Inject constructor(
             type = seatType,
             isOccupied = getBoolean("isOccupied") ?: false
         )
-    }
-
-    private fun parsePricingSummary(raw: Any?): Map<String, CabinPricing> {
-        val summary = mutableMapOf<String, CabinPricing>()
-        val map = raw as? Map<*, *> ?: return emptyMap()
-        map.forEach { (key, value) ->
-            val cabin = key?.toString()?.uppercase().orEmpty()
-            if (cabin == "META" || cabin.isBlank()) return@forEach
-            val valueMap = value as? Map<*, *> ?: return@forEach
-            val price = when (val rawPrice = valueMap["price"]) {
-                is Number -> rawPrice.toInt()
-                is String -> rawPrice.toIntOrNull() ?: 0
-                else -> 0
-            }
-            val seatsAvailable = when (val rawSeats = valueMap["seatsAvailable"]) {
-                is Number -> rawSeats.toInt()
-                is String -> rawSeats.toIntOrNull() ?: 0
-                else -> 0
-            }
-            summary[cabin] = CabinPricing(price = price, seatsAvailable = seatsAvailable)
-        }
-        return summary
     }
 
     private fun DocumentSnapshot.toBoardingPass(): BoardingPass = BoardingPass(
@@ -1437,26 +1318,50 @@ class BookingRepository @Inject constructor(
     private val bookingDao: BookingDao,
     private val flightDao: FlightDao
 ) {
+    suspend fun getBookingById(bookingId: String): Booking? {
+        return firebase.getBookingById(bookingId)
+    }
+
     suspend fun getBooking(reference: String, lastName: String): Booking? {
         return firebase.getBookingByReference(reference, lastName)
     }
 
-    suspend fun createBooking(
-        flightId: String,
-        ticketsCount: Int,
-        totalPrice: Int,
-        currency: String,
-        cabinClass: String,
-        passengers: List<BookingPassenger>
-    ): BookingConfirmation {
-        return firebase.createBookingWithPassengers(
-            flightId,
-            ticketsCount,
-            totalPrice,
-            currency,
-            cabinClass,
-            passengers
-        )
+    suspend fun submitCheckIn(bookingId: String, baggage: BaggageDeclaration) {
+        firebase.submitCheckIn(bookingId, baggage)
+        bookingDao.markCheckedIn(bookingId)
+    }
+
+    fun observeUserBookings(userId: String): kotlinx.coroutines.flow.Flow<List<Booking>> {
+        return bookingDao.getByUserFlow(userId).map { list ->
+            list.map { entity ->
+                Booking(
+                    id = entity.id,
+                    reference = entity.reference,
+                    flightId = entity.flightId,
+                    passengerId = entity.passengerId,
+                    checkInStatus = entity.checkInStatus,
+                    ticketsCount = 1,
+                    totalPrice = 0,
+                    currency = "USD",
+                    paymentStatus = "PAID"
+                )
+            }
+        }
+    }
+
+    suspend fun refreshUserBookings(userId: String) {
+        val remote = firebase.getUserBookings(userId)
+        remote.forEach { booking ->
+            bookingDao.upsert(
+                com.airline.checkin.data.local.entity.BookingEntity(
+                    id = booking.id,
+                    reference = booking.reference,
+                    flightId = booking.flightId,
+                    passengerId = booking.passengerId,
+                    checkInStatus = booking.checkInStatus
+                )
+            )
+        }
     }
 }
 
@@ -1466,64 +1371,6 @@ class FlightRepository @Inject constructor(
 ) {
     suspend fun getFlight(flightId: String): Flight? {
         return firebase.getFlight(flightId)
-    }
-
-    suspend fun searchFlights(origin: String, destination: String, startDate: String, endDate: String): List<Flight> {
-        return firebase.searchFlights(origin, destination, startDate, endDate)
-    }
-}
-
-@Singleton
-class AirportRepository @Inject constructor(
-    @dagger.hilt.android.qualifiers.ApplicationContext private val context: android.content.Context,
-    private val firebase: FirebaseService
-) {
-    private var cachedAirports: List<Airport>? = null
-
-    suspend fun getAirports(): List<Airport> {
-        cachedAirports?.let { return it }
-        
-        // try local asset loading
-        try {
-            val jsonStr = context.assets.open("airports.json").bufferedReader().use { it.readText() }
-            val arr = org.json.JSONArray(jsonStr)
-            val list = mutableListOf<Airport>()
-            for (i in 0 until arr.length()) {
-                val obj = arr.getJSONObject(i)
-                list.add(
-                    Airport(
-                        code = obj.getString("code"),
-                        name = obj.optString("name", ""),
-                        city = obj.optString("city", ""),
-                        country = obj.optString("country", "")
-                    )
-                )
-            }
-            cachedAirports = list
-            return list
-        } catch (assetEx: Exception) {
-            Log.e("AirportRepository", "Failed to load airports from local asset JSON", assetEx)
-        }
-
-        // Try fallback to Firestore
-        try {
-            val remoteList = firebase.getAirports()
-            cachedAirports = remoteList
-            return remoteList
-        } catch (firebaseEx: Exception) {
-            Log.e("AirportRepository", "Failed to load airports from remote Firestore", firebaseEx)
-        }
-
-        // Ultimate hardcoded fallback to keep the app working under all conditions
-        val defaultAirports = listOf(
-            Airport("CGK", "Soekarno-Hatta International Airport", "Jakarta", "Indonesia"),
-            Airport("DPS", "Ngurah Rai International Airport", "Bali / Denpasar", "Indonesia"),
-            Airport("SUB", "Juanda International Airport", "Surabaya", "Indonesia"),
-            Airport("KUL", "Kuala Lumpur International Airport", "Kuala Lumpur", "Malaysia"),
-            Airport("SIN", "Changi Airport", "Singapore", "Singapore")
-        )
-        cachedAirports = defaultAirports
-        return defaultAirports
     }
 }
 
@@ -1763,23 +1610,6 @@ data class PassengerDocument(
     val dateOfBirth: String = ""
 )
 
-data class BookingPassenger(
-    val id: String = "",
-    val bookingId: String = "",
-    val passengerId: String = "",
-    val firstName: String = "",
-    val lastName: String = "",
-    val passengerName: String = "",
-    val seatId: String = "",
-    val seatNumber: String = "",
-    val cabinClass: String = ""
-)
-
-data class CabinPricing(
-    val price: Int = 0,
-    val seatsAvailable: Int = 0
-)
-
 data class Flight(
     val id: String = "",
     val flightNumber: String = "",
@@ -1787,6 +1617,7 @@ data class Flight(
     val destination: String = "",
     val departureTime: String = "",
     val arrivalTime: String = "",
+    val dateKey: String = "",
     val status: String = "",
     val airline: String = "",
     val stops: Int = 0,
@@ -1796,8 +1627,7 @@ data class Flight(
     val price: Int = 0,
     val currency: String = "USD",
     val durationMinutes: Int = 0,
-    val aircraftId: String = "",
-    val pricingSummary: Map<String, CabinPricing> = emptyMap()
+    val aircraftId: String = ""
 )
 
 data class Booking(
@@ -1805,16 +1635,13 @@ data class Booking(
     val reference: String = "",
     val flightId: String = "",
     val passengerId: String = "",
+    val passengerName: String = "",
+    val cabinClass: String = "",
     val checkInStatus: Boolean = false,
     val ticketsCount: Int = 1,
     val totalPrice: Int = 0,
     val currency: String = "USD",
     val paymentStatus: String = ""
-)
-
-data class BookingConfirmation(
-    val id: String = "",
-    val reference: String = ""
 )
 
 data class Passenger(
@@ -1848,7 +1675,8 @@ data class BoardingPass(
     val qrCode: String = "",
     val isDownloaded: Boolean = false,
     val origin: String = "",
-    val destination: String = ""
+    val destination: String = "",
+    val cabinClass: String = ""
 )
 
 data class BaggageDeclaration(
@@ -1859,29 +1687,6 @@ data class BaggageDeclaration(
     val checkedBags: Int = 0,
     val specialItems: String = ""
 )
-
-fun Flight.economyPrice(): Int {
-    val summaryPrice = pricingSummary["ECONOMY"]?.price ?: pricingSummary["economy"]?.price ?: 0
-    return when {
-        summaryPrice > 0 -> summaryPrice
-        price > 0 -> price
-        else -> 120
-    }
-}
-
-fun Flight.cabinPrice(cabinClass: String): Int {
-    val summaryPrice = pricingSummary[cabinClass.uppercase()]?.price ?: pricingSummary[cabinClass.lowercase()]?.price ?: 0
-    if (summaryPrice > 0) return summaryPrice
-    
-    val basePrice = economyPrice()
-    val multiplier = when (cabinClass.uppercase()) {
-        "PREMIUM" -> 1.2f
-        "BUSINESS" -> 1.5f
-        "FIRST" -> 2.0f
-        else -> 1.0f
-    }
-    return (basePrice * multiplier).toInt()
-}
 
 
 ============================================================
@@ -2731,22 +2536,40 @@ private fun BoardingPassContent(
                     Row(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.weight(1f)) {
                             InfoLabel(label = "Date")
-                            Text("Mon, May 7", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                            val displayDate = try {
+                                if (boardingPass.boardingTime.isNotBlank()) {
+                                    val instant = java.time.Instant.parse(boardingPass.boardingTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
+                                    val localDate = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
+                                    localDate.format(java.time.format.DateTimeFormatter.ofPattern("EEE, MMM d"))
+                                } else "—"
+                            } catch (e: Exception) {
+                                "—"
+                            }
+                            Text(displayDate, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
                         }
                         Column(modifier = Modifier.weight(1f)) {
                             InfoLabel(label = "Class")
-                            Text("Economy", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                            Text(boardingPass.cabinClass.ifBlank { "Economy" }, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
                         }
                     }
 
                     Row(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.weight(1f)) {
                             InfoLabel(label = "Departure")
-                            Text(boardingPass.boardingTime.ifEmpty { "N/A" }, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                            val displayTime = try {
+                                if (boardingPass.boardingTime.isNotBlank()) {
+                                    val instant = java.time.Instant.parse(boardingPass.boardingTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
+                                    val localDate = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
+                                    localDate.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
+                                } else "—"
+                            } catch (e: Exception) {
+                                "—"
+                            }
+                            Text(displayTime, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
                         }
                         Column(modifier = Modifier.weight(1f)) {
                             InfoLabel(label = "Arrival")
-                            Text("18:45", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                            Text("TBD", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
                         }
                     }
 
@@ -3037,18 +2860,18 @@ object PdfGenerator {
             canvas.drawText("Date", 100f, currentY, labelPaint)
             canvas.drawText("Class", 450f, currentY, labelPaint)
             currentY += 40f
-            // Try formatting boarding time to get the date portion. Example: "2026-05-07T16:55:00Z" -> "Mon, May 7"
+            // Try formatting boarding time to get the date portion.
             val displayDate = try {
                 if (boardingPass.boardingTime.isNotBlank()) {
                     val instant = java.time.Instant.parse(boardingPass.boardingTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
                     val localDate = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
                     localDate.format(java.time.format.DateTimeFormatter.ofPattern("EEE, MMM d"))
-                } else "Mon, May 7"
+                } else "—"
             } catch (e: Exception) {
-                "Mon, May 7"
+                "—"
             }
             canvas.drawText(displayDate, 100f, currentY, valuePaint)
-            canvas.drawText("Economy", 450f, currentY, valuePaint)
+            canvas.drawText(boardingPass.cabinClass.ifBlank { "Economy" }, 450f, currentY, valuePaint)
 
             currentY += 80f
             // Row 3: Departure & Arrival
@@ -3060,9 +2883,9 @@ object PdfGenerator {
                     val instant = java.time.Instant.parse(boardingPass.boardingTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
                     val localDate = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
                     localDate.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
-                } else "16:55"
+                } else "—"
             } catch (e: Exception) {
-                "16:55"
+                "—"
             }
             canvas.drawText(displayTime, 100f, currentY, valuePaint)
             canvas.drawText("TBD", 450f, currentY, valuePaint)
@@ -3176,2365 +2999,13 @@ object QrCodeGenerator {
 }
 
 ============================================================
-FILE: app/src/main/java/com/airline/checkin/ui/booking/BookingFlowViewModel.kt
-============================================================
-package com.airline.checkin.ui.booking
-
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.airline.checkin.domain.model.BookingPassenger
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
-import javax.inject.Inject
-
-data class PassengerDraft(
-    val index: Int,
-    val passengerId: String = "",
-    val firstName: String = "",
-    val lastName: String = "",
-    val passengerName: String = "",
-    val seatId: String = "",
-    val seatNumber: String = "",
-    val cabinClass: String = ""
-)
-
-data class BookingDraft(
-    val flightId: String = "",
-    val passengersCount: Int = 1,
-    val cabinClass: String = "ECONOMY",
-    val pricePerPerson: Int = 0,
-    val passengerDrafts: List<PassengerDraft> = emptyList()
-)
-
-@HiltViewModel
-class BookingFlowViewModel @Inject constructor() : ViewModel() {
-    private val _draft = MutableStateFlow(BookingDraft())
-    val draft = _draft.asStateFlow()
-
-    fun startFlow(flightId: String, passengers: Int, cabin: String, pricePerPerson: Int) {
-        viewModelScope.launch {
-            val drafts = (0 until passengers).map { idx ->
-                PassengerDraft(index = idx, cabinClass = cabin)
-            }
-            _draft.value = BookingDraft(
-                flightId = flightId,
-                passengersCount = passengers,
-                cabinClass = cabin,
-                pricePerPerson = pricePerPerson,
-                passengerDrafts = drafts
-            )
-        }
-    }
-
-    fun addPassenger() {
-        val current = _draft.value
-        val newCount = current.passengersCount + 1
-        val newDraft = PassengerDraft(index = newCount - 1, cabinClass = current.cabinClass)
-        _draft.value = current.copy(
-            passengersCount = newCount,
-            passengerDrafts = current.passengerDrafts + newDraft
-        )
-    }
-
-    fun removePassenger(index: Int) {
-        val current = _draft.value
-        if (current.passengersCount <= 1) return
-        val updated = current.passengerDrafts.filterNot { it.index == index }
-            .mapIndexed { i, p -> p.copy(index = i) }
-        _draft.value = current.copy(
-            passengersCount = updated.size,
-            passengerDrafts = updated
-        )
-    }
-
-    fun setPassengerDocument(index: Int, document: com.airline.checkin.domain.model.PassengerDocument) {
-        val current = _draft.value
-        val updated = current.passengerDrafts.map {
-            if (it.index == index) {
-                it.copy(
-                    passengerId = document.id,
-                    passengerName = document.fullName.ifBlank {
-                        listOf(document.firstName, document.lastName).filter { part -> part.isNotBlank() }.joinToString(" ")
-                    },
-                    firstName = document.firstName.ifBlank {
-                        document.fullName.trim().split(Regex("\\s+"), limit = 2).getOrNull(0).orEmpty()
-                    },
-                    lastName = document.lastName.ifBlank {
-                        document.fullName.trim().split(Regex("\\s+"), limit = 2).getOrNull(1).orEmpty()
-                    }
-                )
-            } else {
-                it
-            }
-        }
-        _draft.value = current.copy(passengerDrafts = updated)
-    }
-
-    fun setPassengerCabin(index: Int, cabinClass: String) {
-        val current = _draft.value
-        val updated = current.passengerDrafts.map {
-            if (it.index == index) it.copy(cabinClass = cabinClass) else it
-        }
-        _draft.value = current.copy(passengerDrafts = updated)
-    }
-
-    fun setPassengerName(index: Int, firstName: String, lastName: String) {
-        val current = _draft.value
-        val updated = current.passengerDrafts.map {
-            if (it.index == index) {
-                val combined = listOf(firstName.trim(), lastName.trim()).filter { part -> part.isNotBlank() }.joinToString(" ")
-                it.copy(firstName = firstName, lastName = lastName, passengerName = combined)
-            } else {
-                it
-            }
-        }
-        _draft.value = current.copy(passengerDrafts = updated)
-    }
-
-    fun clearPassenger(index: Int) {
-        val current = _draft.value
-        val updated = current.passengerDrafts.map {
-            if (it.index == index) {
-                it.copy(
-                    passengerId = "",
-                    firstName = "",
-                    lastName = "",
-                    passengerName = "",
-                    seatId = "",
-                    seatNumber = ""
-                )
-            } else {
-                it
-            }
-        }
-        _draft.value = current.copy(passengerDrafts = updated)
-    }
-
-    fun setSeatForPassenger(index: Int, seatId: String, seatNumber: String) {
-        val current = _draft.value
-        val updated = current.passengerDrafts.map {
-            if (it.index == index) it.copy(seatId = seatId, seatNumber = seatNumber) else it
-        }
-        _draft.value = current.copy(passengerDrafts = updated)
-    }
-
-    fun toBookingPassengers(): List<BookingPassenger> {
-        return _draft.value.passengerDrafts.map { d ->
-            BookingPassenger(
-                id = "",
-                bookingId = "",
-                passengerId = d.passengerId,
-                firstName = d.firstName,
-                lastName = d.lastName,
-                passengerName = d.passengerName,
-                seatId = d.seatId,
-                seatNumber = d.seatNumber,
-                cabinClass = d.cabinClass
-            )
-        }
-    }
-}
-
-
-============================================================
-FILE: app/src/main/java/com/airline/checkin/ui/booking/BookingScreens.kt
-============================================================
-package com.airline.checkin.ui.booking
-
-import android.app.DatePickerDialog
-import android.content.Context
-
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AddCircleOutline
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Remove
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.SwapHoriz
-
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CircularProgressIndicator
-
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Slider
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.hapticfeedback.HapticFeedbackType
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.airline.checkin.R
-import com.airline.checkin.data.repository.AirportRepository
-import com.airline.checkin.data.repository.BookingRepository
-import com.airline.checkin.data.repository.DocumentRepository
-import com.airline.checkin.data.repository.FlightRepository
-import com.airline.checkin.domain.model.Airport
-import com.airline.checkin.domain.model.BookingConfirmation
-import com.airline.checkin.domain.model.Flight
-import com.airline.checkin.domain.model.PassengerDocument
-import com.airline.checkin.domain.model.cabinPrice
-import com.airline.checkin.domain.model.economyPrice
-import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
-import java.util.Calendar
-import javax.inject.Inject
-import kotlin.math.roundToInt
-
-private const val ECO_MAX_EMISSIONS = 200
-
-enum class CabinClass { ECONOMY, PREMIUM, BUSINESS }
-
-// ── Search flights ──────────────────────────────────────────────────────────────
-
-data class SearchFlightsUiState(
-    val origin: String = "",
-    val originLabel: String = "",
-    val destination: String = "",
-    val destinationLabel: String = "",
-    val dateKey: String = "",
-    val returnDateKey: String = "",
-    val passengers: Int = 1,
-    val cabinClass: CabinClass = CabinClass.ECONOMY,
-    val error: String? = null
-)
-
-@HiltViewModel
-class SearchFlightsViewModel @Inject constructor() : ViewModel() {
-    private val _uiState = MutableStateFlow(SearchFlightsUiState())
-    val uiState = _uiState.asStateFlow()
-
-    fun setOrigin(airport: Airport) {
-        _uiState.value = _uiState.value.copy(
-            origin = airport.code,
-            originLabel = airport.city.ifBlank { airport.name },
-            error = null
-        )
-    }
-
-    fun setDestination(airport: Airport) {
-        _uiState.value = _uiState.value.copy(
-            destination = airport.code,
-            destinationLabel = airport.city.ifBlank { airport.name },
-            error = null
-        )
-    }
-
-    fun updateOrigin(value: String) {
-        _uiState.value = _uiState.value.copy(origin = value.uppercase(), originLabel = "", error = null)
-    }
-
-    fun updateDestination(value: String) {
-        _uiState.value = _uiState.value.copy(destination = value.uppercase(), destinationLabel = "", error = null)
-    }
-
-    fun updateDateKey(value: String) {
-        _uiState.value = _uiState.value.copy(dateKey = value, error = null)
-    }
-
-    fun updateReturnDateKey(value: String) {
-        _uiState.value = _uiState.value.copy(returnDateKey = value, error = null)
-    }
-
-    fun updatePassengers(delta: Int) {
-        val current = _uiState.value.passengers + delta
-        if (current in 1..9) {
-            _uiState.value = _uiState.value.copy(passengers = current, error = null)
-        }
-    }
-
-    fun updateCabinClass(value: CabinClass) {
-        _uiState.value = _uiState.value.copy(cabinClass = value, error = null)
-    }
-
-    fun swapCities() {
-        val s = _uiState.value
-        _uiState.value = s.copy(
-            origin = s.destination,
-            originLabel = s.destinationLabel,
-            destination = s.origin,
-            destinationLabel = s.originLabel,
-            error = null
-        )
-    }
-
-    fun validate(): Boolean {
-        val s = _uiState.value
-        if (s.origin.isBlank() || s.destination.isBlank()) {
-            _uiState.value = s.copy(error = "Please select origin and destination")
-            return false
-        }
-        if (s.dateKey.isBlank()) {
-            _uiState.value = s.copy(error = "Please select a date")
-            return false
-        }
-        return true
-    }
-}
-
-@Composable
-fun FlightSearchScreen(
-    onSearch: (origin: String, destination: String, startDate: String, endDate: String, passengers: Int) -> Unit,
-    viewModel: SearchFlightsViewModel = hiltViewModel()
-) {
-    val uiState by viewModel.uiState.collectAsState()
-    val context = LocalContext.current
-    var pickerTarget by remember { mutableStateOf(PickerTarget.NONE) }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Text("Book a flight", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(modifier = Modifier.weight(1f)) {
-                AirportField(
-                    label = "From",
-                    value = airportLabel(uiState.origin, uiState.originLabel),
-                    placeholder = "Origin",
-                    onClick = { pickerTarget = PickerTarget.ORIGIN }
-                )
-            }
-            IconButton(onClick = { viewModel.swapCities() }) {
-                Icon(Icons.Default.SwapHoriz, contentDescription = "Swap")
-            }
-            Box(modifier = Modifier.weight(1f)) {
-                AirportField(
-                    label = "To",
-                    value = airportLabel(uiState.destination, uiState.destinationLabel),
-                    placeholder = "Destination",
-                    onClick = { pickerTarget = PickerTarget.DESTINATION }
-                )
-            }
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Box(modifier = Modifier.weight(1f)) {
-                DateField(
-                    label = "From Date",
-                    value = uiState.dateKey,
-                    onClick = { showDatePicker(context, uiState.dateKey, viewModel::updateDateKey) }
-                )
-            }
-            Box(modifier = Modifier.weight(1f)) {
-                DateField(
-                    label = "To Date",
-                    value = uiState.returnDateKey,
-                    onClick = { showDatePicker(context, uiState.returnDateKey, viewModel::updateReturnDateKey) }
-                )
-            }
-        }
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text("Travelers", style = MaterialTheme.typography.bodyMedium)
-            Spacer(Modifier.weight(1f))
-            IconButton(onClick = { viewModel.updatePassengers(-1) }) {
-                Icon(Icons.Default.Remove, contentDescription = "Decrease")
-            }
-            Text(uiState.passengers.toString())
-            IconButton(onClick = { viewModel.updatePassengers(1) }) {
-                Icon(Icons.Default.Add, contentDescription = "Increase")
-            }
-        }
-
-        CabinClassPicker(
-            value = uiState.cabinClass,
-            onChange = viewModel::updateCabinClass
-        )
-
-        uiState.error?.let {
-            Text(it, color = MaterialTheme.colorScheme.error)
-        }
-
-        Button(
-            onClick = {
-                if (viewModel.validate()) {
-                    val endDate = uiState.returnDateKey.trim().ifBlank { uiState.dateKey.trim() }
-                    onSearch(
-                        uiState.origin.trim(),
-                        uiState.destination.trim(),
-                        uiState.dateKey.trim(),
-                        endDate,
-                        uiState.passengers
-                    )
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Search flights")
-        }
-    }
-
-    AirportPickerDialog(
-        title = "Select origin",
-        show = pickerTarget == PickerTarget.ORIGIN,
-        onDismiss = { pickerTarget = PickerTarget.NONE },
-        onSelect = {
-            viewModel.setOrigin(it)
-            pickerTarget = PickerTarget.NONE
-        }
-    )
-
-    AirportPickerDialog(
-        title = "Select destination",
-        show = pickerTarget == PickerTarget.DESTINATION,
-        onDismiss = { pickerTarget = PickerTarget.NONE },
-        onSelect = {
-            viewModel.setDestination(it)
-            pickerTarget = PickerTarget.NONE
-        }
-    )
-}
-
-private enum class PickerTarget { NONE, ORIGIN, DESTINATION }
-
-@Composable
-private fun AirportField(
-    label: String,
-    value: String,
-    placeholder: String,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-    ) {
-        OutlinedTextField(
-            value = value,
-            onValueChange = {},
-            readOnly = true,
-            label = { Text(label) },
-            placeholder = { Text(placeholder) },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .clickable { onClick() }
-        )
-    }
-}
-
-private fun airportLabel(code: String, label: String): String {
-    if (code.isBlank()) return ""
-    return if (label.isBlank()) code else "$code · $label"
-}
-
-@Composable
-private fun DateField(
-    label: String = "Date",
-    value: String,
-    onClick: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onClick() }
-    ) {
-        OutlinedTextField(
-            value = value,
-            onValueChange = {},
-            readOnly = true,
-            label = { Text(label) },
-            placeholder = { Text("YYYY-MM-DD") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true,
-            trailingIcon = {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_date_range),
-                    contentDescription = "Pick date",
-                    modifier = Modifier.size(24.dp),
-                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.onSurfaceVariant)
-                )
-            }
-        )
-        Box(
-            modifier = Modifier
-                .matchParentSize()
-                .clickable { onClick() }
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun CabinClassPicker(
-    value: CabinClass,
-    onChange: (CabinClass) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
-        OutlinedTextField(
-            value = value.name.lowercase().replaceFirstChar { it.uppercase() },
-            onValueChange = {},
-            readOnly = true,
-            label = { Text("Class") },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-            modifier = Modifier
-                .menuAnchor()
-                .fillMaxWidth()
-        )
-        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            CabinClass.values().forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(option.name.lowercase().replaceFirstChar { it.uppercase() }) },
-                    onClick = {
-                        onChange(option)
-                        expanded = false
-                    }
-                )
-            }
-        }
-    }
-}
-
-data class AirportPickerUiState(
-    val isLoading: Boolean = false,
-    val airports: List<Airport> = emptyList(),
-    val filtered: List<Airport> = emptyList(),
-    val query: String = "",
-    val error: String? = null
-)
-
-@HiltViewModel
-class AirportPickerViewModel @Inject constructor(
-    private val repository: AirportRepository
-) : ViewModel() {
-    private val _uiState = MutableStateFlow(AirportPickerUiState())
-    val uiState = _uiState.asStateFlow()
-
-    fun loadAirports() {
-        if (_uiState.value.airports.isNotEmpty()) return
-        viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true)
-            try {
-                val airports = repository.getAirports()
-                    .sortedBy { it.code }
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    airports = airports,
-                    filtered = airports
-                )
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    error = e.message
-                )
-            }
-        }
-    }
-
-    fun updateQuery(value: String) {
-        val query = value.trim()
-        val filtered = if (query.isBlank()) {
-            _uiState.value.airports
-        } else {
-            _uiState.value.airports.filter { airport ->
-                airport.code.contains(query, ignoreCase = true) ||
-                    airport.name.contains(query, ignoreCase = true) ||
-                    airport.city.contains(query, ignoreCase = true) ||
-                    airport.country.contains(query, ignoreCase = true)
-            }
-        }
-        _uiState.value = _uiState.value.copy(query = value, filtered = filtered)
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
-@Composable
-private fun AirportPickerDialog(
-    title: String,
-    show: Boolean,
-    onDismiss: () -> Unit,
-    onSelect: (Airport) -> Unit,
-    viewModel: AirportPickerViewModel = hiltViewModel()
-) {
-    if (!show) return
-    val vmState by viewModel.uiState.collectAsState()
-
-    // Each dialog instance keeps its own local query so From/To searches are isolated
-    var localQuery by remember { mutableStateOf("") }
-    val localFiltered = remember(localQuery, vmState.airports) {
-        val q = localQuery.trim()
-        if (q.isBlank()) vmState.airports
-        else vmState.airports.filter { airport ->
-            airport.code.contains(q, ignoreCase = true) ||
-                airport.name.contains(q, ignoreCase = true) ||
-                airport.city.contains(q, ignoreCase = true) ||
-                airport.country.contains(q, ignoreCase = true)
-        }
-    }
-
-    // Wrap vmState values with local overrides
-    val uiState = vmState.copy(query = localQuery, filtered = localFiltered)
-
-    LaunchedEffect(show) {
-        if (show) viewModel.loadAirports()
-    }
-
-    // Full-screen overlay
-    Dialog(
-        onDismissRequest = onDismiss,
-        properties = DialogProperties(usePlatformDefaultWidth = false)
-    ) {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = MaterialTheme.colorScheme.background
-        ) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                // Header bar
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = onDismiss) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Close")
-                    }
-                    Text(
-                        text = title,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-
-                // Search bar — uses local query state for isolation
-                OutlinedTextField(
-                    value = localQuery,
-                    onValueChange = { localQuery = it },
-                    placeholder = { Text("Search by city, code, or country") },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    singleLine = true,
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) }
-                )
-
-                when {
-                    uiState.isLoading -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    }
-                    uiState.error != null -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(uiState.error ?: "Error", color = MaterialTheme.colorScheme.error)
-                        }
-                    }
-                    uiState.filtered.isEmpty() -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text("No airports found", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                    }
-                    else -> {
-                        // Group by country
-                        val grouped = uiState.filtered.groupBy { it.country.ifBlank { "Other" } }
-                            .toSortedMap()
-
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(bottom = 24.dp)
-                        ) {
-                            grouped.forEach { (country, airports) ->
-                                stickyHeader {
-                                    Text(
-                                        text = country,
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .background(MaterialTheme.colorScheme.surfaceVariant)
-                                            .padding(horizontal = 16.dp, vertical = 8.dp),
-                                        style = MaterialTheme.typography.labelLarge,
-                                        fontWeight = FontWeight.Bold,
-                                        color = MaterialTheme.colorScheme.primary
-                                    )
-                                }
-                                items(airports) { airport ->
-                                    Column(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .clickable { onSelect(airport) }
-                                            .padding(horizontal = 16.dp, vertical = 10.dp)
-                                    ) {
-                                        AirportRowHighlighted(
-                                            airport = airport,
-                                            query = uiState.query.trim()
-                                        )
-                                    }
-                                    HorizontalDivider(
-                                        modifier = Modifier.padding(horizontal = 16.dp),
-                                        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f)
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-/** Renders an airport row with the search query highlighted in bold within the displayed text. */
-@Composable
-private fun AirportRowHighlighted(airport: Airport, query: String) {
-    val codeAndCity = "${airport.code} · ${airport.city.ifBlank { airport.name }}"
-    Text(
-        text = highlightQuery(codeAndCity, query),
-        fontWeight = FontWeight.SemiBold
-    )
-    if (airport.name.isNotBlank()) {
-        Text(
-            text = highlightQuery(airport.name, query),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-    }
-}
-
-/** Returns an AnnotatedString with matching substrings of [query] bolded. */
-private fun highlightQuery(text: String, query: String): androidx.compose.ui.text.AnnotatedString {
-    if (query.isBlank()) return androidx.compose.ui.text.AnnotatedString(text)
-    val builder = androidx.compose.ui.text.AnnotatedString.Builder()
-    val lowerText = text.lowercase()
-    val lowerQuery = query.lowercase()
-    var start = 0
-    while (start < text.length) {
-        val idx = lowerText.indexOf(lowerQuery, start)
-        if (idx == -1) {
-            builder.append(text.substring(start))
-            break
-        }
-        builder.append(text.substring(start, idx))
-        builder.pushStyle(
-            androidx.compose.ui.text.SpanStyle(
-                fontWeight = FontWeight.ExtraBold,
-                color = androidx.compose.ui.graphics.Color.Unspecified
-            )
-        )
-        builder.append(text.substring(idx, idx + query.length))
-        builder.pop()
-        start = idx + query.length
-    }
-    return builder.toAnnotatedString()
-}
-
-
-enum class StopsFilter { ANY, NONSTOP, ONE_STOP, TWO_PLUS }
-enum class TimeWindow { ANY, MORNING, AFTERNOON, EVENING }
-enum class SortOption { PRICE_LOW, DURATION_SHORT, DEPARTURE_EARLY, EMISSIONS_LOW }
-
-data class FlightFilters(
-    val stops: StopsFilter = StopsFilter.ANY,
-    val checkedBagsOnly: Boolean = false,
-    val ecoOnly: Boolean = false,
-    val timeWindow: TimeWindow = TimeWindow.ANY,
-    val maxPrice: Int? = null
-)
-
-data class FlightResultsUiState(
-    val isLoading: Boolean = false,
-    val flights: List<Flight> = emptyList(),
-    val filteredFlights: List<Flight> = emptyList(),
-    val filters: FlightFilters = FlightFilters(),
-    val sortOption: SortOption = SortOption.PRICE_LOW,
-    val priceCeiling: Int = 0,
-    val error: String? = null
-)
-
-@HiltViewModel
-class FlightResultsViewModel @Inject constructor(
-    private val repository: FlightRepository
-) : ViewModel() {
-    private val _uiState = MutableStateFlow(FlightResultsUiState())
-    val uiState = _uiState.asStateFlow()
-
-    fun loadFlights(origin: String, destination: String, startDate: String, endDate: String) {
-        viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-            try {
-                val flights = repository.searchFlights(
-                    origin.uppercase(),
-                    destination.uppercase(),
-                    startDate.trim(),
-                    endDate.trim().ifBlank { startDate.trim() }
-                )
-                val ceiling = flights.maxOfOrNull { it.economyPrice() } ?: 0
-                val maxPrice = _uiState.value.filters.maxPrice ?: ceiling
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    flights = flights,
-                    priceCeiling = ceiling,
-                    filters = _uiState.value.filters.copy(maxPrice = maxPrice)
-                )
-                applyFiltersAndSort()
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
-            }
-        }
-    }
-
-    fun updateStopsFilter(value: StopsFilter) {
-        _uiState.value = _uiState.value.copy(filters = _uiState.value.filters.copy(stops = value))
-        applyFiltersAndSort()
-    }
-
-    fun toggleCheckedBags() {
-        val next = !_uiState.value.filters.checkedBagsOnly
-        _uiState.value = _uiState.value.copy(filters = _uiState.value.filters.copy(checkedBagsOnly = next))
-        applyFiltersAndSort()
-    }
-
-    fun toggleEco() {
-        val next = !_uiState.value.filters.ecoOnly
-        _uiState.value = _uiState.value.copy(filters = _uiState.value.filters.copy(ecoOnly = next))
-        applyFiltersAndSort()
-    }
-
-    fun updateTimeWindow(value: TimeWindow) {
-        _uiState.value = _uiState.value.copy(filters = _uiState.value.filters.copy(timeWindow = value))
-        applyFiltersAndSort()
-    }
-
-    fun updateMaxPrice(value: Int) {
-        _uiState.value = _uiState.value.copy(filters = _uiState.value.filters.copy(maxPrice = value))
-        applyFiltersAndSort()
-    }
-
-    fun updateSort(value: SortOption) {
-        _uiState.value = _uiState.value.copy(sortOption = value)
-        applyFiltersAndSort()
-    }
-
-    private fun applyFiltersAndSort() {
-        val state = _uiState.value
-        var filtered = state.flights
-
-        filtered = when (state.filters.stops) {
-            StopsFilter.NONSTOP -> filtered.filter { it.stops == 0 }
-            StopsFilter.ONE_STOP -> filtered.filter { it.stops == 1 }
-            StopsFilter.TWO_PLUS -> filtered.filter { it.stops >= 2 }
-            StopsFilter.ANY -> filtered
-        }
-
-        if (state.filters.checkedBagsOnly) {
-            filtered = filtered.filter { it.checkedBagsIncluded > 0 }
-        }
-
-        if (state.filters.ecoOnly) {
-            filtered = filtered.filter { it.emissionsKg in 1..ECO_MAX_EMISSIONS }
-        }
-
-        state.filters.maxPrice?.let { max ->
-            if (max > 0) {
-                filtered = filtered.filter { it.economyPrice() <= max }
-            }
-        }
-
-        if (state.filters.timeWindow != TimeWindow.ANY) {
-            filtered = filtered.filter { flight ->
-                val hour = parseHour(flight.departureTime)
-                hour != null && hour in timeWindowRange(state.filters.timeWindow)
-            }
-        }
-
-        val sorted = when (state.sortOption) {
-            SortOption.PRICE_LOW -> filtered.sortedBy { it.economyPrice() }
-            SortOption.DURATION_SHORT -> filtered.sortedBy { durationMinutes(it) }
-            SortOption.DEPARTURE_EARLY -> filtered.sortedBy { departureMinutes(it) }
-            SortOption.EMISSIONS_LOW -> filtered.sortedBy { it.emissionsKg }
-        }
-
-        _uiState.value = state.copy(filteredFlights = sorted)
-    }
-}
-
-@Composable
-fun FlightResultsScreen(
-    origin: String,
-    destination: String,
-    startDate: String,
-    endDate: String,
-    passengers: Int,
-    onBack: () -> Unit,
-    onSelectFlight: (Flight) -> Unit,
-    viewModel: FlightResultsViewModel = hiltViewModel()
-) {
-    val uiState by viewModel.uiState.collectAsState()
-
-    LaunchedEffect(origin, destination, startDate, endDate) {
-        viewModel.loadFlights(origin, destination, startDate, endDate)
-    }
-
-    Column(modifier = Modifier.fillMaxSize()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onBack) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-            }
-            Column {
-                Text("$origin to $destination", style = MaterialTheme.typography.titleMedium)
-                Text(
-                    "${startDate} to ${endDate.ifBlank { startDate }} · $passengers traveler(s)",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        }
-
-        FiltersBar(uiState = uiState, viewModel = viewModel)
-
-        Spacer(Modifier.height(8.dp))
-
-        when {
-            uiState.isLoading -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            }
-            uiState.error != null -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(uiState.error ?: "Unknown error")
-                }
-            }
-            uiState.filteredFlights.isEmpty() -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("No flights found. Try a different date range.")
-                }
-            }
-            else -> {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(uiState.filteredFlights) { flight ->
-                        FlightResultCard(flight = flight, onSelect = { onSelectFlight(flight) })
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun FiltersBar(
-    uiState: FlightResultsUiState,
-    viewModel: FlightResultsViewModel
-) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            FilterChip(
-                selected = uiState.filters.stops == StopsFilter.NONSTOP,
-                onClick = {
-                    viewModel.updateStopsFilter(
-                        if (uiState.filters.stops == StopsFilter.NONSTOP) StopsFilter.ANY else StopsFilter.NONSTOP
-                    )
-                },
-                label = { Text("Nonstop") }
-            )
-            FilterChip(
-                selected = uiState.filters.stops == StopsFilter.ONE_STOP,
-                onClick = {
-                    viewModel.updateStopsFilter(
-                        if (uiState.filters.stops == StopsFilter.ONE_STOP) StopsFilter.ANY else StopsFilter.ONE_STOP
-                    )
-                },
-                label = { Text("1 stop") }
-            )
-            FilterChip(
-                selected = uiState.filters.stops == StopsFilter.TWO_PLUS,
-                onClick = {
-                    viewModel.updateStopsFilter(
-                        if (uiState.filters.stops == StopsFilter.TWO_PLUS) StopsFilter.ANY else StopsFilter.TWO_PLUS
-                    )
-                },
-                label = { Text("2+ stops") }
-            )
-            FilterChip(
-                selected = uiState.filters.checkedBagsOnly,
-                onClick = viewModel::toggleCheckedBags,
-                label = { Text("Free bag") }
-            )
-            FilterChip(
-                selected = uiState.filters.ecoOnly,
-                onClick = viewModel::toggleEco,
-                label = { Text("Low emissions") }
-            )
-        }
-
-        if (uiState.priceCeiling > 0) {
-            val maxPrice = uiState.filters.maxPrice ?: uiState.priceCeiling
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            ) {
-                Text("Max economy price: $maxPrice")
-                Slider(
-                    value = maxPrice.toFloat(),
-                    onValueChange = { viewModel.updateMaxPrice(it.roundToInt()) },
-                    valueRange = 0f..uiState.priceCeiling.toFloat()
-                )
-            }
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            TimeWindowPicker(
-                value = uiState.filters.timeWindow,
-                onChange = viewModel::updateTimeWindow,
-                modifier = Modifier.weight(1f)
-            )
-            SortPicker(
-                value = uiState.sortOption,
-                onChange = viewModel::updateSort,
-                modifier = Modifier.weight(1f)
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun TimeWindowPicker(
-    value: TimeWindow,
-    onChange: (TimeWindow) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    var expanded by remember { mutableStateOf(false) }
-    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }, modifier = modifier) {
-        OutlinedTextField(
-            value = timeWindowLabel(value),
-            onValueChange = {},
-            readOnly = true,
-            label = { Text("Time") },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-            modifier = Modifier
-                .menuAnchor()
-                .fillMaxWidth()
-        )
-        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            TimeWindow.values().forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(timeWindowLabel(option)) },
-                    onClick = {
-                        onChange(option)
-                        expanded = false
-                    }
-                )
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun SortPicker(
-    value: SortOption,
-    onChange: (SortOption) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    var expanded by remember { mutableStateOf(false) }
-    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }, modifier = modifier) {
-        OutlinedTextField(
-            value = sortLabel(value),
-            onValueChange = {},
-            readOnly = true,
-            label = { Text("Sort") },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-            modifier = Modifier
-                .menuAnchor()
-                .fillMaxWidth()
-        )
-        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            SortOption.values().forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(sortLabel(option)) },
-                    onClick = {
-                        onChange(option)
-                        expanded = false
-                    }
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun FlightResultCard(
-    flight: Flight,
-    onSelect: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(flight.airline.ifBlank { "Airline" }, fontWeight = FontWeight.SemiBold)
-                Text("From ${flight.currency} ${flight.economyPrice()}", fontWeight = FontWeight.SemiBold)
-            }
-            Text("${flight.flightNumber}  ·  ${flight.origin} -> ${flight.destination}")
-            Text("${formatTime(flight.departureTime)} - ${formatTime(flight.arrivalTime)}")
-            Text("${stopsLabel(flight.stops)}  ·  ${durationLabel(flight)}")
-            Text(
-                text = if (flight.checkedBagsIncluded > 0) "Free checked bag" else "No free checked bag",
-                style = MaterialTheme.typography.bodySmall
-            )
-            Text("Emissions: ${flight.emissionsKg} kg", style = MaterialTheme.typography.bodySmall)
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                TextButton(onClick = onSelect) { Text("Details") }
-            }
-        }
-    }
-}
-
-data class FlightDetailUiState(
-    val isLoading: Boolean = false,
-    val flight: Flight? = null,
-    val originAirport: Airport? = null,
-    val destinationAirport: Airport? = null,
-    val error: String? = null
-)
-
-@HiltViewModel
-class FlightDetailViewModel @Inject constructor(
-    private val repository: FlightRepository,
-    private val airportRepository: AirportRepository
-) : ViewModel() {
-    private val _uiState = MutableStateFlow(FlightDetailUiState())
-    val uiState = _uiState.asStateFlow()
-
-    fun loadFlight(flightId: String) {
-        viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-            try {
-                val flight = repository.getFlight(flightId)
-                // Resolve airport details
-                var originAirport: Airport? = null
-                var destinationAirport: Airport? = null
-                try {
-                    val airports = airportRepository.getAirports()
-                    originAirport = airports.firstOrNull { it.code.equals(flight?.origin, ignoreCase = true) }
-                    destinationAirport = airports.firstOrNull { it.code.equals(flight?.destination, ignoreCase = true) }
-                } catch (_: Exception) { /* airport lookup is best-effort */ }
-                _uiState.value = _uiState.value.copy(
-                    isLoading = false,
-                    flight = flight,
-                    originAirport = originAirport,
-                    destinationAirport = destinationAirport
-                )
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
-            }
-        }
-    }
-}
-
-@Composable
-fun FlightDetailScreen(
-    flightId: String,
-    passengers: Int,
-    onBack: () -> Unit,
-    onSelectTicket: (CabinClass, Int) -> Unit,
-    viewModel: FlightDetailViewModel = hiltViewModel()
-) {
-    val uiState by viewModel.uiState.collectAsState()
-
-    LaunchedEffect(flightId) {
-        viewModel.loadFlight(flightId)
-    }
-
-    Column(modifier = Modifier.fillMaxSize()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onBack) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-            }
-            Text("Flight details", style = MaterialTheme.typography.titleMedium)
-        }
-
-        when {
-            uiState.isLoading -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            }
-            uiState.error != null -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(uiState.error ?: "Unknown error")
-                }
-            }
-            uiState.flight == null -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("Flight not found")
-                }
-            }
-            else -> {
-                val flight = uiState.flight!!
-                val originAirport = uiState.originAirport
-                val destinationAirport = uiState.destinationAirport
-
-                // Step E — prefer pricingSummary values over multiplier fallback
-                val economyFromSummary = flight.pricingSummary["ECONOMY"]?.price
-                    ?: flight.pricingSummary["economy"]?.price
-                val basePrice = economyFromSummary ?: flight.economyPrice()
-
-                val options = listOf(
-                    TicketOption(CabinClass.ECONOMY, "Economy", 1.0f, "Standard seat · 1 carry-on"),
-                    TicketOption(CabinClass.PREMIUM, "Premium", 1.2f, "Extra comfort · Priority boarding"),
-                    TicketOption(CabinClass.BUSINESS, "Business", 1.5f, "Extra space · Full recline")
-                )
-
-                // Step B — cabin selection state
-                var selectedCabin by remember { mutableStateOf(CabinClass.ECONOMY) }
-
-                // Step D — aircraft display from flight.aircraftId
-                val aircraftDisplay = when (flight.aircraftId.uppercase()) {
-                    "A320" -> "Airbus A320"
-                    "A220" -> "Airbus A220"
-                    "B737" -> "Boeing 737"
-                    "E190" -> "Embraer E190"
-                    "ATR72" -> "ATR 72"
-                    else -> flight.aircraftId.ifBlank { "Unknown aircraft" }
-                }
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    LazyColumn(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        // Step C — redesigned header with city names
-                        item {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Column {
-                                    Text(
-                                        text = originAirport?.city ?: flight.origin,
-                                        style = MaterialTheme.typography.titleLarge,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Text(
-                                        text = "${flight.origin}${originAirport?.country?.let { " · $it" } ?: ""}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                                Column(horizontalAlignment = Alignment.End) {
-                                    Text(
-                                        text = destinationAirport?.city ?: flight.destination,
-                                        style = MaterialTheme.typography.titleLarge,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                    Text(
-                                        text = "${flight.destination}${destinationAirport?.country?.let { " · $it" } ?: ""}",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
-                        item {
-                            Column(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                HorizontalDivider(
-                                    modifier = Modifier.fillMaxWidth(0.6f),
-                                    color = MaterialTheme.colorScheme.outlineVariant
-                                )
-                                Text(
-                                    text = "✈",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    modifier = Modifier.padding(vertical = 4.dp)
-                                )
-                                Text(
-                                    text = "${durationLabel(flight)} · ${stopsLabel(flight.stops)} · ${formatTime(flight.departureTime)} - ${formatTime(flight.arrivalTime)}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                        item {
-                            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                                Text(flight.airline, style = MaterialTheme.typography.labelMedium)
-                                Text(
-                                    text = if (flight.checkedBagsIncluded > 0) "${flight.checkedBagsIncluded} free checked bag(s)" else "No free checked bag",
-                                    style = MaterialTheme.typography.bodySmall
-                                )
-                                Text("Aircraft: $aircraftDisplay", style = MaterialTheme.typography.bodySmall)
-                            }
-                        }
-                        item {
-                            Spacer(Modifier.height(4.dp))
-                            Text("Ticket options", style = MaterialTheme.typography.titleMedium)
-                        }
-                        items(options.size) { idx ->
-                            val option = options[idx]
-                            // Step E — prefer pricingSummary per cabin
-                            val summaryPrice = flight.pricingSummary[option.cabinClass.name]?.price
-                                ?: flight.pricingSummary[option.cabinClass.name.lowercase()]?.price
-                            val pricePerPerson = summaryPrice?.takeIf { it > 0 }
-                                ?: (basePrice * option.multiplier).roundToInt()
-                            val totalPrice = pricePerPerson * passengers
-                            TicketOptionCard(
-                                option = option,
-                                pricePerPerson = pricePerPerson,
-                                totalPrice = totalPrice,
-                                passengers = passengers,
-                                currency = flight.currency,
-                                isSelected = selectedCabin == option.cabinClass,
-                                onClick = { selectedCabin = option.cabinClass }
-                            )
-                        }
-                    }
-
-                    Text(
-                        "Seat selection is optional and can be done per passenger on the next step.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    // Step B — Continue button respects selected cabin
-                    Button(
-                        onClick = {
-                            val option = options.first { it.cabinClass == selectedCabin }
-                            val summaryPrice = flight.pricingSummary[option.cabinClass.name]?.price
-                                ?: flight.pricingSummary[option.cabinClass.name.lowercase()]?.price
-                            val price = summaryPrice?.takeIf { it > 0 }
-                                ?: (basePrice * option.multiplier).roundToInt()
-                            onSelectTicket(selectedCabin, price)
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Continue")
-                    }
-                }
-            }
-        }
-    }
-}
-
-data class TicketOption(
-    val cabinClass: CabinClass,
-    val label: String,
-    val multiplier: Float,
-    val note: String
-)
-
-@Composable
-private fun TicketOptionCard(
-    option: TicketOption,
-    pricePerPerson: Int,
-    totalPrice: Int,
-    passengers: Int,
-    currency: String,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    val containerColor = if (isSelected)
-        MaterialTheme.colorScheme.primaryContainer
-    else
-        MaterialTheme.colorScheme.surfaceVariant
-    val borderModifier = if (isSelected)
-        Modifier.fillMaxWidth()
-    else
-        Modifier.fillMaxWidth()
-
-    Card(
-        modifier = borderModifier.clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = containerColor),
-        border = if (isSelected) androidx.compose.foundation.BorderStroke(
-            2.dp, MaterialTheme.colorScheme.primary
-        ) else null
-    ) {
-        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(option.label, fontWeight = FontWeight.SemiBold)
-                Text(
-                    text = "$currency $pricePerPerson",
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
-            Text(option.note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            if (passengers > 1) {
-                Text("$passengers travelers · Total: $currency $totalPrice", style = MaterialTheme.typography.bodySmall)
-            }
-        }
-    }
-}
-
-enum class PaymentMethod { CARD, EWALLET, BANK_TRANSFER }
-
-data class PaymentUiState(
-    val isLoading: Boolean = false,
-    val isPaying: Boolean = false,
-    val flight: Flight? = null,
-    val method: PaymentMethod? = null,
-    val demoFilled: Boolean = false,
-    val error: String? = null
-)
-
-@HiltViewModel
-class PaymentViewModel @Inject constructor(
-    private val flights: FlightRepository,
-    private val bookings: BookingRepository
-) : ViewModel() {
-    private val _uiState = MutableStateFlow(PaymentUiState())
-    val uiState = _uiState.asStateFlow()
-
-    fun loadFlight(flightId: String) {
-        viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
-            try {
-                val flight = flights.getFlight(flightId)
-                _uiState.value = _uiState.value.copy(isLoading = false, flight = flight)
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
-            }
-        }
-    }
-
-    fun selectMethod(method: PaymentMethod) {
-        _uiState.value = _uiState.value.copy(method = method)
-    }
-
-    fun fillDemoCard() {
-        _uiState.value = _uiState.value.copy(method = PaymentMethod.CARD, demoFilled = true)
-    }
-
-    fun pay(
-        flightId: String,
-        ticketsCount: Int,
-        totalPrice: Int,
-        currency: String,
-        cabinClass: CabinClass,
-        passengers: List<com.airline.checkin.domain.model.BookingPassenger>,
-        onSuccess: (BookingConfirmation) -> Unit
-    ) {
-        viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isPaying = true, error = null)
-            try {
-                val confirmation = bookings.createBooking(
-                    flightId = flightId,
-                    ticketsCount = ticketsCount,
-                    totalPrice = totalPrice,
-                    currency = currency,
-                    cabinClass = cabinClass.name,
-                    passengers = passengers
-                )
-                _uiState.value = _uiState.value.copy(isPaying = false)
-                onSuccess(confirmation)
-            } catch (e: Exception) {
-                _uiState.value = _uiState.value.copy(isPaying = false, error = e.message)
-            }
-        }
-    }
-}
-
-@Composable
-fun PaymentScreen(
-    flightId: String,
-    passengers: Int,
-    cabinClass: CabinClass,
-    pricePerPerson: Int,
-    onBack: () -> Unit,
-    onPaymentSuccess: (BookingConfirmation, Int, String) -> Unit,
-    viewModel: PaymentViewModel = hiltViewModel(),
-    flowViewModel: BookingFlowViewModel
-) {
-    val uiState by viewModel.uiState.collectAsState()
-    val haptic = LocalHapticFeedback.current
-    val totalPrice = pricePerPerson * passengers
-
-    // Payment form fields
-    var cardNumber by remember { mutableStateOf("") }
-    var cardExpiry by remember { mutableStateOf("") }
-    var cardCvv by remember { mutableStateOf("") }
-    var cardHolder by remember { mutableStateOf("") }
-    var walletId by remember { mutableStateOf("") }
-    var bankAccount by remember { mutableStateOf("") }
-    var bankRouting by remember { mutableStateOf("") }
-
-    LaunchedEffect(flightId) {
-        viewModel.loadFlight(flightId)
-    }
-
-    Column(modifier = Modifier.fillMaxSize()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onBack) {
-                Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-            }
-            Text("Payment", style = MaterialTheme.typography.titleMedium)
-        }
-
-        when {
-            uiState.isLoading -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            }
-            uiState.error != null -> {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text(uiState.error ?: "Unknown error")
-                }
-            }
-            else -> {
-                val flight = uiState.flight
-                val currency = flight?.currency ?: "USD"
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp)
-                        .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        text = "$currency $totalPrice",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                    if (flight != null) {
-                        Text(
-                            text = "${flight.origin} -> ${flight.destination} · ${formatTime(flight.departureTime)}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                    Text("$passengers traveler(s) · ${cabinClass.name.lowercase().replaceFirstChar { it.uppercase() }}")
-
-                    Text("Select payment method", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-
-                    PaymentMethodRow(
-                        label = "Debit card",
-                        selected = uiState.method == PaymentMethod.CARD,
-                        onSelect = { viewModel.selectMethod(PaymentMethod.CARD) }
-                    )
-                    PaymentMethodRow(
-                        label = "E-wallet",
-                        selected = uiState.method == PaymentMethod.EWALLET,
-                        onSelect = { viewModel.selectMethod(PaymentMethod.EWALLET) }
-                    )
-                    PaymentMethodRow(
-                        label = "Bank transfer",
-                        selected = uiState.method == PaymentMethod.BANK_TRANSFER,
-                        onSelect = { viewModel.selectMethod(PaymentMethod.BANK_TRANSFER) }
-                    )
-
-                    // ── Payment details form (shown when a method is selected) ──
-                    if (uiState.method != null) {
-                        Spacer(Modifier.height(4.dp))
-                        Text("Payment details", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-
-                        when (uiState.method) {
-                            PaymentMethod.CARD -> {
-                                OutlinedTextField(
-                                    value = cardNumber, onValueChange = { cardNumber = it },
-                                    label = { Text("Card number") },
-                                    placeholder = { Text("1234 5678 9012 3456") },
-                                    modifier = Modifier.fillMaxWidth(), singleLine = true
-                                )
-                                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                    OutlinedTextField(
-                                        value = cardExpiry, onValueChange = { cardExpiry = it },
-                                        label = { Text("MM/YY") },
-                                        modifier = Modifier.weight(1f), singleLine = true
-                                    )
-                                    OutlinedTextField(
-                                        value = cardCvv, onValueChange = { cardCvv = it },
-                                        label = { Text("CVV") },
-                                        modifier = Modifier.weight(1f), singleLine = true
-                                    )
-                                }
-                                OutlinedTextField(
-                                    value = cardHolder, onValueChange = { cardHolder = it },
-                                    label = { Text("Cardholder name") },
-                                    modifier = Modifier.fillMaxWidth(), singleLine = true
-                                )
-                                OutlinedButton(
-                                    onClick = {
-                                        cardNumber = "4111 1111 1111 1111"
-                                        cardExpiry = "12/28"
-                                        cardCvv = "123"
-                                        cardHolder = "DEMO USER"
-                                        viewModel.fillDemoCard()
-                                    },
-                                    modifier = Modifier.fillMaxWidth()
-                                ) { Text("Use demo card") }
-                            }
-                            PaymentMethod.EWALLET -> {
-                                OutlinedTextField(
-                                    value = walletId, onValueChange = { walletId = it },
-                                    label = { Text("Wallet ID / Phone") },
-                                    placeholder = { Text("+1 234 567 890") },
-                                    modifier = Modifier.fillMaxWidth(), singleLine = true
-                                )
-                                OutlinedButton(
-                                    onClick = {
-                                        walletId = "+1 555 000 1234"
-                                    },
-                                    modifier = Modifier.fillMaxWidth()
-                                ) { Text("Use demo wallet") }
-                            }
-                            PaymentMethod.BANK_TRANSFER -> {
-                                OutlinedTextField(
-                                    value = bankAccount, onValueChange = { bankAccount = it },
-                                    label = { Text("Account number") },
-                                    modifier = Modifier.fillMaxWidth(), singleLine = true
-                                )
-                                OutlinedTextField(
-                                    value = bankRouting, onValueChange = { bankRouting = it },
-                                    label = { Text("Routing number") },
-                                    modifier = Modifier.fillMaxWidth(), singleLine = true
-                                )
-                                OutlinedButton(
-                                    onClick = {
-                                        bankAccount = "0000-1234-5678"
-                                        bankRouting = "021000021"
-                                    },
-                                    modifier = Modifier.fillMaxWidth()
-                                ) { Text("Use demo account") }
-                            }
-                            else -> {}
-                        }
-                    }
-
-                    uiState.error?.let {
-                        Text(it, color = MaterialTheme.colorScheme.error)
-                    }
-
-                    Spacer(Modifier.height(8.dp))
-
-                    Button(
-                        onClick = {
-                            viewModel.pay(
-                                flightId = flightId,
-                                ticketsCount = passengers,
-                                totalPrice = totalPrice,
-                                currency = currency,
-                                cabinClass = cabinClass,
-                                passengers = flowViewModel.toBookingPassengers()
-                            ) { confirmation ->
-                                haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                                        onPaymentSuccess(confirmation, totalPrice, currency)
-                            }
-                        },
-                        enabled = uiState.method != null && !uiState.isPaying,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(if (uiState.isPaying) "Processing..." else "Pay now")
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun PaymentMethodRow(
-    label: String,
-    selected: Boolean,
-    onSelect: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onSelect() },
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(label)
-            Text(if (selected) "Selected" else "")
-        }
-    }
-}
-
-@Composable
-fun PaymentSuccessScreen(
-    reference: String,
-    amount: Int,
-    currency: String,
-    onSeeTicket: () -> Unit,
-    onBackHome: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text("Payment success", style = MaterialTheme.typography.headlineSmall)
-        Spacer(Modifier.height(12.dp))
-        Text("$currency $amount", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.SemiBold)
-        Spacer(Modifier.height(6.dp))
-        Text("Reference: $reference")
-        Spacer(Modifier.height(24.dp))
-        Button(onClick = onSeeTicket, modifier = Modifier.fillMaxWidth()) {
-            Text("See ticket")
-        }
-        Spacer(Modifier.height(12.dp))
-        OutlinedButton(onClick = onBackHome, modifier = Modifier.fillMaxWidth()) {
-            Text("Back to home")
-        }
-    }
-}
-
-private fun timeWindowLabel(value: TimeWindow): String = when (value) {
-    TimeWindow.ANY -> "Any"
-    TimeWindow.MORNING -> "Morning"
-    TimeWindow.AFTERNOON -> "Afternoon"
-    TimeWindow.EVENING -> "Evening"
-}
-
-private fun sortLabel(value: SortOption): String = when (value) {
-    SortOption.PRICE_LOW -> "Price"
-    SortOption.DURATION_SHORT -> "Duration"
-    SortOption.DEPARTURE_EARLY -> "Departure"
-    SortOption.EMISSIONS_LOW -> "Emissions"
-}
-
-private fun stopsLabel(stops: Int): String = when (stops) {
-    0 -> "Nonstop"
-    1 -> "1 stop"
-    else -> "$stops stops"
-}
-
-private fun durationLabel(flight: Flight): String {
-    val minutes = durationMinutes(flight)
-    if (minutes <= 0) return "Duration: n/a"
-    val hours = minutes / 60
-    val mins = minutes % 60
-    return if (hours > 0) "${hours}h ${mins}m" else "${mins}m"
-}
-
-private fun durationMinutes(flight: Flight): Int {
-    if (flight.durationMinutes > 0) return flight.durationMinutes
-    val start = parseInstant(flight.departureTime)
-    val end = parseInstant(flight.arrivalTime)
-    if (start != null && end != null) {
-        val diff = (end.toEpochMilli() - start.toEpochMilli()) / 60000
-        return diff.toInt().coerceAtLeast(0)
-    }
-    return 0
-}
-
-private fun departureMinutes(flight: Flight): Int {
-    val hour = parseHour(flight.departureTime) ?: return Int.MAX_VALUE
-    val minute = parseMinute(flight.departureTime) ?: 0
-    return hour * 60 + minute
-}
-
-private fun timeWindowRange(window: TimeWindow): IntRange = when (window) {
-    TimeWindow.MORNING -> 5..11
-    TimeWindow.AFTERNOON -> 12..16
-    TimeWindow.EVENING -> 17..22
-    TimeWindow.ANY -> 0..23
-}
-
-private fun formatTime(raw: String): String {
-    parseInstant(raw)?.let {
-        val formatter = DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.systemDefault())
-        return formatter.format(it)
-    }
-    return raw
-}
-
-private fun parseInstant(raw: String): Instant? {
-    return runCatching { Instant.parse(raw) }.getOrNull()
-}
-
-private fun parseHour(raw: String): Int? {
-    parseInstant(raw)?.let { return it.atZone(ZoneId.systemDefault()).hour }
-    return raw.substringBefore(":").toIntOrNull()
-}
-
-private fun parseMinute(raw: String): Int? {
-    parseInstant(raw)?.let { return it.atZone(ZoneId.systemDefault()).minute }
-    val parts = raw.split(":")
-    return if (parts.size > 1) parts[1].take(2).toIntOrNull() else null
-}
-
-private fun showDatePicker(
-    context: Context,
-    initialDateKey: String,
-    onPicked: (String) -> Unit
-) {
-    val initialDate = runCatching { LocalDate.parse(initialDateKey) }.getOrNull()
-    val calendar = Calendar.getInstance()
-    val year = initialDate?.year ?: calendar.get(Calendar.YEAR)
-    val month = initialDate?.monthValue?.minus(1) ?: calendar.get(Calendar.MONTH)
-    val day = initialDate?.dayOfMonth ?: calendar.get(Calendar.DAY_OF_MONTH)
-
-    DatePickerDialog(
-        context,
-        { _, pickedYear, pickedMonth, pickedDay ->
-            onPicked(formatDateKey(pickedYear, pickedMonth, pickedDay))
-        },
-        year,
-        month,
-        day
-    ).show()
-}
-
-private fun formatDateKey(year: Int, monthIndex: Int, day: Int): String {
-    val month = String.format("%02d", monthIndex + 1)
-    val dayStr = String.format("%02d", day)
-    return "$year-$month-$dayStr"
-}
-
-@HiltViewModel
-class PassengerListViewModel @Inject constructor(
-    private val documentRepository: DocumentRepository,
-    private val flightRepository: FlightRepository
-) : ViewModel() {
-    private val _docs = MutableStateFlow<List<PassengerDocument>>(emptyList())
-    val docs = _docs.asStateFlow()
-    private val _flight = MutableStateFlow<Flight?>(null)
-    val flight = _flight.asStateFlow()
-
-    fun loadDocs(userId: String) {
-        viewModelScope.launch {
-            try {
-                _docs.value = documentRepository.getPassengerDocuments(userId)
-            } catch (_: Exception) {
-                _docs.value = emptyList()
-            }
-        }
-    }
-
-    fun loadFlight(flightId: String) {
-        viewModelScope.launch {
-            try {
-                _flight.value = flightRepository.getFlight(flightId)
-            } catch (_: Exception) {
-                _flight.value = null
-            }
-        }
-    }
-
-    fun createDocument(userId: String, document: PassengerDocument) {
-        viewModelScope.launch {
-            if (userId.isBlank()) return@launch
-            try {
-                documentRepository.createPassengerDocument(document.copy(userId = userId))
-                _docs.value = documentRepository.getPassengerDocuments(userId)
-            } catch (_: Exception) {
-                // keep the flow usable even if Firestore is unavailable
-            }
-        }
-    }
-}
-
-private enum class PassengerSlotMode { PICK_SAVED, ADD_NEW, CONFIRMED }
-
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
-@Composable
-fun PassengerListScreen(
-    flightId: String,
-    passengers: Int,
-    cabin: CabinClass,
-    pricePerPerson: Int,
-    onBack: () -> Unit,
-    onPickSeat: (index: Int, cabinClass: String) -> Unit,
-    onDone: () -> Unit,
-    viewModel: BookingFlowViewModel = hiltViewModel(),
-    docsVm: PassengerListViewModel = hiltViewModel()
-) {
-    val draft by viewModel.draft.collectAsState()
-    val docs by docsVm.docs.collectAsState()
-    val flight by docsVm.flight.collectAsState()
-
-    // Per-slot mode tracking
-    val slotModes = remember { mutableStateListOf<PassengerSlotMode>() }
-
-    val totalPrice = draft.passengerDrafts.sumOf { passenger ->
-        if (passenger.cabinClass.isNotBlank()) (flight?.cabinPrice(passenger.cabinClass)?.takeIf { it > 0 } ?: pricePerPerson) else pricePerPerson
-    }
-
-    // Keep slotModes list in sync with the number of passengers
-    LaunchedEffect(draft.passengerDrafts.size, docs.size) {
-        val defaultMode = PassengerSlotMode.PICK_SAVED
-        while (slotModes.size < draft.passengerDrafts.size) {
-            slotModes.add(defaultMode)
-        }
-        while (slotModes.size > draft.passengerDrafts.size) {
-            slotModes.removeAt(slotModes.lastIndex)
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        viewModel.startFlow(flightId, passengers, cabin.name, pricePerPerson)
-        val currentUser = try { com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: "" } catch (_: Exception) { "" }
-        if (currentUser.isNotBlank()) docsVm.loadDocs(currentUser)
-        docsVm.loadFlight(flightId)
-    }
-
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = onBack) { Icon(Icons.Default.ArrowBack, contentDescription = "Back") }
-            Text("Travelers", style = MaterialTheme.typography.titleMedium)
-        }
-
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.weight(1f)) {
-            itemsIndexed(draft.passengerDrafts) { index, p ->
-                val mode = slotModes.getOrElse(index) { PassengerSlotMode.PICK_SAVED }
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth().padding(12.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp)
-                    ) {
-                        // Header row — always visible
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Text(if (index == 0) "You" else "Child $index", fontWeight = FontWeight.SemiBold)
-                            if (index >= 1) {
-                                TextButton(onClick = { viewModel.removePassenger(index) }) { Text("Remove child") }
-                            }
-                        }
-
-                        when (mode) {
-                            // ── PICK_SAVED ───────────────────────────────────────────
-                            PassengerSlotMode.PICK_SAVED -> {
-                                if (p.passengerName.isBlank()) {
-                                    var expanded by remember(index) { mutableStateOf(false) }
-                                    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
-                                        OutlinedTextField(
-                                            value = "",
-                                            onValueChange = {},
-                                            readOnly = true,
-                                            label = { Text("Choose a saved profile") },
-                                            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-                                            modifier = Modifier.menuAnchor().fillMaxWidth()
-                                        )
-                                        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                                            docs.forEach { doc ->
-                                                DropdownMenuItem(
-                                                    text = { Text(doc.fullName.ifBlank { "${doc.firstName} ${doc.lastName}" }) },
-                                                    onClick = {
-                                                        viewModel.setPassengerDocument(index, doc)
-                                                        expanded = false
-                                                    }
-                                                )
-                                            }
-                                        }
-                                    }
-                                    TextButton(onClick = {
-                                        if (index < slotModes.size) slotModes[index] = PassengerSlotMode.ADD_NEW
-                                    }) {
-                                        Text("Enter details manually")
-                                    }
-                                } else {
-                                    Text(p.passengerName, fontWeight = FontWeight.Bold)
-
-                                    if (p.seatNumber.isNotBlank()) {
-                                        Text("Seat: ${p.seatNumber}", style = MaterialTheme.typography.bodyMedium)
-                                        TextButton(onClick = { onPickSeat(index, p.cabinClass.ifBlank { cabin.name }) }) { Text("Change seat") }
-                                    } else {
-                                        TextButton(onClick = { onPickSeat(index, p.cabinClass.ifBlank { cabin.name }) }) { Text("Pick seat") }
-                                    }
-
-                                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                        Button(
-                                            onClick = { if (index < slotModes.size) slotModes[index] = PassengerSlotMode.CONFIRMED },
-                                            enabled = true
-                                        ) { Text("Confirm") }
-                                        TextButton(onClick = { viewModel.clearPassenger(index) }) { Text("Change traveler") }
-                                    }
-                                }
-                            }
-
-                            // ── ADD_NEW ──────────────────────────────────────────────
-                            PassengerSlotMode.ADD_NEW -> {
-                                var localFirstName by remember(index) { mutableStateOf(p.firstName) }
-                                var localLastName by remember(index) { mutableStateOf(p.lastName) }
-                                var localDocType by remember(index) { mutableStateOf("Passport") }
-                                var localDocNumber by remember(index) { mutableStateOf("") }
-                                var saveToAccount by remember(index) { mutableStateOf(true) }
-
-                                OutlinedTextField(
-                                    value = localFirstName,
-                                    onValueChange = { localFirstName = it },
-                                    label = { Text("First name") },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    singleLine = true
-                                )
-                                OutlinedTextField(
-                                    value = localLastName,
-                                    onValueChange = { localLastName = it },
-                                    label = { Text("Last name") },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    singleLine = true
-                                )
-
-                                DocumentTypeSelector(
-                                    value = localDocType,
-                                    onChange = { localDocType = it }
-                                )
-
-                                OutlinedTextField(
-                                    value = localDocNumber,
-                                    onValueChange = { localDocNumber = it },
-                                    label = { Text("Document number") },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    singleLine = true
-                                )
-
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Checkbox(
-                                        checked = saveToAccount,
-                                        onCheckedChange = { saveToAccount = it }
-                                    )
-                                    Spacer(Modifier.width(4.dp))
-                                    Text(
-                                        "Save profile for future trips",
-                                        style = MaterialTheme.typography.bodySmall
-                                    )
-                                }
-
-                                if (p.seatNumber.isNotBlank()) {
-                                    Text("Seat: ${p.seatNumber}", style = MaterialTheme.typography.bodyMedium)
-                                    TextButton(onClick = { 
-                                        viewModel.setPassengerName(index, localFirstName.trim(), localLastName.trim())
-                                        onPickSeat(index, p.cabinClass.ifBlank { cabin.name }) 
-                                    }) { Text("Change seat") }
-                                } else {
-                                    TextButton(onClick = { 
-                                        viewModel.setPassengerName(index, localFirstName.trim(), localLastName.trim())
-                                        onPickSeat(index, p.cabinClass.ifBlank { cabin.name }) 
-                                    }) { Text("Pick seat") }
-                                }
-
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    Button(
-                                        onClick = {
-                                            viewModel.setPassengerName(index, localFirstName.trim(), localLastName.trim())
-
-                                            if (saveToAccount) {
-                                                val userId = try {
-                                                    com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: ""
-                                                } catch (_: Exception) { "" }
-                                                if (userId.isNotBlank()) {
-                                                    docsVm.createDocument(
-                                                        userId,
-                                                        PassengerDocument(
-                                                            firstName = localFirstName.trim(),
-                                                            lastName = localLastName.trim(),
-                                                            fullName = listOf(localFirstName.trim(), localLastName.trim())
-                                                                .filter { it.isNotBlank() }.joinToString(" "),
-                                                            docType = localDocType,
-                                                            docNumber = localDocNumber.trim()
-                                                        )
-                                                    )
-                                                }
-                                            }
-
-                                            if (index < slotModes.size) {
-                                                slotModes[index] = PassengerSlotMode.CONFIRMED
-                                            }
-                                        },
-                                        enabled = localFirstName.isNotBlank() && localLastName.isNotBlank()
-                                    ) { Text("Confirm") }
-
-                                    if (docs.isNotEmpty()) {
-                                        TextButton(onClick = {
-                                            if (index < slotModes.size) slotModes[index] = PassengerSlotMode.PICK_SAVED
-                                        }) { Text("Choose saved") }
-                                    }
-                                }
-                            }
-
-                            // ── CONFIRMED ────────────────────────────────────────────
-                            PassengerSlotMode.CONFIRMED -> {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Column(modifier = Modifier.weight(1f)) {
-                                        Text(
-                                            p.passengerName.ifBlank {
-                                                listOf(p.firstName, p.lastName)
-                                                    .filter { it.isNotBlank() }
-                                                    .joinToString(" ")
-                                                    .ifBlank { if (index == 0) "You" else "Child $index" }
-                                            },
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                        Text(
-                                            "${p.cabinClass.ifBlank { cabin.name }.lowercase().replaceFirstChar { it.uppercase() }} · Seat: ${p.seatNumber.ifBlank { "No seat selected" }}",
-                                            style = MaterialTheme.typography.bodySmall,
-                                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                                        )
-                                    }
-                                    Icon(
-                                        Icons.Default.CheckCircle,
-                                        contentDescription = "Confirmed",
-                                        tint = androidx.compose.ui.graphics.Color(0xFF4CAF50),
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                }
-
-                                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    TextButton(onClick = {
-                                        if (index < slotModes.size) {
-                                            slotModes[index] = if (docs.isNotEmpty()) PassengerSlotMode.PICK_SAVED else PassengerSlotMode.ADD_NEW
-                                        }
-                                    }) { Text("Edit") }
-
-                                    TextButton(onClick = {
-                                        onPickSeat(index, p.cabinClass.ifBlank { cabin.name })
-                                    }) { Text("Change seat") }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            item {
-                TextButton(
-                    onClick = { viewModel.addPassenger() },
-                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
-                ) {
-                    Icon(Icons.Default.AddCircleOutline, contentDescription = "Add")
-                    Spacer(Modifier.width(8.dp))
-                    Text("Add a child")
-                }
-            }
-        }
-
-        Card(modifier = Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)) {
-            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("Price summary", fontWeight = FontWeight.SemiBold)
-                Text("${draft.passengerDrafts.size} traveler(s)")
-                val currency = flight?.currency ?: "USD"
-                draft.passengerDrafts.forEachIndexed { index, passenger ->
-                    val mode = slotModes.getOrNull(index) ?: PassengerSlotMode.ADD_NEW
-                    val passengerPrice = if (passenger.cabinClass.isNotBlank()) (flight?.cabinPrice(passenger.cabinClass)?.takeIf { it > 0 } ?: pricePerPerson) else pricePerPerson
-                    if (mode == PassengerSlotMode.CONFIRMED) {
-                        Text(
-                            text = "${passenger.passengerName.ifBlank { listOf(passenger.firstName, passenger.lastName).filter { it.isNotBlank() }.joinToString(" ").ifBlank { if (index == 0) "You" else "Child $index" } }} · ${passenger.cabinClass.ifBlank { cabin.name }} · $currency $passengerPrice",
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    } else {
-                        Text(
-                            text = "${if (index == 0) "You" else "Child $index"} · Pending · $currency $passengerPrice",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-                Text("Total: $currency $totalPrice", fontWeight = FontWeight.SemiBold)
-            }
-        }
-
-        Text(
-            text = "Note: If you do not choose a seat, one will be assigned by the system.",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 4.dp)
-        )
-        Button(onClick = onDone, modifier = Modifier.fillMaxWidth()) { Text("Continue to payment") }
-    }
-}
-
-@Composable
-private fun CabinClassSelector(
-    value: String,
-    onChange: (String) -> Unit
-) {
-    Row(
-        modifier = Modifier.horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        CabinClass.values().forEach { option ->
-            val label = option.name.lowercase().replaceFirstChar { it.uppercase() }
-            FilterChip(
-                selected = value.equals(option.name, ignoreCase = true),
-                onClick = { onChange(option.name) },
-                label = { Text(label) }
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun DocumentTypeSelector(
-    value: String,
-    onChange: (String) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-    val options = listOf("Passport", "National ID", "Driver License")
-
-    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
-        OutlinedTextField(
-            value = value,
-            onValueChange = {},
-            readOnly = true,
-            label = { Text("Document type") },
-            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
-            modifier = Modifier
-                .menuAnchor()
-                .fillMaxWidth()
-        )
-        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            options.forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(option) },
-                    onClick = {
-                        onChange(option)
-                        expanded = false
-                    }
-                )
-            }
-        }
-    }
-}
-
-
-============================================================
 FILE: app/src/main/java/com/airline/checkin/ui/checkin/CheckInScreens.kt
 ============================================================
 package com.airline.checkin.ui.checkin
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -5571,6 +3042,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 data class CheckInUiState(
     val isLoading: Boolean = false,
     val booking: Booking? = null,
+    val flight: com.airline.checkin.domain.model.Flight? = null,
     val error: String? = null,
     val currentStep: Int = 1,
     val passenger: Passenger = Passenger(),
@@ -5583,18 +3055,52 @@ data class CheckInUiState(
 
 @HiltViewModel
 class CheckInViewModel @Inject constructor(
-    private val bookingRepository: BookingRepository
+    private val bookingRepository: BookingRepository,
+    private val flightRepository: com.airline.checkin.data.repository.FlightRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CheckInUiState())
     val uiState = _uiState.asStateFlow()
+
+    fun loadBookingById(bookingId: String) {
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            try {
+                val booking = bookingRepository.getBookingById(bookingId)
+                if (booking == null) {
+                    _uiState.value = _uiState.value.copy(isLoading = false, error = "Booking not found")
+                    return@launch
+                }
+
+                val flight = flightRepository.getFlight(booking.flightId)
+                if (flight == null) {
+                    _uiState.value = _uiState.value.copy(isLoading = false, error = "Flight not found")
+                    return@launch
+                }
+
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    booking = booking,
+                    flight = flight,
+                    error = null
+                )
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
+            }
+        }
+    }
 
     fun lookupBooking(reference: String, lastName: String) {
         viewModelScope.launch {
             _uiState.value = CheckInUiState(isLoading = true)
             try {
                 val booking = bookingRepository.getBooking(reference, lastName)
-                _uiState.value = CheckInUiState(booking = booking)
+                if (booking != null) {
+                    val flight = flightRepository.getFlight(booking.flightId)
+                    _uiState.value = CheckInUiState(booking = booking, flight = flight)
+                } else {
+                    _uiState.value = CheckInUiState(error = "Booking not found")
+                }
             } catch (e: Exception) {
                 _uiState.value = CheckInUiState(error = e.message)
             }
@@ -5629,6 +3135,34 @@ class CheckInViewModel @Inject constructor(
         )
     }
 
+    fun submitCheckIn(onSuccess: () -> Unit) {
+        val bookingId = _uiState.value.booking?.id
+        if (bookingId.isNullOrBlank()) {
+            _uiState.value = _uiState.value.copy(error = "Booking not loaded")
+            return
+        }
+
+        val baggage = BaggageDeclaration(
+            id = bookingId,
+            bookingId = bookingId,
+            carryOnIncluded = 0,
+            cabinBags = _uiState.value.baggageList.sumOf { it.cabinBags },
+            checkedBags = _uiState.value.baggageList.sumOf { it.checkedBags },
+            specialItems = _uiState.value.baggageList.joinToString(", ") { it.specialItems }
+        )
+
+        viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null)
+            try {
+                bookingRepository.submitCheckIn(bookingId, baggage)
+                _uiState.value = _uiState.value.copy(isLoading = false)
+                onSuccess()
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
+            }
+        }
+    }
+
     fun nextStep() {
         _uiState.value = _uiState.value.copy(currentStep = _uiState.value.currentStep + 1)
     }
@@ -5640,114 +3174,343 @@ class CheckInViewModel @Inject constructor(
     }
 }
 
-// ---- Booking Lookup Screen ----
+data class BookingLookupUiState(
+    val reference: String = "",
+    val lastName: String = "",
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val result: Booking? = null
+)
 
-@Composable
-fun BookingLookupScreen(
-    onBookingFound: (bookingId: String) -> Unit,
-    viewModel: CheckInViewModel = hiltViewModel()
-) {
-    val uiState by viewModel.uiState.collectAsState()
-    var bookingRef by remember { mutableStateOf("") }
-    var lastName by remember { mutableStateOf("") }
+@HiltViewModel
+class BookingLookupViewModel @Inject constructor(
+    private val bookingRepository: BookingRepository
+) : ViewModel() {
+    private val _uiState = MutableStateFlow(BookingLookupUiState())
+    val uiState = _uiState.asStateFlow()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Top
-    ) {
-        Spacer(Modifier.height(40.dp))
+    fun updateReference(value: String) {
+        _uiState.value = _uiState.value.copy(reference = value, error = null, result = null)
+    }
 
-        Text(
-            text = "Find my bookings",
-            style = MaterialTheme.typography.headlineMedium
-        )
+    fun updateLastName(value: String) {
+        _uiState.value = _uiState.value.copy(lastName = value, error = null, result = null)
+    }
 
-        Spacer(Modifier.height(24.dp))
-
-        // Booking ID field
-        OutlinedTextField(
-            value = bookingRef,
-            onValueChange = { bookingRef = it },
-            label = { Text("Booking reference") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-
-        Spacer(Modifier.height(12.dp))
-
-        // Last name field
-        OutlinedTextField(
-            value = lastName,
-            onValueChange = { lastName = it },
-            label = { Text("Last name") },
-            modifier = Modifier.fillMaxWidth(),
-            singleLine = true
-        )
-
-        Spacer(Modifier.height(20.dp))
-
-        // Find button
-        Button(
-            onClick = { viewModel.lookupBooking(bookingRef, lastName) },
-            modifier = Modifier.fillMaxWidth(),
-            enabled = !uiState.isLoading
-        ) {
-            Text("Find my booking")
-        }
-
-        Spacer(Modifier.height(24.dp))
-
-        // State 1: Loading
-        if (uiState.isLoading) {
-            Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
+    fun lookup() {
+        viewModelScope.launch {
+            val reference = _uiState.value.reference.trim()
+            val lastName = _uiState.value.lastName.trim()
+            _uiState.value = _uiState.value.copy(isLoading = true, error = null, result = null)
+            try {
+                val booking = bookingRepository.getBooking(reference, lastName)
+                _uiState.value = if (booking != null) {
+                    _uiState.value.copy(isLoading = false, result = booking)
+                } else {
+                    _uiState.value.copy(isLoading = false, error = "Booking not found")
+                }
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
             }
         }
+    }
+}
 
-        // State 2: Error
-        uiState.error?.let { errorMsg ->
-            Text(
-                text = " $errorMsg",
-                color = MaterialTheme.colorScheme.error,
-                style = MaterialTheme.typography.bodyMedium
-            )
+// ---- My Bookings Screen ----
+
+@HiltViewModel
+class MyBookingsViewModel @Inject constructor(
+    private val bookingRepository: BookingRepository
+) : ViewModel() {
+    private val _bookings = MutableStateFlow<List<Booking>>(emptyList())
+    val bookings = _bookings.asStateFlow()
+
+    init {
+        val userId = com.google.firebase.auth.FirebaseAuth.getInstance().currentUser?.uid ?: ""
+        if (userId.isNotBlank()) {
+            viewModelScope.launch {
+                bookingRepository.observeUserBookings(userId).collect {
+                    _bookings.value = it
+                }
+            }
+            viewModelScope.launch {
+                try {
+                    bookingRepository.refreshUserBookings(userId)
+                } catch (e: Exception) {
+                    // Ignore
+                }
+            }
         }
+    }
+}
 
-        // State 3: Booking found → show flight card
-        uiState.booking?.let { booking ->
-            Spacer(Modifier.height(8.dp))
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                elevation = CardDefaults.cardElevation(4.dp)
+@Composable
+fun MyBookingsScreen(
+    onNavigateToCheckIn: (String) -> Unit,
+    onNavigateToBoardingPass: (String) -> Unit,
+    viewModel: MyBookingsViewModel = hiltViewModel()
+) {
+    val bookings by viewModel.bookings.collectAsState()
+
+    Column(
+        modifier = Modifier.fillMaxSize().padding(24.dp)
+    ) {
+        Spacer(Modifier.height(40.dp))
+        Text("Passes", style = MaterialTheme.typography.headlineMedium)
+        Spacer(Modifier.height(24.dp))
+
+        if (bookings.isEmpty()) {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("No passes found.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        } else {
+            androidx.compose.foundation.lazy.LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Booking ID: ${booking.reference}",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = "Flight: ${booking.flightId}",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = if (booking.checkInStatus) " Checked In" else " Not checked in",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                    Spacer(Modifier.height(12.dp))
-                    Button(
-                        onClick = { onBookingFound(booking.id) },
-                        modifier = Modifier.fillMaxWidth()
+                items(bookings.size) { index ->
+                    val booking = bookings[index]
+                    Card(
+                        modifier = Modifier.fillMaxWidth().clickable {
+                            if (booking.checkInStatus) {
+                                onNavigateToBoardingPass(booking.id)
+                            } else {
+                                onNavigateToCheckIn(booking.id)
+                            }
+                        },
+                        elevation = CardDefaults.cardElevation(4.dp)
                     ) {
-                        Text("Start checking")
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text("Reference: ${booking.reference}", style = MaterialTheme.typography.titleMedium)
+                            Text("Flight: ${booking.flightId}", style = MaterialTheme.typography.bodyMedium)
+                            if (booking.checkInStatus) {
+                                Text(
+                                    text = "Checked In · Pass Ready",
+                                    color = Color(0xFF4CAF50),
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            } else {
+                                Text(
+                                    text = "Check-In Open",
+                                    color = Color(0xFFFFC107),
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+fun BookingLookupScreen(
+    onBookingFound: (String) -> Unit,
+    viewModel: BookingLookupViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(uiState.result?.id) {
+        uiState.result?.id?.let(onBookingFound)
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text("Online Check-In", style = MaterialTheme.typography.headlineMedium)
+        Spacer(Modifier.height(24.dp))
+
+        OutlinedTextField(
+            value = uiState.reference,
+            onValueChange = viewModel::updateReference,
+            label = { Text("Booking Reference") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+        Spacer(Modifier.height(12.dp))
+
+        OutlinedTextField(
+            value = uiState.lastName,
+            onValueChange = viewModel::updateLastName,
+            label = { Text("Last Name") },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true
+        )
+
+        uiState.error?.let {
+            Spacer(Modifier.height(12.dp))
+            Text(it, color = MaterialTheme.colorScheme.error)
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        Button(
+            onClick = viewModel::lookup,
+            enabled = !uiState.isLoading && uiState.reference.isNotBlank() && uiState.lastName.isNotBlank(),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            if (uiState.isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(18.dp),
+                    strokeWidth = 2.dp,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+                Spacer(Modifier.width(12.dp))
+                Text("Finding...")
+            } else {
+                Text("Find Booking")
+            }
+        }
+    }
+}
+
+@Composable
+fun BookingFoundScreen(
+    bookingId: String,
+    onStartCheckIn: (String) -> Unit,
+    onViewBoardingPass: (String) -> Unit,
+    onBack: () -> Unit,
+    viewModel: CheckInViewModel = hiltViewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(bookingId) {
+        viewModel.loadBookingById(bookingId)
+    }
+
+    val booking = uiState.booking
+    val flight = uiState.flight
+    val departureInstant = remember(flight?.id, flight?.departureTime, flight?.dateKey) {
+        resolveDepartureInstant(flight)
+    }
+    val checkInOpen = departureInstant?.let {
+        val timeUntilDeparture = java.time.Duration.between(java.time.Instant.now(), it)
+        timeUntilDeparture > java.time.Duration.ZERO && timeUntilDeparture <= java.time.Duration.ofHours(24)
+    } ?: false
+
+    when {
+        uiState.isLoading -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        }
+
+        uiState.error != null -> {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = uiState.error ?: "Unable to load booking",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
+
+        booking == null || flight == null -> {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Booking not found",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
+
+        else -> {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(24.dp)
+            ) {
+                Text("Booking Found", style = MaterialTheme.typography.headlineMedium)
+                Spacer(Modifier.height(20.dp))
+
+                Card(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text("Flight: ${flight.flightNumber}", style = MaterialTheme.typography.titleMedium)
+                        Text("${flight.origin} → ${flight.destination}")
+                        Text("Departure: ${formatDepartureDisplay(flight)}")
+                        Text("Passenger: ${booking.passengerName.ifBlank { "Unknown" }}")
+                        Text("Cabin class: ${booking.cabinClass.ifBlank { "Unknown" }}")
+
+                        Spacer(Modifier.height(16.dp))
+
+                        if (booking.checkInStatus) {
+                            Text(
+                                text = "Already Checked In",
+                                color = Color(0xFF4CAF50),
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Spacer(Modifier.height(12.dp))
+                            Button(
+                                onClick = { onViewBoardingPass(booking.id) },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("View Boarding Pass")
+                            }
+                        } else if (checkInOpen) {
+                            Button(
+                                onClick = { onStartCheckIn(booking.id) },
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF4CAF50))
+                            ) {
+                                Text("Start Check-In")
+                            }
+                        } else {
+                            Text(
+                                text = "Check-in opens 24 hours before departure",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(16.dp))
+                OutlinedButton(onClick = onBack, modifier = Modifier.fillMaxWidth()) {
+                    Text("Back")
+                }
+            }
+        }
+    }
+}
+
+private fun resolveDepartureInstant(flight: com.airline.checkin.domain.model.Flight?): java.time.Instant? {
+    val departureTime = flight?.departureTime?.trim().orEmpty()
+    if (departureTime.isBlank()) return null
+
+    runCatching {
+        val normalized = if (!departureTime.endsWith("Z") && !departureTime.contains("+")) {
+            "${departureTime}Z"
+        } else departureTime
+        java.time.Instant.parse(normalized)
+    }.getOrNull()?.let { return it }
+
+    val dateKey = flight?.dateKey?.trim().orEmpty()
+    if (dateKey.isBlank()) return null
+
+    val date = runCatching { java.time.LocalDate.parse(dateKey) }.getOrNull() ?: return null
+    val time = runCatching { java.time.LocalTime.parse(departureTime) }
+        .getOrNull() ?: java.time.LocalTime.MIDNIGHT
+    return date.atTime(time).atZone(java.time.ZoneId.systemDefault()).toInstant()
+}
+
+private fun formatDepartureDisplay(flight: com.airline.checkin.domain.model.Flight?): String {
+    val departureInstant = resolveDepartureInstant(flight) ?: return flight?.departureTime?.ifBlank { "Unknown" } ?: "Unknown"
+    val localDateTime = java.time.LocalDateTime.ofInstant(departureInstant, java.time.ZoneId.systemDefault())
+    val datePart = localDateTime.format(java.time.format.DateTimeFormatter.ofPattern("EEE, MMM d"))
+    val timePart = localDateTime.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
+    return "$datePart • $timePart"
 }
 
 // ---- Check-In Flow Screen ----
@@ -5761,37 +3524,71 @@ fun CheckInScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    when (uiState.currentStep) {
-        1 -> PassportScanStep(onNext = { viewModel.nextStep() })
-        2 -> PassengerDetailsStep(
-            passenger = uiState.passenger,
-            onUpdate = { viewModel.updatePassenger(it) },
-            onNext = { viewModel.nextStep() },
-            onBack = { viewModel.prevStep() }
-        )
-        3 -> BaggageStep(
-            baggageList = uiState.baggageList,
-            onAdd = { viewModel.addBaggage(it) },
-            onRemove = { viewModel.removeBaggage(it) },
-            onNext = { viewModel.nextStep() },
-            onBack = { viewModel.prevStep() }
-        )
-        4 -> SpecialRequestsStep(
-            meal = uiState.mealPreference,
-            wheelchair = uiState.needsWheelchair,
-            infant = uiState.travelingWithInfant,
-            pet = uiState.travelingWithPet,
-            onUpdate = { meal, wc, inf, pet ->
-                viewModel.updateSpecialRequests(meal, wc, inf, pet)
-            },
-            onNext = { viewModel.nextStep() },
-            onBack = { viewModel.prevStep() }
-        )
-        5 -> ConfirmationStep(
-            uiState = uiState,
-            onConfirm = { onDone() },
-            onBack = { viewModel.prevStep() }
-        )
+    LaunchedEffect(bookingId) {
+        viewModel.loadBookingById(bookingId)
+    }
+
+    when {
+        uiState.isLoading -> {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    CircularProgressIndicator()
+                    Spacer(Modifier.height(12.dp))
+                    Text("Loading check-in...", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+
+        uiState.error != null -> {
+            Box(
+                modifier = Modifier.fillMaxSize().padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = uiState.error ?: "Something went wrong",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
+
+        else -> when (uiState.currentStep) {
+            1 -> PassportScanStep(onNext = { viewModel.nextStep() })
+            2 -> PassengerDetailsStep(
+                passenger = uiState.passenger,
+                flight = uiState.flight,
+                onUpdate = { viewModel.updatePassenger(it) },
+                onNext = { viewModel.nextStep() },
+                onBack = { viewModel.prevStep() }
+            )
+            3 -> BaggageStep(
+                baggageList = uiState.baggageList,
+                onAdd = { viewModel.addBaggage(it) },
+                onRemove = { viewModel.removeBaggage(it) },
+                onNext = { viewModel.nextStep() },
+                onBack = { viewModel.prevStep() }
+            )
+            4 -> SpecialRequestsStep(
+                meal = uiState.mealPreference,
+                wheelchair = uiState.needsWheelchair,
+                infant = uiState.travelingWithInfant,
+                pet = uiState.travelingWithPet,
+                onUpdate = { meal, wc, inf, pet ->
+                    viewModel.updateSpecialRequests(meal, wc, inf, pet)
+                },
+                onNext = { viewModel.nextStep() },
+                onBack = { viewModel.prevStep() }
+            )
+            5 -> ConfirmationStep(
+                uiState = uiState,
+                viewModel = viewModel,
+                onConfirm = { onDone() },
+                onBack = { viewModel.prevStep() }
+            )
+        }
     }
 }
 
@@ -5836,6 +3633,7 @@ fun PassportScanStep(onNext: () -> Unit) {
 @Composable
 fun PassengerDetailsStep(
     passenger: Passenger,
+    flight: com.airline.checkin.domain.model.Flight?,
     onUpdate: (Passenger) -> Unit,
     onNext: () -> Unit,
     onBack: () -> Unit
@@ -5865,8 +3663,35 @@ fun PassengerDetailsStep(
                 .background(Color(0xFF6200EE))
                 .padding(horizontal = 16.dp, vertical = 10.dp)
         ) {
+            val depTime = flight?.departureTime?.let {
+                try {
+                    val instant = java.time.Instant.parse(if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it)
+                    val localDate = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
+                    localDate.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
+                } catch (e: Exception) { "TBD" }
+            } ?: "TBD"
+            
+            val arrTime = flight?.arrivalTime?.let {
+                try {
+                    val instant = java.time.Instant.parse(if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it)
+                    val localDate = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
+                    localDate.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
+                } catch (e: Exception) { "TBD" }
+            } ?: "TBD"
+            
+            val dateDisplay = flight?.departureTime?.let {
+                try {
+                    val instant = java.time.Instant.parse(if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it)
+                    val localDate = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
+                    localDate.format(java.time.format.DateTimeFormatter.ofPattern("EEE, MMM d"))
+                } catch (e: Exception) { "TBD" }
+            } ?: "TBD"
+
+            val origin = flight?.origin ?: "Unknown"
+            val dest = flight?.destination ?: "Unknown"
+
             Text(
-                text = "Depart  •  Jakarta - Bali  •  Mon, May 7  •  16:55 - 20:30  ⏱",
+                text = "Depart  •  $origin - $dest  •  $dateDisplay  •  $depTime - $arrTime  ⏱",
                 color = Color.White,
                 style = MaterialTheme.typography.labelSmall,
                 maxLines = 1
@@ -6216,6 +4041,7 @@ fun SpecialRequestsStep(
 @Composable
 fun ConfirmationStep(
     uiState: CheckInUiState,
+    viewModel: CheckInViewModel,
     onConfirm: () -> Unit,
     onBack: () -> Unit
 ) {
@@ -6230,13 +4056,46 @@ fun ConfirmationStep(
 
         Card(modifier = Modifier.fillMaxWidth()) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("✈ CGK → DPS", style = MaterialTheme.typography.titleLarge)
+                val origin = uiState.flight?.origin ?: "Unknown"
+                val dest = uiState.flight?.destination ?: "Unknown"
+                Text("✈ $origin → $dest", style = MaterialTheme.typography.titleLarge)
                 Spacer(Modifier.height(8.dp))
                 Text("Passenger: ${uiState.passenger.fullName.ifBlank { "—" }}")
-                Text("Flight: IDN16821")
-                Text("Date: Mon, May 7")
-                Text("Departure: 16:55  Arrival: 20:30")
-                Text("Gate: 12  Seat: 5B")
+                
+                val flightNumber = uiState.flight?.flightNumber ?: uiState.booking?.flightId ?: "Unknown"
+                Text("Flight: $flightNumber")
+                
+                val dateDisplay = try {
+                    if (!uiState.flight?.departureTime.isNullOrBlank()) {
+                        val instant = java.time.Instant.parse(uiState.flight!!.departureTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
+                        val localDate = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
+                        localDate.format(java.time.format.DateTimeFormatter.ofPattern("EEE, MMM d"))
+                    } else "Unknown"
+                } catch (e: Exception) {
+                    "Unknown"
+                }
+                Text("Date: $dateDisplay")
+                
+                val depTime = try {
+                    if (!uiState.flight?.departureTime.isNullOrBlank()) {
+                        val instant = java.time.Instant.parse(uiState.flight!!.departureTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
+                        val localDate = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
+                        localDate.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
+                    } else "TBD"
+                } catch (e: Exception) {
+                    "TBD"
+                }
+                val arrTime = try {
+                    if (!uiState.flight?.arrivalTime.isNullOrBlank()) {
+                        val instant = java.time.Instant.parse(uiState.flight!!.arrivalTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
+                        val localDate = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
+                        localDate.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
+                    } else "TBD"
+                } catch (e: Exception) {
+                    "TBD"
+                }
+                Text("Departure: $depTime  Arrival: $arrTime")
+                Text("Gate: TBD  Seat: TBD")
                 Spacer(Modifier.height(16.dp))
                 // QR code placeholder
                 Box(
@@ -6280,14 +4139,15 @@ fun ConfirmationStep(
             text = { Text("Your booking has been saved successfully") },
             confirmButton = {
                 Button(onClick = {
-                    showDialog = false
-                    onConfirm()
+                    viewModel.submitCheckIn {
+                        showDialog = false
+                        onConfirm()
+                    }
                 }) { Text("See Ticket") }
             },
             dismissButton = {
                 TextButton(onClick = {
                     showDialog = false
-                    onConfirm()
                 }) { Text("Back to home") }
             }
         )
@@ -6322,8 +4182,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AirplaneTicket
 import androidx.compose.material.icons.filled.ConfirmationNumber
-import androidx.compose.material.icons.filled.FlightTakeoff
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -6350,9 +4208,7 @@ import java.time.LocalTime
 @Composable
 fun HomeScreen(
     userName: String?,
-    onFindBooking: () -> Unit,
-    onViewPasses: () -> Unit,
-    onBookFlight: () -> Unit,
+    onViewBookings: () -> Unit,
     onProfileClick: () -> Unit
 ) {
     val greeting = remember {
@@ -6438,21 +4294,9 @@ fun HomeScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             QuickActionButton(
-                icon = Icons.Default.FlightTakeoff,
-                label = "Book",
-                onClick = onBookFlight,
-                modifier = Modifier.weight(1f)
-            )
-            QuickActionButton(
-                icon = Icons.Default.Search,
-                label = "Check-in",
-                onClick = onFindBooking,
-                modifier = Modifier.weight(1f)
-            )
-            QuickActionButton(
-                icon = Icons.Default.ConfirmationNumber,
-                label = "Passes",
-                onClick = onViewPasses,
+                icon = Icons.Default.AirplaneTicket,
+                label = "My Bookings",
+                onClick = onViewBookings,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -6465,31 +4309,11 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             FeatureCard(
-                icon = Icons.Default.FlightTakeoff,
-                title = "Book a flight",
-                description = "Search routes, compare prices, and reserve your seat.",
-                primaryLabel = "Search flights",
-                onPrimary = onBookFlight,
-                accentColor = MaterialTheme.colorScheme.primary
-            )
-
-            FeatureCard(
-                icon = Icons.Default.Search,
-                title = "Check in",
-                description = "Find your booking and complete online check-in.",
-                primaryLabel = "Find booking",
-                onPrimary = onFindBooking,
-                accentColor = MaterialTheme.colorScheme.tertiary
-            )
-
-            FeatureCard(
                 icon = Icons.Default.AirplaneTicket,
-                title = "Boarding passes",
-                description = "Access your digital passes after check-in.",
-                primaryLabel = "View passes",
-                onPrimary = onViewPasses,
-                secondaryLabel = "Find booking",
-                onSecondary = onFindBooking,
+                title = "My Bookings",
+                description = "View your bookings, check in, and access boarding passes.",
+                primaryLabel = "View bookings",
+                onPrimary = onViewBookings,
                 accentColor = MaterialTheme.colorScheme.secondary
             )
         }
@@ -6498,36 +4322,6 @@ fun HomeScreen(
     }
 }
 
-@Composable
-fun BoardingPassHubScreen(
-    onFindBooking: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "Boarding passes",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.SemiBold
-        )
-        Spacer(Modifier.height(12.dp))
-        Text(
-            text = "No passes yet. Complete check-in to see your ticket.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(Modifier.height(24.dp))
-        Button(
-            onClick = onFindBooking,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Find booking")
-        }
-    }
-}
 
 @Composable
 private fun QuickActionButton(
@@ -7296,8 +5090,6 @@ import androidx.compose.foundation.rememberScrollState
 import com.airline.checkin.data.repository.FlightRepository
 import com.airline.checkin.data.repository.SeatRepository
 import com.airline.checkin.domain.model.Flight
-import com.airline.checkin.domain.model.cabinPrice
-import com.airline.checkin.domain.model.economyPrice
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -7460,7 +5252,7 @@ fun SeatMapScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
-                text = "Economy from ${flight.currency} ${flight.economyPrice()}",
+                text = "Economy from ${flight.currency} ${displayCabinPrice("ECONOMY")}",
                 style = MaterialTheme.typography.bodySmall,
                 fontWeight = FontWeight.SemiBold
             )
@@ -7548,7 +5340,7 @@ fun SeatMapScreen(
                     val seatCabinBand = cabinBandForRow(template, rowNum)
                     val cabinLabel = seatCabinBand?.label ?: "Economy"
                     val cabinKey = seatCabinBand?.classKey ?: "ECONOMY"
-                    val price = flight?.cabinPrice(cabinKey) ?: flight?.economyPrice() ?: 0
+                    val price = displayCabinPrice(cabinKey)
                     val currency = flight?.currency ?: "USD"
 
                     Card(
@@ -7584,6 +5376,14 @@ fun SeatMapScreen(
                 }
             }
         }
+    }
+}
+
+private fun displayCabinPrice(cabinKey: String): Int {
+    return when (cabinKey.uppercase()) {
+        "BUSINESS" -> 300
+        "PREMIUM" -> 168
+        else -> 120
     }
 }
 
@@ -7692,6 +5492,8 @@ import androidx.compose.material.icons.filled.Flight
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.FlightTakeoff
+import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -7700,9 +5502,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -7713,15 +5513,10 @@ import com.airline.checkin.ui.auth.AuthViewModel
 import com.airline.checkin.ui.auth.CompleteProfileScreen
 import com.airline.checkin.ui.auth.WelcomeScreen
 import com.airline.checkin.ui.boardingpass.BoardingPassScreen
-import com.airline.checkin.ui.booking.CabinClass
-import com.airline.checkin.ui.booking.FlightDetailScreen
-import com.airline.checkin.ui.booking.FlightResultsScreen
-import com.airline.checkin.ui.booking.FlightSearchScreen
-import com.airline.checkin.ui.booking.PaymentScreen
-import com.airline.checkin.ui.booking.PaymentSuccessScreen
+import com.airline.checkin.ui.checkin.BookingFoundScreen
 import com.airline.checkin.ui.checkin.BookingLookupScreen
 import com.airline.checkin.ui.checkin.CheckInScreen
-import com.airline.checkin.ui.home.BoardingPassHubScreen
+import com.airline.checkin.ui.checkin.MyBookingsScreen
 import com.airline.checkin.ui.home.HomeScreen
 import com.airline.checkin.ui.profile.ProfileScreen
 import com.airline.checkin.ui.profile.SavedTravelerFormScreen
@@ -7733,16 +5528,11 @@ object Routes {
     const val WELCOME        = "welcome"
     const val COMPLETE_PROFILE = "complete_profile"
     const val HOME           = "home"
-    const val BOOK_FLIGHT    = "book_flight"
+    const val CHECK_IN_LOOKUP = "check_in_lookup"
     const val PROFILE        = "profile"
     const val NEW_SAVED_TRAVELER = "profile/traveler/new"
-    const val FLIGHT_RESULTS = "flight_results/{origin}/{destination}/{startDate}/{endDate}/{passengers}"
-    const val FLIGHT_DETAIL  = "flight_detail/{flightId}/{passengers}"
-    const val PASSENGER_INFO = "passenger_info/{flightId}/{passengers}/{cabin}/{price}"
-    const val PAYMENT        = "payment/{flightId}/{passengers}/{cabin}/{price}"
-    const val PAYMENT_SUCCESS = "payment_success/{bookingId}/{reference}/{currency}/{amount}"
-    const val BOOKING_LOOKUP = "booking_lookup"
-    const val PASSES         = "passes"
+    const val MY_BOOKINGS    = "my_bookings"
+    const val BOOKING_FOUND  = "booking_found/{bookingId}"
     const val CHECK_IN       = "check_in/{bookingId}"
     const val SEAT_MAP       = "seat_map/{flightId}/{passengerIndex}/{cabinClass}"
     const val BOARDING_PASS  = "boarding_pass/{bookingId}"
@@ -7759,11 +5549,11 @@ fun AppNavGraph(
 
     val bottomNavItems = listOf(
         BottomNavItem(route = Routes.HOME, label = "Home", icon = Icons.Default.Home),
-        BottomNavItem(route = Routes.BOOKING_LOOKUP, label = "Bookings", icon = Icons.Default.Search),
-        BottomNavItem(route = Routes.PASSES, label = "Passes", icon = Icons.Default.Flight),
+        BottomNavItem(route = Routes.CHECK_IN_LOOKUP, label = "Check-In", icon = Icons.Default.FlightTakeoff),
+        BottomNavItem(route = Routes.MY_BOOKINGS, label = "Passes", icon = Icons.Default.ConfirmationNumber),
         BottomNavItem(route = Routes.PROFILE, label = "Profile", icon = Icons.Default.Person)
     )
-    val bottomBarRoutes = setOf(Routes.HOME, Routes.BOOKING_LOOKUP, Routes.PASSES, Routes.PROFILE)
+    val bottomBarRoutes = setOf(Routes.HOME, Routes.CHECK_IN_LOOKUP, Routes.MY_BOOKINGS, Routes.PROFILE)
     val showBottomBar = currentRoute in bottomBarRoutes
 
     Scaffold(
@@ -7833,9 +5623,7 @@ fun AppNavGraph(
                 val userName by authViewModel.displayName.collectAsState()
                 HomeScreen(
                     userName = userName,
-                    onFindBooking = { navController.navigate(Routes.BOOKING_LOOKUP) },
-                    onViewPasses = { navController.navigate(Routes.PASSES) },
-                    onBookFlight = { navController.navigate(Routes.BOOK_FLIGHT) },
+                    onViewBookings = { navController.navigate(Routes.MY_BOOKINGS) },
                     onProfileClick = { navController.navigate(Routes.PROFILE) }
                 )
             }
@@ -7863,142 +5651,29 @@ fun AppNavGraph(
                 )
             }
 
-            composable(Routes.BOOKING_LOOKUP) {
+            composable(Routes.MY_BOOKINGS) {
+                MyBookingsScreen(
+                    onNavigateToCheckIn = { bookingId -> navController.navigate("check_in/$bookingId") },
+                    onNavigateToBoardingPass = { bookingId -> navController.navigate("boarding_pass/$bookingId") }
+                )
+            }
+
+            composable(Routes.CHECK_IN_LOOKUP) {
                 BookingLookupScreen(
-                    onBookingFound = { bookingId ->
-                        navController.navigate("check_in/$bookingId")
-                    }
+                    onBookingFound = { bookingId -> navController.navigate("booking_found/$bookingId") }
                 )
             }
 
-            composable(Routes.BOOK_FLIGHT) {
-                FlightSearchScreen(
-                    onSearch = { origin, destination, startDate, endDate, passengers ->
-                        navController.navigate("flight_results/$origin/$destination/$startDate/$endDate/$passengers")
-                    }
-                )
-            }
-
-            composable(Routes.FLIGHT_RESULTS) { backStack ->
-                val origin = backStack.arguments?.getString("origin") ?: ""
-                val destination = backStack.arguments?.getString("destination") ?: ""
-                val startDate = backStack.arguments?.getString("startDate") ?: ""
-                val endDate = backStack.arguments?.getString("endDate") ?: ""
-                val passengers = backStack.arguments?.getString("passengers")?.toIntOrNull() ?: 1
-                FlightResultsScreen(
-                    origin = origin,
-                    destination = destination,
-                    startDate = startDate,
-                    endDate = endDate,
-                    passengers = passengers,
-                    onBack = { navController.popBackStack() },
-                    onSelectFlight = { flight ->
-                        navController.navigate("flight_detail/${flight.id}/$passengers")
-                    }
-                )
-            }
-
-            composable(Routes.FLIGHT_DETAIL) { backStack ->
-                val flightId = backStack.arguments?.getString("flightId") ?: ""
-                val passengers = backStack.arguments?.getString("passengers")?.toIntOrNull() ?: 1
-                FlightDetailScreen(
-                    flightId = flightId,
-                    passengers = passengers,
-                    onBack = { navController.popBackStack() },
-                    onSelectTicket = { cabinClass, pricePerPerson ->
-                        navController.navigate(
-                            "passenger_info/$flightId/$passengers/${cabinClass.name}/$pricePerPerson"
-                        )
-                    }
-                )
-            }
-
-            composable(Routes.PAYMENT) { backStack ->
-                val flightId = backStack.arguments?.getString("flightId") ?: ""
-                val passengers = backStack.arguments?.getString("passengers")?.toIntOrNull() ?: 1
-                val cabinRaw = backStack.arguments?.getString("cabin") ?: CabinClass.ECONOMY.name
-                val cabinClass = runCatching { CabinClass.valueOf(cabinRaw) }
-                    .getOrDefault(CabinClass.ECONOMY)
-                val pricePerPerson = backStack.arguments?.getString("price")?.toIntOrNull() ?: 0
-
-                val passengerEntry = remember(backStack) {
-                    navController.getBackStackEntry(Routes.PASSENGER_INFO)
-                }
-                val flowVm: com.airline.checkin.ui.booking.BookingFlowViewModel = hiltViewModel(passengerEntry)
-
-                PaymentScreen(
-                    flightId = flightId,
-                    passengers = passengers,
-                    cabinClass = cabinClass,
-                    pricePerPerson = pricePerPerson,
-                    onBack = { navController.popBackStack() },
-                    onPaymentSuccess = { confirmation, amount, currency ->
-                        navController.navigate(
-                            "payment_success/${confirmation.id}/${confirmation.reference}/$currency/$amount"
-                        )
-                    },
-                    flowViewModel = flowVm
-                )
-            }
-
-            composable(Routes.PASSENGER_INFO) { backStack ->
-                val flightId = backStack.arguments?.getString("flightId") ?: ""
-                val passengers = backStack.arguments?.getString("passengers")?.toIntOrNull() ?: 1
-                val cabin = backStack.arguments?.getString("cabin") ?: CabinClass.ECONOMY.name
-                val pricePerPerson = backStack.arguments?.getString("price")?.toIntOrNull() ?: 0
-                val flowVm: com.airline.checkin.ui.booking.BookingFlowViewModel = hiltViewModel()
-                
-                val savedStateHandle = backStack.savedStateHandle
-                val pickedIdx = savedStateHandle.get<Int>("pickedSeat_idx")
-                val pickedId = savedStateHandle.get<String>("pickedSeat_id")
-                val pickedNum = savedStateHandle.get<String>("pickedSeat_num")
-                
-                androidx.compose.runtime.LaunchedEffect(pickedIdx, pickedId, pickedNum) {
-                    if (pickedIdx != null && pickedId != null && pickedNum != null) {
-                        flowVm.setSeatForPassenger(pickedIdx, pickedId, pickedNum)
-                        savedStateHandle.remove<Int>("pickedSeat_idx")
-                        savedStateHandle.remove<String>("pickedSeat_id")
-                        savedStateHandle.remove<String>("pickedSeat_num")
-                    }
-                }
-
-                com.airline.checkin.ui.booking.PassengerListScreen(
-                    flightId = flightId,
-                    passengers = passengers,
-                    cabin = runCatching { CabinClass.valueOf(cabin) }.getOrDefault(CabinClass.ECONOMY),
-                    pricePerPerson = pricePerPerson,
-                    onBack = { navController.popBackStack() },
-                    onPickSeat = { idx, passCabin -> navController.navigate("seat_map/$flightId/$idx/$passCabin") },
-                    onDone = {
-                        navController.navigate("payment/$flightId/${flowVm.draft.value.passengersCount}/$cabin/$pricePerPerson")
-                    },
-                    viewModel = flowVm
-                )
-            }
-
-            composable(Routes.PAYMENT_SUCCESS) { backStack ->
+            composable(Routes.BOOKING_FOUND) { backStack ->
                 val bookingId = backStack.arguments?.getString("bookingId") ?: ""
-                val reference = backStack.arguments?.getString("reference") ?: ""
-                val currency = backStack.arguments?.getString("currency") ?: "USD"
-                val amount = backStack.arguments?.getString("amount")?.toIntOrNull() ?: 0
-                PaymentSuccessScreen(
-                    reference = reference,
-                    amount = amount,
-                    currency = currency,
-                    onSeeTicket = { navController.navigate("boarding_pass/$bookingId") },
-                    onBackHome = {
-                        navController.navigate(Routes.HOME) {
-                            popUpTo(Routes.HOME) { inclusive = true }
-                        }
-                    }
+                BookingFoundScreen(
+                    bookingId = bookingId,
+                    onStartCheckIn = { id -> navController.navigate("check_in/$id") },
+                    onViewBoardingPass = { id -> navController.navigate("boarding_pass/$id") },
+                    onBack = { navController.popBackStack() }
                 )
             }
 
-            composable(Routes.PASSES) {
-                BoardingPassHubScreen(
-                    onFindBooking = { navController.navigate(Routes.BOOKING_LOOKUP) }
-                )
-            }
 
             composable(Routes.CHECK_IN) { backStack ->
                 val bookingId = backStack.arguments?.getString("bookingId") ?: ""
@@ -8014,24 +5689,14 @@ fun AppNavGraph(
                 val passengerIndex = backStack.arguments?.getString("passengerIndex")?.toIntOrNull() ?: 0
                 val cabinClass = backStack.arguments?.getString("cabinClass") ?: "ECONOMY"
 
-                val passengerEntry = remember(backStack) {
-                    runCatching { navController.getBackStackEntry(Routes.PASSENGER_INFO) }.getOrNull()
-                }
-                val flowVm: com.airline.checkin.ui.booking.BookingFlowViewModel? =
-                    if (passengerEntry != null) hiltViewModel(passengerEntry) else null
-
                 com.airline.checkin.ui.seat.SeatMapScreen(
                     flightId = flightId,
                     passengerIndex = passengerIndex,
                     cabinClass = cabinClass,
                     onSeatPicked = { seatId, seatNumber ->
-                        if (flowVm != null) {
-                            flowVm.setSeatForPassenger(passengerIndex, seatId, seatNumber)
-                        } else {
-                            navController.previousBackStackEntry?.savedStateHandle?.set("pickedSeat_idx", passengerIndex)
-                            navController.previousBackStackEntry?.savedStateHandle?.set("pickedSeat_id", seatId)
-                            navController.previousBackStackEntry?.savedStateHandle?.set("pickedSeat_num", seatNumber)
-                        }
+                        navController.previousBackStackEntry?.savedStateHandle?.set("pickedSeat_idx", passengerIndex)
+                        navController.previousBackStackEntry?.savedStateHandle?.set("pickedSeat_id", seatId)
+                        navController.previousBackStackEntry?.savedStateHandle?.set("pickedSeat_num", seatNumber)
                         navController.popBackStack()
                     }
                 )
@@ -8347,6 +6012,57 @@ dependencies {
     implementation(libs.zxing.core)
 }
 
+
+============================================================
+FILE: app/google-services.json
+============================================================
+{
+  "project_info": {
+    "project_number": "364763326529",
+    "project_id": "airline-checkin-app-tdm",
+    "storage_bucket": "airline-checkin-app-tdm.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:364763326529:android:6cf65e9cf595ea1c257ec0",
+        "android_client_info": {
+          "package_name": "com.airline.checkin"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "364763326529-fe3u35kc3pu40qhho7pfnrvfjld1e8ej.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.airline.checkin",
+            "certificate_hash": "6d9b6717650818e0f59a2ee99953e0764a8e812a"
+          }
+        },
+        {
+          "client_id": "364763326529-imm34p1ec8497su9sqcqvplpfqvrnm0e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyABE4W3JiqOcd4VZCkKGPGcFHQJMYagcWI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "364763326529-imm34p1ec8497su9sqcqvplpfqvrnm0e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
 
 ============================================================
 FILE: flight-worker/data/aircrafts.json

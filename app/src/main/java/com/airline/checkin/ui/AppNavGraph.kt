@@ -16,9 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -29,14 +27,10 @@ import com.airline.checkin.ui.auth.AuthViewModel
 import com.airline.checkin.ui.auth.CompleteProfileScreen
 import com.airline.checkin.ui.auth.WelcomeScreen
 import com.airline.checkin.ui.boardingpass.BoardingPassScreen
-import com.airline.checkin.ui.booking.CabinClass
-import com.airline.checkin.ui.booking.FlightDetailScreen
-import com.airline.checkin.ui.booking.FlightResultsScreen
-import com.airline.checkin.ui.booking.FlightSearchScreen
-import com.airline.checkin.ui.booking.PaymentScreen
-import com.airline.checkin.ui.booking.PaymentSuccessScreen
-import com.airline.checkin.ui.checkin.MyBookingsScreen
+import com.airline.checkin.ui.checkin.BookingFoundScreen
+import com.airline.checkin.ui.checkin.BookingLookupScreen
 import com.airline.checkin.ui.checkin.CheckInScreen
+import com.airline.checkin.ui.checkin.MyBookingsScreen
 import com.airline.checkin.ui.home.HomeScreen
 import com.airline.checkin.ui.profile.ProfileScreen
 import com.airline.checkin.ui.profile.SavedTravelerFormScreen
@@ -48,15 +42,11 @@ object Routes {
     const val WELCOME        = "welcome"
     const val COMPLETE_PROFILE = "complete_profile"
     const val HOME           = "home"
-    const val BOOK_FLIGHT    = "book_flight"
+    const val CHECK_IN_LOOKUP = "check_in_lookup"
     const val PROFILE        = "profile"
     const val NEW_SAVED_TRAVELER = "profile/traveler/new"
-    const val FLIGHT_RESULTS = "flight_results/{origin}/{destination}/{startDate}/{endDate}/{passengers}"
-    const val FLIGHT_DETAIL  = "flight_detail/{flightId}/{passengers}"
-    const val PASSENGER_INFO = "passenger_info/{flightId}/{passengers}/{cabin}/{price}"
-    const val PAYMENT        = "payment/{flightId}/{passengers}/{cabin}/{price}"
-    const val PAYMENT_SUCCESS = "payment_success/{bookingId}/{reference}/{currency}/{amount}"
     const val MY_BOOKINGS    = "my_bookings"
+    const val BOOKING_FOUND  = "booking_found/{bookingId}"
     const val CHECK_IN       = "check_in/{bookingId}"
     const val SEAT_MAP       = "seat_map/{flightId}/{passengerIndex}/{cabinClass}"
     const val BOARDING_PASS  = "boarding_pass/{bookingId}"
@@ -73,11 +63,11 @@ fun AppNavGraph(
 
     val bottomNavItems = listOf(
         BottomNavItem(route = Routes.HOME, label = "Home", icon = Icons.Default.Home),
-        BottomNavItem(route = Routes.BOOK_FLIGHT, label = "Book", icon = Icons.Default.FlightTakeoff),
+        BottomNavItem(route = Routes.CHECK_IN_LOOKUP, label = "Check-In", icon = Icons.Default.FlightTakeoff),
         BottomNavItem(route = Routes.MY_BOOKINGS, label = "Passes", icon = Icons.Default.ConfirmationNumber),
         BottomNavItem(route = Routes.PROFILE, label = "Profile", icon = Icons.Default.Person)
     )
-    val bottomBarRoutes = setOf(Routes.HOME, Routes.BOOK_FLIGHT, Routes.MY_BOOKINGS, Routes.PROFILE)
+    val bottomBarRoutes = setOf(Routes.HOME, Routes.CHECK_IN_LOOKUP, Routes.MY_BOOKINGS, Routes.PROFILE)
     val showBottomBar = currentRoute in bottomBarRoutes
 
     Scaffold(
@@ -148,7 +138,6 @@ fun AppNavGraph(
                 HomeScreen(
                     userName = userName,
                     onViewBookings = { navController.navigate(Routes.MY_BOOKINGS) },
-                    onBookFlight = { navController.navigate(Routes.BOOK_FLIGHT) },
                     onProfileClick = { navController.navigate(Routes.PROFILE) }
                 )
             }
@@ -183,126 +172,19 @@ fun AppNavGraph(
                 )
             }
 
-            composable(Routes.BOOK_FLIGHT) {
-                FlightSearchScreen(
-                    onSearch = { origin, destination, startDate, endDate, passengers ->
-                        navController.navigate("flight_results/$origin/$destination/$startDate/$endDate/$passengers")
-                    }
+            composable(Routes.CHECK_IN_LOOKUP) {
+                BookingLookupScreen(
+                    onBookingFound = { bookingId -> navController.navigate("booking_found/$bookingId") }
                 )
             }
 
-            composable(Routes.FLIGHT_RESULTS) { backStack ->
-                val origin = backStack.arguments?.getString("origin") ?: ""
-                val destination = backStack.arguments?.getString("destination") ?: ""
-                val startDate = backStack.arguments?.getString("startDate") ?: ""
-                val endDate = backStack.arguments?.getString("endDate") ?: ""
-                val passengers = backStack.arguments?.getString("passengers")?.toIntOrNull() ?: 1
-                FlightResultsScreen(
-                    origin = origin,
-                    destination = destination,
-                    startDate = startDate,
-                    endDate = endDate,
-                    passengers = passengers,
-                    onBack = { navController.popBackStack() },
-                    onSelectFlight = { flight ->
-                        navController.navigate("flight_detail/${flight.id}/$passengers")
-                    }
-                )
-            }
-
-            composable(Routes.FLIGHT_DETAIL) { backStack ->
-                val flightId = backStack.arguments?.getString("flightId") ?: ""
-                val passengers = backStack.arguments?.getString("passengers")?.toIntOrNull() ?: 1
-                FlightDetailScreen(
-                    flightId = flightId,
-                    passengers = passengers,
-                    onBack = { navController.popBackStack() },
-                    onSelectTicket = { cabinClass, pricePerPerson ->
-                        navController.navigate(
-                            "passenger_info/$flightId/$passengers/${cabinClass.name}/$pricePerPerson"
-                        )
-                    }
-                )
-            }
-
-            composable(Routes.PAYMENT) { backStack ->
-                val flightId = backStack.arguments?.getString("flightId") ?: ""
-                val passengers = backStack.arguments?.getString("passengers")?.toIntOrNull() ?: 1
-                val cabinRaw = backStack.arguments?.getString("cabin") ?: CabinClass.ECONOMY.name
-                val cabinClass = runCatching { CabinClass.valueOf(cabinRaw) }
-                    .getOrDefault(CabinClass.ECONOMY)
-                val pricePerPerson = backStack.arguments?.getString("price")?.toIntOrNull() ?: 0
-
-                val passengerEntry = remember(backStack) {
-                    navController.getBackStackEntry(Routes.PASSENGER_INFO)
-                }
-                val flowVm: com.airline.checkin.ui.booking.BookingFlowViewModel = hiltViewModel(passengerEntry)
-
-                PaymentScreen(
-                    flightId = flightId,
-                    passengers = passengers,
-                    cabinClass = cabinClass,
-                    pricePerPerson = pricePerPerson,
-                    onBack = { navController.popBackStack() },
-                    onPaymentSuccess = { confirmation, amount, currency ->
-                        navController.navigate(
-                            "payment_success/${confirmation.id}/${confirmation.reference}/$currency/$amount"
-                        )
-                    },
-                    flowViewModel = flowVm
-                )
-            }
-
-            composable(Routes.PASSENGER_INFO) { backStack ->
-                val flightId = backStack.arguments?.getString("flightId") ?: ""
-                val passengers = backStack.arguments?.getString("passengers")?.toIntOrNull() ?: 1
-                val cabin = backStack.arguments?.getString("cabin") ?: CabinClass.ECONOMY.name
-                val pricePerPerson = backStack.arguments?.getString("price")?.toIntOrNull() ?: 0
-                val flowVm: com.airline.checkin.ui.booking.BookingFlowViewModel = hiltViewModel()
-                
-                val savedStateHandle = backStack.savedStateHandle
-                val pickedIdx = savedStateHandle.get<Int>("pickedSeat_idx")
-                val pickedId = savedStateHandle.get<String>("pickedSeat_id")
-                val pickedNum = savedStateHandle.get<String>("pickedSeat_num")
-                
-                androidx.compose.runtime.LaunchedEffect(pickedIdx, pickedId, pickedNum) {
-                    if (pickedIdx != null && pickedId != null && pickedNum != null) {
-                        flowVm.setSeatForPassenger(pickedIdx, pickedId, pickedNum)
-                        savedStateHandle.remove<Int>("pickedSeat_idx")
-                        savedStateHandle.remove<String>("pickedSeat_id")
-                        savedStateHandle.remove<String>("pickedSeat_num")
-                    }
-                }
-
-                com.airline.checkin.ui.booking.PassengerListScreen(
-                    flightId = flightId,
-                    passengers = passengers,
-                    cabin = runCatching { CabinClass.valueOf(cabin) }.getOrDefault(CabinClass.ECONOMY),
-                    pricePerPerson = pricePerPerson,
-                    onBack = { navController.popBackStack() },
-                    onPickSeat = { idx, passCabin -> navController.navigate("seat_map/$flightId/$idx/$passCabin") },
-                    onDone = {
-                        navController.navigate("payment/$flightId/${flowVm.draft.value.passengersCount}/$cabin/$pricePerPerson")
-                    },
-                    viewModel = flowVm
-                )
-            }
-
-            composable(Routes.PAYMENT_SUCCESS) { backStack ->
+            composable(Routes.BOOKING_FOUND) { backStack ->
                 val bookingId = backStack.arguments?.getString("bookingId") ?: ""
-                val reference = backStack.arguments?.getString("reference") ?: ""
-                val currency = backStack.arguments?.getString("currency") ?: "USD"
-                val amount = backStack.arguments?.getString("amount")?.toIntOrNull() ?: 0
-                PaymentSuccessScreen(
-                    reference = reference,
-                    amount = amount,
-                    currency = currency,
-                    onSeeTicket = { navController.navigate("boarding_pass/$bookingId") },
-                    onBackHome = {
-                        navController.navigate(Routes.HOME) {
-                            popUpTo(Routes.HOME) { inclusive = true }
-                        }
-                    }
+                BookingFoundScreen(
+                    bookingId = bookingId,
+                    onStartCheckIn = { id -> navController.navigate("check_in/$id") },
+                    onViewBoardingPass = { id -> navController.navigate("boarding_pass/$id") },
+                    onBack = { navController.popBackStack() }
                 )
             }
 
@@ -321,24 +203,14 @@ fun AppNavGraph(
                 val passengerIndex = backStack.arguments?.getString("passengerIndex")?.toIntOrNull() ?: 0
                 val cabinClass = backStack.arguments?.getString("cabinClass") ?: "ECONOMY"
 
-                val passengerEntry = remember(backStack) {
-                    runCatching { navController.getBackStackEntry(Routes.PASSENGER_INFO) }.getOrNull()
-                }
-                val flowVm: com.airline.checkin.ui.booking.BookingFlowViewModel? =
-                    if (passengerEntry != null) hiltViewModel(passengerEntry) else null
-
                 com.airline.checkin.ui.seat.SeatMapScreen(
                     flightId = flightId,
                     passengerIndex = passengerIndex,
                     cabinClass = cabinClass,
                     onSeatPicked = { seatId, seatNumber ->
-                        if (flowVm != null) {
-                            flowVm.setSeatForPassenger(passengerIndex, seatId, seatNumber)
-                        } else {
-                            navController.previousBackStackEntry?.savedStateHandle?.set("pickedSeat_idx", passengerIndex)
-                            navController.previousBackStackEntry?.savedStateHandle?.set("pickedSeat_id", seatId)
-                            navController.previousBackStackEntry?.savedStateHandle?.set("pickedSeat_num", seatNumber)
-                        }
+                        navController.previousBackStackEntry?.savedStateHandle?.set("pickedSeat_idx", passengerIndex)
+                        navController.previousBackStackEntry?.savedStateHandle?.set("pickedSeat_id", seatId)
+                        navController.previousBackStackEntry?.savedStateHandle?.set("pickedSeat_num", seatNumber)
                         navController.popBackStack()
                     }
                 )

@@ -90,38 +90,17 @@ class BookingRepository @Inject constructor(
     private val bookingDao: BookingDao,
     private val flightDao: FlightDao
 ) {
+    suspend fun getBookingById(bookingId: String): Booking? {
+        return firebase.getBookingById(bookingId)
+    }
+
     suspend fun getBooking(reference: String, lastName: String): Booking? {
         return firebase.getBookingByReference(reference, lastName)
     }
 
-    suspend fun createBooking(
-        flightId: String,
-        ticketsCount: Int,
-        totalPrice: Int,
-        currency: String,
-        cabinClass: String,
-        passengers: List<BookingPassenger>
-    ): BookingConfirmation {
-        val confirmation = firebase.createBookingWithPassengers(
-            flightId,
-            ticketsCount,
-            totalPrice,
-            currency,
-            cabinClass,
-            passengers
-        )
-        
-        bookingDao.upsert(
-            com.airline.checkin.data.local.entity.BookingEntity(
-                id = confirmation.id,
-                reference = confirmation.reference,
-                flightId = flightId,
-                passengerId = firebase.currentUserId() ?: "guest",
-                checkInStatus = false
-            )
-        )
-        
-        return confirmation
+    suspend fun submitCheckIn(bookingId: String, baggage: BaggageDeclaration) {
+        firebase.submitCheckIn(bookingId, baggage)
+        bookingDao.markCheckedIn(bookingId)
     }
 
     fun observeUserBookings(userId: String): kotlinx.coroutines.flow.Flow<List<Booking>> {
@@ -164,64 +143,6 @@ class FlightRepository @Inject constructor(
 ) {
     suspend fun getFlight(flightId: String): Flight? {
         return firebase.getFlight(flightId)
-    }
-
-    suspend fun searchFlights(origin: String, destination: String, startDate: String, endDate: String): List<Flight> {
-        return firebase.searchFlights(origin, destination, startDate, endDate)
-    }
-}
-
-@Singleton
-class AirportRepository @Inject constructor(
-    @dagger.hilt.android.qualifiers.ApplicationContext private val context: android.content.Context,
-    private val firebase: FirebaseService
-) {
-    private var cachedAirports: List<Airport>? = null
-
-    suspend fun getAirports(): List<Airport> {
-        cachedAirports?.let { return it }
-        
-        // try local asset loading
-        try {
-            val jsonStr = context.assets.open("airports.json").bufferedReader().use { it.readText() }
-            val arr = org.json.JSONArray(jsonStr)
-            val list = mutableListOf<Airport>()
-            for (i in 0 until arr.length()) {
-                val obj = arr.getJSONObject(i)
-                list.add(
-                    Airport(
-                        code = obj.getString("code"),
-                        name = obj.optString("name", ""),
-                        city = obj.optString("city", ""),
-                        country = obj.optString("country", "")
-                    )
-                )
-            }
-            cachedAirports = list
-            return list
-        } catch (assetEx: Exception) {
-            Log.e("AirportRepository", "Failed to load airports from local asset JSON", assetEx)
-        }
-
-        // Try fallback to Firestore
-        try {
-            val remoteList = firebase.getAirports()
-            cachedAirports = remoteList
-            return remoteList
-        } catch (firebaseEx: Exception) {
-            Log.e("AirportRepository", "Failed to load airports from remote Firestore", firebaseEx)
-        }
-
-        // Ultimate hardcoded fallback to keep the app working under all conditions
-        val defaultAirports = listOf(
-            Airport("CGK", "Soekarno-Hatta International Airport", "Jakarta", "Indonesia"),
-            Airport("DPS", "Ngurah Rai International Airport", "Bali / Denpasar", "Indonesia"),
-            Airport("SUB", "Juanda International Airport", "Surabaya", "Indonesia"),
-            Airport("KUL", "Kuala Lumpur International Airport", "Kuala Lumpur", "Malaysia"),
-            Airport("SIN", "Changi Airport", "Singapore", "Singapore")
-        )
-        cachedAirports = defaultAirports
-        return defaultAirports
     }
 }
 

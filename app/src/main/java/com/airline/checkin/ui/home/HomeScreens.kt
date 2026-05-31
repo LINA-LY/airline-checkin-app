@@ -23,8 +23,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AirplaneTicket
 import androidx.compose.material.icons.filled.ConfirmationNumber
-import androidx.compose.material.icons.filled.FlightTakeoff
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -52,7 +50,6 @@ import java.time.LocalTime
 fun HomeScreen(
     userName: String?,
     onViewBookings: () -> Unit,
-    onBookFlight: () -> Unit,
     onProfileClick: () -> Unit
 ) {
     val greeting = remember {
@@ -138,12 +135,6 @@ fun HomeScreen(
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             QuickActionButton(
-                icon = Icons.Default.FlightTakeoff,
-                label = "Book",
-                onClick = onBookFlight,
-                modifier = Modifier.weight(1f)
-            )
-            QuickActionButton(
                 icon = Icons.Default.AirplaneTicket,
                 label = "My Bookings",
                 onClick = onViewBookings,
@@ -158,15 +149,6 @@ fun HomeScreen(
             modifier = Modifier.padding(horizontal = 24.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            FeatureCard(
-                icon = Icons.Default.FlightTakeoff,
-                title = "Book a flight",
-                description = "Search routes, compare prices, and reserve your seat.",
-                primaryLabel = "Search flights",
-                onPrimary = onBookFlight,
-                accentColor = MaterialTheme.colorScheme.primary
-            )
-
             FeatureCard(
                 icon = Icons.Default.AirplaneTicket,
                 title = "My Bookings",
