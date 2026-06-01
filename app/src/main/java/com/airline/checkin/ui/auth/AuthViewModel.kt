@@ -18,7 +18,8 @@ data class AuthUiState(
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val repository: AuthRepository
+    private val repository: AuthRepository,
+    private val bookingRepository: com.airline.checkin.data.repository.BookingRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthUiState())
@@ -27,6 +28,9 @@ class AuthViewModel @Inject constructor(
     private val _displayName = MutableStateFlow<String?>(null)
     val displayName = _displayName.asStateFlow()
 
+    private val _recentBooking = MutableStateFlow<com.airline.checkin.domain.model.Booking?>(null)
+    val recentBooking = _recentBooking.asStateFlow()
+
     init {
         loadDisplayName()
     }
@@ -34,6 +38,11 @@ class AuthViewModel @Inject constructor(
     fun loadDisplayName() {
         viewModelScope.launch {
             _displayName.value = repository.getUserDisplayName()
+            val userId = repository.getCurrentUserId()
+            if (userId != null) {
+                val bookings = bookingRepository.getUserBookings(userId)
+                _recentBooking.value = bookings.maxByOrNull { it.id } ?: bookings.firstOrNull()
+            }
         }
     }
 
@@ -61,6 +70,10 @@ class AuthViewModel @Inject constructor(
             _uiState.value = AuthUiState(isLoading = true)
             try {
                 repository.registerWithProfile(email, password, firstName, lastName, phone)
+                val userId = repository.getCurrentUserId()
+                if (userId != null) {
+                    bookingRepository.createMockBooking(userId, firstName, lastName)
+                }
                 loadDisplayName()
                 _uiState.value = AuthUiState(isSuccess = true)
             } catch (e: Exception) {
@@ -91,6 +104,10 @@ class AuthViewModel @Inject constructor(
             _uiState.value = AuthUiState(isLoading = true)
             try {
                 repository.saveUserProfile(firstName, lastName, phone)
+                val userId = repository.getCurrentUserId()
+                if (userId != null) {
+                    bookingRepository.createMockBooking(userId, firstName, lastName)
+                }
                 loadDisplayName()
                 _uiState.value = AuthUiState(isSuccess = true)
             } catch (e: Exception) {

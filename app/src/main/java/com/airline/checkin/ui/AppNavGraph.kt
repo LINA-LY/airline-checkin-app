@@ -34,9 +34,7 @@ import com.airline.checkin.ui.checkin.CheckInScreen
 import com.airline.checkin.ui.checkin.MyBookingsScreen
 import com.airline.checkin.ui.home.HomeScreen
 import com.airline.checkin.ui.profile.ProfileScreen
-import com.airline.checkin.ui.profile.SavedTravelerFormScreen
 import com.airline.checkin.ui.onboarding.OnboardingScreen
-import com.airline.checkin.ui.seat.SeatMapScreen
 
 object Routes {
     const val ONBOARDING     = "onboarding"
@@ -45,11 +43,9 @@ object Routes {
     const val HOME           = "home"
     const val CHECK_IN_LOOKUP = "check_in_lookup"
     const val PROFILE        = "profile"
-    const val NEW_SAVED_TRAVELER = "profile/traveler/new"
     const val MY_BOOKINGS    = "my_bookings"
     const val BOOKING_FOUND  = "booking_found/{bookingId}"
     const val CHECK_IN       = "check_in/{bookingId}"
-    const val SEAT_MAP       = "seat_map/{flightId}/{passengerIndex}/{cabinClass}"
     const val BOARDING_PASS  = "boarding_pass/{bookingId}"
 }
 
@@ -136,8 +132,10 @@ fun AppNavGraph(
             composable(Routes.HOME) {
                 val authViewModel: AuthViewModel = hiltViewModel()
                 val userName by authViewModel.displayName.collectAsState()
+                val recentBooking by authViewModel.recentBooking.collectAsState()
                 HomeScreen(
                     userName = userName,
+                    recentBooking = recentBooking,
                     onViewBookings = { navController.navigate(Routes.MY_BOOKINGS) },
                     onProfileClick = { navController.navigate(Routes.PROFILE) }
                 )
@@ -149,19 +147,12 @@ fun AppNavGraph(
                 ProfileScreen(
                     userName = userName,
                     onEditProfile = { navController.navigate(Routes.COMPLETE_PROFILE) },
-                    onAddNewTraveler = { navController.navigate(Routes.NEW_SAVED_TRAVELER) },
                     onSignOut = {
                         authViewModel.signOut()
                         navController.navigate(Routes.WELCOME) {
                             popUpTo(Routes.HOME) { inclusive = true }
                         }
                     },
-                    onBack = { navController.popBackStack() }
-                )
-            }
-
-            composable(Routes.NEW_SAVED_TRAVELER) {
-                SavedTravelerFormScreen(
                     onBack = { navController.popBackStack() }
                 )
             }
@@ -194,26 +185,8 @@ fun AppNavGraph(
                 val bookingId = backStack.arguments?.getString("bookingId") ?: ""
                 CheckInScreen(
                     bookingId  = bookingId,
-                    onGoToSeat = { flightId -> navController.navigate("seat_map/$flightId/0/ECONOMY") },
+                    onGoToSeat = { /* Deprecated */ },
                     onDone     = { navController.navigate("boarding_pass/$bookingId") }
-                )
-            }
-
-            composable(Routes.SEAT_MAP) { backStack ->
-                val flightId = backStack.arguments?.getString("flightId") ?: ""
-                val passengerIndex = backStack.arguments?.getString("passengerIndex")?.toIntOrNull() ?: 0
-                val cabinClass = backStack.arguments?.getString("cabinClass") ?: "ECONOMY"
-
-                com.airline.checkin.ui.seat.SeatMapScreen(
-                    flightId = flightId,
-                    passengerIndex = passengerIndex,
-                    cabinClass = cabinClass,
-                    onSeatPicked = { seatId, seatNumber ->
-                        navController.previousBackStackEntry?.savedStateHandle?.set("pickedSeat_idx", passengerIndex)
-                        navController.previousBackStackEntry?.savedStateHandle?.set("pickedSeat_id", seatId)
-                        navController.previousBackStackEntry?.savedStateHandle?.set("pickedSeat_num", seatNumber)
-                        navController.popBackStack()
-                    }
                 )
             }
 

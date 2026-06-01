@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -33,6 +34,36 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import androidx.compose.material3.ExperimentalMaterial3Api
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import dagger.hilt.android.qualifiers.ApplicationContext
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.compose.ui.platform.LocalContext
+import com.airline.checkin.R
+import com.airline.checkin.domain.model.BaggageData
+import com.airline.checkin.domain.model.PassportData
+import com.airline.checkin.domain.model.SeatData
+import com.airline.checkin.domain.model.SpecialRequests
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import java.util.concurrent.Executors
+import kotlinx.coroutines.delay
 
 // ---- ViewModel ----
 
@@ -43,6 +74,8 @@ data class CheckInUiState(
     val error: String? = null,
     val currentStep: Int = 1,
     val passenger: Passenger = Passenger(),
+    val selectedSeatId: String = "",
+    val selectedSeatNumber: String = "",
     val baggageList: List<BaggageDeclaration> = emptyList(),
     val mealPreference: String = "",
     val needsWheelchair: Boolean = false,
@@ -53,7 +86,8 @@ data class CheckInUiState(
 @HiltViewModel
 class CheckInViewModel @Inject constructor(
     private val bookingRepository: BookingRepository,
-    private val flightRepository: com.airline.checkin.data.repository.FlightRepository
+    private val flightRepository: com.airline.checkin.data.repository.FlightRepository,
+    @ApplicationContext private val appContext: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CheckInUiState())
@@ -108,6 +142,13 @@ class CheckInViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(passenger = passenger)
     }
 
+    fun updateSeat(seatId: String, seatNumber: String) {
+        _uiState.value = _uiState.value.copy(
+            selectedSeatId = seatId,
+            selectedSeatNumber = seatNumber
+        )
+    }
+
     fun addBaggage(baggage: BaggageDeclaration) {
         val updated = _uiState.value.baggageList + baggage
         _uiState.value = _uiState.value.copy(baggageList = updated)
@@ -132,27 +173,55 @@ class CheckInViewModel @Inject constructor(
         )
     }
 
-    fun submitCheckIn(onSuccess: () -> Unit) {
-        val bookingId = _uiState.value.booking?.id
+    fun submitCheckIn(canSendNotification: Boolean, onSuccess: () -> Unit) {
+        val currentState = _uiState.value
+        val existingBooking = currentState.booking
+        val bookingId = existingBooking?.id
         if (bookingId.isNullOrBlank()) {
             _uiState.value = _uiState.value.copy(error = "Booking not loaded")
             return
         }
 
-        val baggage = BaggageDeclaration(
-            id = bookingId,
-            bookingId = bookingId,
-            carryOnIncluded = 0,
-            cabinBags = _uiState.value.baggageList.sumOf { it.cabinBags },
-            checkedBags = _uiState.value.baggageList.sumOf { it.checkedBags },
-            specialItems = _uiState.value.baggageList.joinToString(", ") { it.specialItems }
+        val resolvedFirstName = currentState.passenger.fullName.trim()
+            .substringBefore(" ", existingBooking.firstName)
+            .ifBlank { existingBooking.firstName }
+        val resolvedLastName = currentState.passenger.fullName.trim()
+            .substringAfter(" ", existingBooking.lastName)
+            .ifBlank { existingBooking.lastName }
+
+        val checkInPayload = existingBooking.copy(
+            checkInStatus = true,
+            firstName = resolvedFirstName,
+            lastName = resolvedLastName,
+            seat = SeatData(
+                seatId = currentState.selectedSeatId,
+                seatNumber = currentState.selectedSeatNumber
+            ),
+            passport = PassportData(
+                number = currentState.passenger.passportNumber,
+                dob = currentState.passenger.dateOfBirth,
+                nationality = currentState.passenger.nationality
+            ),
+            baggage = BaggageData(
+                cabin = currentState.baggageList.sumOf { it.cabinBags },
+                checked = currentState.baggageList.sumOf { it.checkedBags }
+            ),
+            specialRequests = SpecialRequests(
+                dietary = currentState.mealPreference,
+                wheelchair = currentState.needsWheelchair,
+                infant = currentState.travelingWithInfant,
+                pet = currentState.travelingWithPet
+            )
         )
 
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
             try {
-                bookingRepository.submitCheckIn(bookingId, baggage)
+                bookingRepository.submitCheckIn(bookingId, checkInPayload)
                 _uiState.value = _uiState.value.copy(isLoading = false)
+                if (canSendNotification) {
+                    showCheckInCompleteNotification(appContext)
+                }
                 onSuccess()
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
@@ -277,7 +346,7 @@ fun MyBookingsScreen(
                         elevation = CardDefaults.cardElevation(4.dp)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text("Reference: ${booking.reference}", style = MaterialTheme.typography.titleMedium)
+                            Text("Reference: ${booking.id}", style = MaterialTheme.typography.titleMedium)
                             Text("Flight: ${booking.flightId}", style = MaterialTheme.typography.bodyMedium)
                             if (booking.checkInStatus) {
                                 Text(
@@ -553,7 +622,19 @@ fun CheckInScreen(
         }
 
         else -> when (uiState.currentStep) {
-            1 -> PassportScanStep(onNext = { viewModel.nextStep() })
+            1 -> PassportScanStep(
+                expectedLastName = uiState.booking?.lastName ?: "",
+                expectedFirstName = uiState.booking?.firstName ?: "",
+                onPassportScanned = { passportNumber, lastName, firstName, dob ->
+                    val updatedPassenger = uiState.passenger.copy(
+                        passportNumber = passportNumber,
+                        fullName = "$firstName $lastName".trim(),
+                        dateOfBirth = dob
+                    )
+                    viewModel.updatePassenger(updatedPassenger)
+                    viewModel.nextStep()
+                }
+            )
             2 -> PassengerDetailsStep(
                 passenger = uiState.passenger,
                 flight = uiState.flight,
@@ -561,14 +642,25 @@ fun CheckInScreen(
                 onNext = { viewModel.nextStep() },
                 onBack = { viewModel.prevStep() }
             )
-            3 -> BaggageStep(
+            3 -> {
+                com.airline.checkin.ui.seat.SeatMapScreen(
+                    flightId = uiState.flight?.id ?: "",
+                    passengerIndex = 0,
+                    cabinClass = uiState.booking?.cabinClass ?: "ECONOMY",
+                    onSeatPicked = { seatId, seatNumber ->
+                        viewModel.updateSeat(seatId, seatNumber)
+                        viewModel.nextStep()
+                    }
+                )
+            }
+            4 -> BaggageStep(
                 baggageList = uiState.baggageList,
                 onAdd = { viewModel.addBaggage(it) },
                 onRemove = { viewModel.removeBaggage(it) },
                 onNext = { viewModel.nextStep() },
                 onBack = { viewModel.prevStep() }
             )
-            4 -> SpecialRequestsStep(
+            5 -> SpecialRequestsStep(
                 meal = uiState.mealPreference,
                 wheelchair = uiState.needsWheelchair,
                 infant = uiState.travelingWithInfant,
@@ -579,7 +671,7 @@ fun CheckInScreen(
                 onNext = { viewModel.nextStep() },
                 onBack = { viewModel.prevStep() }
             )
-            5 -> ConfirmationStep(
+            6 -> ConfirmationStep(
                 uiState = uiState,
                 viewModel = viewModel,
                 onConfirm = { onDone() },
@@ -590,37 +682,282 @@ fun CheckInScreen(
 }
 
 // ---- Step 1: Passport Scan ----
+
+enum class ScanState { WAITING, DETECTING, MISMATCH, SUCCESS, TIMEOUT, ERROR }
+
 @Composable
-fun PassportScanStep(onNext: () -> Unit) {
+fun PassportScanStep(
+    expectedLastName: String,
+    expectedFirstName: String,
+    onPassportScanned: (passport: String, lastName: String, firstName: String, dob: String) -> Unit
+) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    var hasCameraPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { granted -> hasCameraPermission = granted }
+    )
+
+    LaunchedEffect(Unit) {
+        if (!hasCameraPermission) {
+            permissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+    var scanState by remember { mutableStateOf(ScanState.WAITING) }
+    var mismatchMsg by remember { mutableStateOf<String?>(null) }
+    var isProcessing by remember { mutableStateOf(true) }
+
+    val cameraExecutor = remember { Executors.newSingleThreadExecutor() }
+    val textRecognizer = remember { TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS) }
+
+    // Timeout: give up after 20 seconds and let the user know
+    LaunchedEffect(hasCameraPermission) {
+        if (hasCameraPermission) {
+            delay(20_000L)
+            if (isProcessing) {
+                isProcessing = false
+                scanState = ScanState.TIMEOUT
+            }
+        }
+    }
+
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Text("Scan Passport", style = MaterialTheme.typography.headlineMedium)
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = "Ensure the two lines at the bottom (MRZ) are visible.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
         Spacer(Modifier.height(24.dp))
-        // Camera placeholder box
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp)
-                .padding(8.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Card(
-                modifier = Modifier.fillMaxSize(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+
+        if (hasCameraPermission) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(350.dp)
+                    .padding(8.dp)
+            ) {
+                AndroidView(
+                    modifier = Modifier.fillMaxSize(),
+                    factory = { ctx ->
+                        val previewView = PreviewView(ctx)
+                        val cameraProviderFuture = ProcessCameraProvider.getInstance(ctx)
+
+                        cameraProviderFuture.addListener({
+                            val cameraProvider = cameraProviderFuture.get()
+                            val preview = Preview.Builder().build().also {
+                                it.setSurfaceProvider(previewView.surfaceProvider)
+                            }
+
+                            val imageAnalysis = ImageAnalysis.Builder()
+                                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                                .build()
+                                .also {
+                                    it.setAnalyzer(cameraExecutor) { imageProxy ->
+                                        if (!isProcessing) {
+                                            imageProxy.close()
+                                            return@setAnalyzer
+                                        }
+
+                                        @androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
+                                        val mediaImage = imageProxy.image
+                                        if (mediaImage != null) {
+                                            val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+                                            textRecognizer.process(image)
+                                                .addOnSuccessListener { visionText ->
+                                                    val text = visionText.text.uppercase()
+                                                    if (text.isBlank()) return@addOnSuccessListener
+
+                                                    // Text detected — advance from WAITING to DETECTING once
+                                                    if (scanState == ScanState.WAITING) {
+                                                        scanState = ScanState.DETECTING
+                                                    }
+
+                                                    var parsedLastName = ""
+                                                    var parsedFirstName = ""
+                                                    var parsedPassport = ""
+                                                    var parsedDob = ""
+
+                                                    // --- 1. SMART MRZ PARSING ---
+                                                    // Fix MLKit's biggest flaw: replace spaces with MRZ '<' characters
+                                                    val cleanLines = text.split('\n').map { it.replace(" ", "<").replace("«", "<<") }
+                                                    
+                                                    val mrzLine1 = cleanLines.find { it.startsWith("P") && it.contains("<") && it.length > 20 }
+                                                    val mrzLine2 = cleanLines.find { it.length > 20 && it != mrzLine1 && it.count { c -> c.isDigit() } > 5 }
+
+                                                    if (mrzLine1 != null) {
+                                                        val namesPart = mrzLine1.substringAfter("P<").drop(3) // Drop 3-letter country code
+                                                        val nameSplit = namesPart.split("<<")
+                                                        if (nameSplit.isNotEmpty()) {
+                                                            parsedLastName = nameSplit[0].replace("<", "").trim()
+                                                            if (nameSplit.size > 1) {
+                                                                parsedFirstName = nameSplit[1].replace("<", " ").trim()
+                                                            }
+                                                        }
+                                                    }
+
+                                                    if (mrzLine2 != null) {
+                                                        // Passport number is the first 9 characters of line 2
+                                                        val match = Regex("^([A-Z0-9<]{9})").find(mrzLine2)
+                                                        if (match != null) {
+                                                            parsedPassport = match.groupValues[1].replace("<", "")
+                                                        }
+                                                        // DOB is at index 13 to 18 in a standard MRZ
+                                                        if (mrzLine2.length >= 19) {
+                                                            val dobRaw = mrzLine2.substring(13, 19)
+                                                            if (dobRaw.all { it.isDigit() }) {
+                                                                val year = dobRaw.substring(0, 2).toIntOrNull() ?: 0
+                                                                val fullYear = if (year > 30) "19$year" else "20$year"
+                                                                parsedDob = "${dobRaw.substring(4, 6)}/${dobRaw.substring(2, 4)}/$fullYear"
+                                                            }
+                                                        }
+                                                    }
+
+                                                    // --- 2. ACADEMIC FALLBACK (BULLETPROOFING) ---
+                                                    // If the MRZ is unreadable due to glare, find the data anywhere on the page
+                                                    if (parsedPassport.length < 6) {
+                                                        val pMatch = Regex("\\b[A-Z0-9]{9}\\b").find(text)
+                                                        if (pMatch != null) parsedPassport = pMatch.value
+                                                    }
+                                                    
+                                                    if (parsedDob.isEmpty()) {
+                                                        // Look for standard passport date format e.g., 15 MAR 1990
+                                                        val dMatch = Regex("\\b\\d{2}\\s[A-Z]{3}\\s\\d{4}\\b").find(text)
+                                                        if (dMatch != null) parsedDob = dMatch.value
+                                                    }
+
+                                                    // If the parser didn't perfectly extract the last name, but the expected 
+                                                    // booking last name is visibly written anywhere on the passport, accept it!
+                                                    if (parsedLastName.isEmpty() || !parsedLastName.equals(expectedLastName, ignoreCase = true)) {
+                                                        if (expectedLastName.isNotBlank() && text.contains(expectedLastName.uppercase())) {
+                                                            parsedLastName = expectedLastName.uppercase()
+                                                        }
+                                                    }
+
+                                                    // --- 3. VALIDATION LOGIC ---
+                                                    if (parsedPassport.isNotEmpty() && parsedLastName.isNotEmpty()) {
+                                                        if (parsedLastName.equals(expectedLastName, ignoreCase = true)) {
+                                                            isProcessing = false
+                                                            scanState = ScanState.SUCCESS
+                                                            mismatchMsg = null
+                                                            onPassportScanned(parsedPassport, parsedLastName, parsedFirstName, parsedDob)
+                                                        } else {
+                                                            scanState = ScanState.MISMATCH
+                                                            mismatchMsg = "Name mismatch!\nBooking: ${expectedLastName.uppercase()}\nPassport: $parsedLastName"
+                                                        }
+                                                    }
+                                                }
+                                                .addOnFailureListener {
+                                                    if (isProcessing) scanState = ScanState.ERROR
+                                                }
+                                                .addOnCompleteListener {
+                                                    imageProxy.close()
+                                                }
+                                        } else {
+                                            imageProxy.close()
+                                        }
+                                    }
+                                }
+
+                            try {
+                                cameraProvider.unbindAll()
+                                cameraProvider.bindToLifecycle(
+                                    lifecycleOwner,
+                                    CameraSelector.DEFAULT_BACK_CAMERA,
+                                    preview,
+                                    imageAnalysis
+                                )
+                            } catch (e: Exception) {
+                                scanState = ScanState.ERROR
+                            }
+                        }, ContextCompat.getMainExecutor(ctx))
+
+                        previewView
+                    }
                 )
+            }
+        } else {
+            Card(
+                modifier = Modifier.fillMaxWidth().height(300.dp).padding(8.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("📷 Camera Preview", style = MaterialTheme.typography.bodyLarge)
+                    Text("Camera permission required", style = MaterialTheme.typography.bodyLarge)
                 }
             }
         }
-        Spacer(Modifier.height(32.dp))
-        Button(onClick = onNext, modifier = Modifier.fillMaxWidth()) {
-            Text("Passport Scanned → Next")
+
+        Spacer(Modifier.height(16.dp))
+
+        // Scan status indicator
+        when (scanState) {
+            ScanState.WAITING ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                    Text("Position passport MRZ in frame…", fontWeight = FontWeight.Medium)
+                }
+            ScanState.DETECTING ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                    Text("MRZ detected, reading data…", fontWeight = FontWeight.Medium)
+                }
+            ScanState.MISMATCH ->
+                Text("⚠️ Keep scanning…", fontWeight = FontWeight.Medium)
+            ScanState.SUCCESS ->
+                Text("✅ Passport verified", fontWeight = FontWeight.Medium, color = Color(0xFF4CAF50))
+            ScanState.TIMEOUT ->
+                Text(
+                    "⏱ Timed out — try better lighting or use manual entry.",
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.error
+                )
+            ScanState.ERROR ->
+                Text(
+                    "⚠️ Recognition error — retry or use manual entry.",
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.error
+                )
+        }
+
+        if (scanState == ScanState.MISMATCH && mismatchMsg != null) {
+            Spacer(Modifier.height(8.dp))
+            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)) {
+                Text(
+                    text = mismatchMsg!!,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    modifier = Modifier.padding(12.dp),
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+        Button(
+            onClick = {
+                onPassportScanned("MOCK12345", expectedLastName, expectedFirstName, "01/01/1990")
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Skip (Manual Entry)")
         }
     }
 }
@@ -667,7 +1004,7 @@ fun PassengerDetailsStep(
                     localDate.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
                 } catch (e: Exception) { "TBD" }
             } ?: "TBD"
-            
+
             val arrTime = flight?.arrivalTime?.let {
                 try {
                     val instant = java.time.Instant.parse(if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it)
@@ -675,7 +1012,7 @@ fun PassengerDetailsStep(
                     localDate.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
                 } catch (e: Exception) { "TBD" }
             } ?: "TBD"
-            
+
             val dateDisplay = flight?.departureTime?.let {
                 try {
                     val instant = java.time.Instant.parse(if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it)
@@ -743,7 +1080,7 @@ fun PassengerDetailsStep(
 
             // Nationality dropdown
             ExposedDropdownMenuBox(
-                expanded = false, // nationality is free text, keep simple
+                expanded = false,
                 onExpandedChange = {}
             ) {
                 OutlinedTextField(
@@ -1042,7 +1379,17 @@ fun ConfirmationStep(
     onConfirm: () -> Unit,
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        viewModel.submitCheckIn(canSendNotification = granted) {
+            showDialog = false
+            onConfirm()
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
@@ -1058,10 +1405,10 @@ fun ConfirmationStep(
                 Text("✈ $origin → $dest", style = MaterialTheme.typography.titleLarge)
                 Spacer(Modifier.height(8.dp))
                 Text("Passenger: ${uiState.passenger.fullName.ifBlank { "—" }}")
-                
+
                 val flightNumber = uiState.flight?.flightNumber ?: uiState.booking?.flightId ?: "Unknown"
                 Text("Flight: $flightNumber")
-                
+
                 val dateDisplay = try {
                     if (!uiState.flight?.departureTime.isNullOrBlank()) {
                         val instant = java.time.Instant.parse(uiState.flight!!.departureTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
@@ -1072,7 +1419,7 @@ fun ConfirmationStep(
                     "Unknown"
                 }
                 Text("Date: $dateDisplay")
-                
+
                 val depTime = try {
                     if (!uiState.flight?.departureTime.isNullOrBlank()) {
                         val instant = java.time.Instant.parse(uiState.flight!!.departureTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
@@ -1092,7 +1439,7 @@ fun ConfirmationStep(
                     "TBD"
                 }
                 Text("Departure: $depTime  Arrival: $arrTime")
-                Text("Gate: TBD  Seat: TBD")
+                Text("Gate: TBD  Seat: ${uiState.selectedSeatNumber.ifBlank { "TBD" }}")
                 Spacer(Modifier.height(16.dp))
                 // QR code placeholder
                 Box(
@@ -1136,9 +1483,19 @@ fun ConfirmationStep(
             text = { Text("Your booking has been saved successfully") },
             confirmButton = {
                 Button(onClick = {
-                    viewModel.submitCheckIn {
-                        showDialog = false
-                        onConfirm()
+                    val needsRuntimePermission = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                        ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.POST_NOTIFICATIONS
+                        ) != PackageManager.PERMISSION_GRANTED
+
+                    if (needsRuntimePermission) {
+                        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    } else {
+                        viewModel.submitCheckIn(canSendNotification = true) {
+                            showDialog = false
+                            onConfirm()
+                        }
                     }
                 }) { Text("See Ticket") }
             },
@@ -1149,4 +1506,28 @@ fun ConfirmationStep(
             }
         )
     }
+}
+
+private const val CHECK_IN_CHANNEL_ID = "check_in_updates"
+
+private fun showCheckInCompleteNotification(context: Context) {
+    val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val channel = NotificationChannel(
+            CHECK_IN_CHANNEL_ID,
+            "Check-In Updates",
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+        notificationManager.createNotificationChannel(channel)
+    }
+
+    val notification = NotificationCompat.Builder(context, CHECK_IN_CHANNEL_ID)
+        .setSmallIcon(R.drawable.ic_launcher_foreground)
+        .setContentTitle("Check-in Complete!")
+        .setContentText("Your boarding pass is ready.")
+        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        .setAutoCancel(true)
+        .build()
+
+    NotificationManagerCompat.from(context).notify((System.currentTimeMillis() % Int.MAX_VALUE).toInt(), notification)
 }

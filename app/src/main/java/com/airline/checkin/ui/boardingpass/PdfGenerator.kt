@@ -12,7 +12,7 @@ import android.graphics.pdf.PdfDocument
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
-import com.airline.checkin.domain.model.BoardingPass
+import com.airline.checkin.domain.model.Booking
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -21,7 +21,7 @@ import java.io.FileOutputStream
 object PdfGenerator {
     suspend fun generateAndSavePdf(
         context: Context,
-        boardingPass: BoardingPass,
+        booking: Booking,
         qrCodeBitmap: Bitmap?
     ): String? = withContext(Dispatchers.IO) {
         var pdfDocument: PdfDocument? = null
@@ -64,9 +64,9 @@ object PdfGenerator {
             canvas.drawText("BOARDING PASS", 400f, 135f, whiteTitlePaint)
 
             // --- Draw Flight Route (Origin -> Destination) ---
-            canvas.drawText(boardingPass.origin.ifEmpty { "—" }, 100f, 320f, hugeRoutePaint)
+            canvas.drawText(booking.departure.ifEmpty { "—" }, 100f, 320f, hugeRoutePaint)
             canvas.drawText("✈", 400f, 305f, planePaint) // Airplane symbol centered
-            canvas.drawText(boardingPass.destination.ifEmpty { "—" }, 540f, 320f, hugeRoutePaint)
+            canvas.drawText(booking.destination.ifEmpty { "—" }, 540f, 320f, hugeRoutePaint)
 
             // --- Draw Grid Details ---
             var currentY = 460f
@@ -74,7 +74,8 @@ object PdfGenerator {
             // Row 1: Passenger
             canvas.drawText("Traveler Name", 100f, currentY, labelPaint)
             currentY += 40f
-            canvas.drawText(boardingPass.passengerName.ifBlank { boardingPass.passengerId }.ifEmpty { "—" }, 100f, currentY, valuePaint)
+            val travelerName = listOf(booking.firstName, booking.lastName).joinToString(" ").trim()
+            canvas.drawText(travelerName.ifEmpty { "—" }, 100f, currentY, valuePaint)
 
             currentY += 80f
             // Row 2: Date & Class
@@ -83,8 +84,8 @@ object PdfGenerator {
             currentY += 40f
             // Try formatting boarding time to get the date portion.
             val displayDate = try {
-                if (boardingPass.boardingTime.isNotBlank()) {
-                    val instant = java.time.Instant.parse(boardingPass.boardingTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
+                if (booking.departureTime.isNotBlank()) {
+                    val instant = java.time.Instant.parse(booking.departureTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
                     val localDate = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
                     localDate.format(java.time.format.DateTimeFormatter.ofPattern("EEE, MMM d"))
                 } else "—"
@@ -92,7 +93,7 @@ object PdfGenerator {
                 "—"
             }
             canvas.drawText(displayDate, 100f, currentY, valuePaint)
-            canvas.drawText(boardingPass.cabinClass.ifBlank { "Economy" }, 450f, currentY, valuePaint)
+            canvas.drawText("Economy", 450f, currentY, valuePaint)
 
             currentY += 80f
             // Row 3: Departure & Arrival
@@ -100,8 +101,8 @@ object PdfGenerator {
             canvas.drawText("Arrival", 450f, currentY, labelPaint)
             currentY += 40f
             val displayTime = try {
-                if (boardingPass.boardingTime.isNotBlank()) {
-                    val instant = java.time.Instant.parse(boardingPass.boardingTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
+                if (booking.departureTime.isNotBlank()) {
+                    val instant = java.time.Instant.parse(booking.departureTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
                     val localDate = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
                     localDate.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
                 } else "—"
@@ -117,9 +118,9 @@ object PdfGenerator {
             canvas.drawText("Gate", 350f, currentY, labelPaint)
             canvas.drawText("Seat", 550f, currentY, labelPaint)
             currentY += 40f
-            canvas.drawText(boardingPass.flightNumber.ifEmpty { "N/A" }, 100f, currentY, valuePaint)
-            canvas.drawText(boardingPass.gate.ifEmpty { "N/A" }, 350f, currentY, valuePaint)
-            canvas.drawText(boardingPass.seatNumber.ifEmpty { "N/A" }, 550f, currentY, valuePaint)
+            canvas.drawText(booking.flightNumber.ifEmpty { "N/A" }, 100f, currentY, valuePaint)
+            canvas.drawText("TBD", 350f, currentY, valuePaint)
+            canvas.drawText(booking.seat?.seatNumber?.ifEmpty { "N/A" } ?: "N/A", 550f, currentY, valuePaint)
 
             // --- Draw Dashed Divider ---
             currentY += 100f
@@ -137,7 +138,7 @@ object PdfGenerator {
             pdfDocument.finishPage(page)
 
             // --- Save Logic ---
-            val fileName = "BoardingPass_${boardingPass.bookingId}.pdf"
+            val fileName = "BoardingPass_${booking.id}.pdf"
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 val resolver = context.contentResolver

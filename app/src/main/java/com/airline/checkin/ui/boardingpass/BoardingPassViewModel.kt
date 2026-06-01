@@ -3,8 +3,8 @@ package com.airline.checkin.ui.boardingpass
 import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.airline.checkin.data.repository.BoardingPassRepository
-import com.airline.checkin.domain.model.BoardingPass
+import com.airline.checkin.data.repository.BookingRepository
+import com.airline.checkin.domain.model.Booking
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,14 +13,15 @@ import javax.inject.Inject
 
 data class BoardingPassUiState(
     val isLoading: Boolean = false,
-    val boardingPass: BoardingPass? = null,
+    val booking: Booking? = null,
     val qrCodeBitmap: Bitmap? = null,
+    val qrCodePayload: String = "",
     val error: String? = null
 )
 
 @HiltViewModel
 class BoardingPassViewModel @Inject constructor(
-    private val boardingPassRepository: BoardingPassRepository
+    private val bookingRepository: BookingRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(BoardingPassUiState())
@@ -31,16 +32,24 @@ class BoardingPassViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                val boardingPass = boardingPassRepository.getBoardingPass(bookingId)
+                val booking = bookingRepository.getBookingById(bookingId)
 
-                if (boardingPass != null) {
-                    _uiState.value = _uiState.value.copy(boardingPass = boardingPass)
+                if (booking != null) {
+                    val fullName = listOf(booking.firstName, booking.lastName)
+                        .joinToString(" ")
+                        .trim()
+                    val seatNumber = booking.seat?.seatNumber.orEmpty()
+                    val qrPayload = "${booking.id}|$fullName|$seatNumber"
+                    val qrBitmap = QrCodeGenerator.generateQrCodeBitmap(qrPayload)
 
-                    val qrBitmap = QrCodeGenerator.generateQrCodeBitmap(boardingPass.qrCode)
-                    _uiState.value = _uiState.value.copy(qrCodeBitmap = qrBitmap)
+                    _uiState.value = _uiState.value.copy(
+                        booking = booking,
+                        qrCodePayload = qrPayload,
+                        qrCodeBitmap = qrBitmap
+                    )
                 } else {
                     _uiState.value = _uiState.value.copy(
-                        error = "Boarding pass not found for booking: $bookingId"
+                        error = "Booking not found for reference: $bookingId"
                     )
                 }
             } catch (e: Exception) {

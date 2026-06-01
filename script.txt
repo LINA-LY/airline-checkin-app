@@ -43,6 +43,8 @@ DIRECTORY STRUCTURE
 |   |   \---cache.properties
 |   +---configuration-cache/
 |   |   +---0161ed0d-fdaf-40d4-8c1b-2b96405762f0/
+|   |   +---04f94f6b-57ac-4112-9151-c3b7e0e2eb44/
+|   |   +---058851df-de1f-4029-b10e-4dad62521b7c/
 |   |   +---05ca39f4-1172-4e21-a70f-4c822fc1ca5f/
 |   |   +---09b39a4c-2fe3-42bd-8397-6888ea46dd39/
 |   |   +---13f872ba-d24a-457e-a4a5-cb1588aa4760/
@@ -57,6 +59,7 @@ DIRECTORY STRUCTURE
 |   |   +---335ffbc5-c71c-42cd-b5f2-ca9c329ab71e/
 |   |   +---3844d034-b0bf-4199-a85c-02abed794951/
 |   |   +---3eaf52b2-b5f9-4f0e-bcb9-4bd96e8331da/
+|   |   +---3fcb6bdd-2eba-4439-a05e-788c54c3ffa9/
 |   |   +---40bcfb01-e807-44d1-ad68-f2d923c490d8/
 |   |   +---44034f52-f805-402c-8493-afcf5d23b5c2/
 |   |   +---465732aa-3a0a-4e3d-9615-5f9ab54f1003/
@@ -70,12 +73,17 @@ DIRECTORY STRUCTURE
 |   |   +---5d77c1ec-6110-483d-8991-990ec2df782d/
 |   |   +---5eb9ae7f-7892-4b07-b8ee-1ea900a986a9/
 |   |   +---5tx95t8y4lfunsr8c2cse8jx2/
+|   |   +---67efa14c-b03f-475f-ad71-f628db26a819/
 |   |   +---696c8c0c-5bb5-402d-933a-2d21e13d6a13/
 |   |   +---6997a640-a083-419a-8544-6da3a25274c5/
+|   |   +---69a3a5de-a3c7-471c-ab05-137ff18e29bb/
 |   |   +---6a1c7702-71af-4c6e-a56c-203a2b112298/
 |   |   +---6b72713b-d1dd-4a2d-98cc-202f47839f24/
 |   |   +---704e35da-da13-41d9-894e-00da299d8711/
+|   |   +---78c82631-fca8-4f71-8977-576e75295757/
 |   |   +---830a2c57-5512-46f6-b3e8-8ea6e047eeb0/
+|   |   +---84017eb5-1420-49b3-919e-67b1a923986f/
+|   |   +---88728429-fd62-49ba-8473-6f8f4069d4c1/
 |   |   +---8f6ec34b-6fbb-44ad-8ec5-eb8086d09298/
 |   |   +---8fb65980-636d-4f7d-9a8d-6333b43291f5/
 |   |   +---929e75c1-72a1-4d25-aa6e-e36df069194a/
@@ -87,6 +95,7 @@ DIRECTORY STRUCTURE
 |   |   +---a5ffbc01-a25b-4be2-9697-e8d314a7297f/
 |   |   +---aa27ba42-954c-4b6b-bf19-3a3ce4cd0422/
 |   |   +---ac932f2b-853c-4097-b417-7c495f278d71/
+|   |   +---b5796sydiln0jl7d2id6qrcqt/
 |   |   +---bpgwimf0a7rq6mwp0goa5abq9/
 |   |   +---bz5zxzg97cega7hqellilpc41/
 |   |   +---c17c920a-1bf1-4ccd-be3d-bd73c346d650/
@@ -98,10 +107,13 @@ DIRECTORY STRUCTURE
 |   |   +---d1a95bd7-c19c-4c06-a4e1-c5f9b255ec15/
 |   |   +---d2041a1c-84cc-4d91-8b54-0d2d92b8c81d/
 |   |   +---d2395000-8ee9-4aea-b67f-6dafe5487f33/
+|   |   +---d831ca26-2023-4178-92a1-be0431cfa80b/
 |   |   +---dbc98506-5d00-4b21-a8ff-ba9b76118ec8/
 |   |   +---de7fb39d-591b-4005-bec8-df85e1f6e91f/
+|   |   +---dl60ksgcz0t3aqccz93d3uzkd/
 |   |   +---e034d929-8545-484d-8904-e6905d0297cb/
 |   |   +---e3493406-c159-4c3c-b155-8bdfda35d6e3/
+|   |   +---e4857221-8e58-4c32-a353-548d884bf926/
 |   |   +---e93a6igejsan7yz7j8p240l6i/
 |   |   +---f5f95785-1842-4025-b5a3-45a441ee449c/
 |   |   +---f81c200a-b736-4ec6-8c23-abc21ea520f5/
@@ -117,7 +129,6 @@ DIRECTORY STRUCTURE
 |   |   +---errors-1779726054278.log
 |   |   \---errors-1780172183190.log
 |   \---sessions/
-|       \---kotlin-compiler-5418445583920314157.salive
 +---.vscode/
 |   \---settings.json
 +---app/
@@ -132,11 +143,9 @@ DIRECTORY STRUCTURE
 |   |       |               +---data/
 |   |       |               |   +---local/
 |   |       |               |   |   +---dao/
-|   |       |               |   |   |   +---Daos.kt
-|   |       |               |   |   |   \---SavedPassengerDao.kt
+|   |       |               |   |   |   \---Daos.kt
 |   |       |               |   |   +---entity/
-|   |       |               |   |   |   +---Entities.kt
-|   |       |               |   |   |   \---SavedPassengerEntity.kt
+|   |       |               |   |   |   \---Entities.kt
 |   |       |               |   |   +---AppDatabase.kt
 |   |       |               |   |   \---OnboardingPreferences.kt
 |   |       |               |   +---remote/
@@ -168,8 +177,7 @@ DIRECTORY STRUCTURE
 |   |       |               |   |   \---OnboardingScreens.kt
 |   |       |               |   +---profile/
 |   |       |               |   |   +---ProfileScreens.kt
-|   |       |               |   |   +---ProfileViewModel.kt
-|   |       |               |   |   \---SavedTravelerFormScreen.kt
+|   |       |               |   |   \---ProfileViewModel.kt
 |   |       |               |   +---seat/
 |   |       |               |   |   \---SeatMapScreen.kt
 |   |       |               |   \---AppNavGraph.kt
@@ -195,11 +203,17 @@ DIRECTORY STRUCTURE
 |       |   +---2v4gpm18gvrn9gubfauuj6tbe/
 |       |   |   \---6q9j1yhqm5ke0539u85lwwhnu/
 |       |   |       \---configuration-cache-report.html
+|       |   +---448nc04i1i1hvo8yen27y1ok0/
+|       |   |   \---7j4mdj3srgyp1dueqbcd1z5i9/
+|       |   |       \---configuration-cache-report.html
 |       |   +---5tx95t8y4lfunsr8c2cse8jx2/
 |       |   |   \---ewgdeby928dy3vyyl6hukhdbt/
 |       |   |       \---configuration-cache-report.html
 |       |   +---9qyhmof27tdh7r5rgbvdggi7h/
 |       |   |   \---dl5tu4wwhzs8vagkyzfzy3dep/
+|       |   |       \---configuration-cache-report.html
+|       |   +---b5796sydiln0jl7d2id6qrcqt/
+|       |   |   \---278h0muab5ymw60zigppz9e14/
 |       |   |       \---configuration-cache-report.html
 |       |   +---bpgwimf0a7rq6mwp0goa5abq9/
 |       |   |   +---11g2yw9p4r3zld18hfhbs9yfw/
@@ -243,6 +257,18 @@ DIRECTORY STRUCTURE
 |       |   |   +---df0g5qe6jdr32b61zir13z9ft/
 |       |   |   |   \---configuration-cache-report.html
 |       |   |   \---ywb7m6oe1v3bss4hrkrqrbsn/
+|       |   |       \---configuration-cache-report.html
+|       |   +---dl60ksgcz0t3aqccz93d3uzkd/
+|       |   |   +---8q6ntz8829j8y5rskkhmxg0ue/
+|       |   |   |   \---configuration-cache-report.html
+|       |   |   +---aot8vr3gq9byvzgw2coplu1m0/
+|       |   |   |   \---configuration-cache-report.html
+|       |   |   +---b72fdhcl2e8kfo625d0omaui9/
+|       |   |   |   \---configuration-cache-report.html
+|       |   |   \---df0g5qe6jdr32b61zir13z9ft/
+|       |   |       \---configuration-cache-report.html
+|       |   +---e93a6igejsan7yz7j8p240l6i/
+|       |   |   \---6ue5xr0ydb6j0qtjh3nzdlay5/
 |       |   |       \---configuration-cache-report.html
 |       |   \---en5alj88rccvqh2mbsxja3v3k/
 |       |       \---34hbjo3av34v4dn394ctkpqgw/
@@ -505,18 +531,9 @@ interface UserDao {
 }
 
 @Dao
-interface FlightDao {
-    @Query("SELECT * FROM flights WHERE id = :id")
-    suspend fun getById(id: String): FlightEntity?
-
-    @Upsert
-    suspend fun upsert(flight: FlightEntity)
-}
-
-@Dao
 interface BookingDao {
-    @Query("SELECT * FROM bookings WHERE reference = :ref")
-    suspend fun getByReference(ref: String): BookingEntity?
+    @Query("SELECT * FROM bookings WHERE id = :id")
+    suspend fun getById(id: String): BookingEntity?
 
     @Upsert
     suspend fun upsert(booking: BookingEntity)
@@ -524,75 +541,8 @@ interface BookingDao {
     @Query("UPDATE bookings SET checkInStatus = 1 WHERE id = :id")
     suspend fun markCheckedIn(id: String)
 
-    @Query("SELECT * FROM bookings WHERE passengerId = :userId")
+    @Query("SELECT * FROM bookings WHERE userId = :userId")
     fun getByUserFlow(userId: String): Flow<List<BookingEntity>>
-}
-
-@Dao
-interface PassengerDao {
-    @Query("SELECT * FROM passengers WHERE bookingId = :bookingId")
-    suspend fun getByBooking(bookingId: String): PassengerEntity?
-
-    @Upsert
-    suspend fun upsert(passenger: PassengerEntity)
-}
-
-@Dao
-interface SeatDao {
-    @Query("SELECT * FROM seats WHERE flightId = :flightId")
-    fun getByFlight(flightId: String): Flow<List<SeatEntity>>
-
-    @Upsert
-    suspend fun upsertAll(seats: List<SeatEntity>)
-
-    @Query("UPDATE seats SET isOccupied = 1 WHERE id = :seatId")
-    suspend fun markOccupied(seatId: String)
-}
-
-@Dao
-interface BoardingPassDao {
-    @Query("SELECT * FROM boarding_passes WHERE bookingId = :bookingId")
-    suspend fun getByBooking(bookingId: String): BoardingPassEntity?
-
-    @Upsert
-    suspend fun upsert(boardingPass: BoardingPassEntity)
-}
-
-@Dao
-interface BaggageDeclarationDao {
-    @Query("SELECT * FROM baggage_declarations WHERE bookingId = :bookingId")
-    suspend fun getByBooking(bookingId: String): BaggageDeclarationEntity?
-
-    @Upsert
-    suspend fun upsert(baggage: BaggageDeclarationEntity)
-}
-
-
-============================================================
-FILE: app/src/main/java/com/airline/checkin/data/local/dao/SavedPassengerDao.kt
-============================================================
-package com.airline.checkin.data.local.dao
-
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import com.airline.checkin.data.local.entity.SavedPassengerEntity
-import kotlinx.coroutines.flow.Flow
-
-@Dao
-interface SavedPassengerDao {
-    @Query("SELECT * FROM saved_passengers WHERE userId = :userId")
-    fun getAll(userId: String): Flow<List<SavedPassengerEntity>>
-
-    @Query("SELECT * FROM saved_passengers WHERE userId = :userId AND syncedToRemote = 0")
-    suspend fun getUnsynced(userId: String): List<SavedPassengerEntity>
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun upsert(entity: SavedPassengerEntity)
-
-    @Query("DELETE FROM saved_passengers WHERE id = :id")
-    suspend fun deleteById(id: String)
 }
 
 
@@ -603,6 +553,12 @@ package com.airline.checkin.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.TypeConverter
+import com.airline.checkin.domain.model.BaggageData
+import com.airline.checkin.domain.model.PassportData
+import com.airline.checkin.domain.model.SeatData
+import com.airline.checkin.domain.model.SpecialRequests
+import org.json.JSONObject
 
 @Entity(tableName = "users")
 data class UserEntity(
@@ -612,92 +568,114 @@ data class UserEntity(
     val phone: String
 )
 
-@Entity(tableName = "flights")
-data class FlightEntity(
-    @PrimaryKey val id: String,
-    val flightNumber: String,
-    val origin: String,
-    val destination: String,
-    val departureTime: String,
-    val arrivalTime: String,
-    val status: String
-)
-
 @Entity(tableName = "bookings")
 data class BookingEntity(
     @PrimaryKey val id: String,
-    val reference: String,
-    val flightId: String,
-    val passengerId: String,
-    val checkInStatus: Boolean
-)
-
-@Entity(tableName = "passengers")
-data class PassengerEntity(
-    @PrimaryKey val id: String,
-    val bookingId: String,
-    val fullName: String,
-    val passportNumber: String,
-    val dateOfBirth: String,
-    val nationality: String
-)
-
-@Entity(tableName = "seats")
-data class SeatEntity(
-    @PrimaryKey val id: String,
-    val flightId: String,
-    val seatNumber: String,
-    val type: String,
-    val isOccupied: Boolean
-)
-
-@Entity(tableName = "boarding_passes")
-data class BoardingPassEntity(
-    @PrimaryKey val id: String,
-    val bookingId: String,
-    val passengerId: String,
-    val passengerName: String = "",
-    val flightNumber: String,
-    val seatNumber: String,
-    val gate: String,
-    val boardingTime: String,
-    val qrCode: String,
-    val isDownloaded: Boolean,
-    val origin: String = "",
-    val destination: String = ""
-)
-
-@Entity(tableName = "baggage_declarations")
-data class BaggageDeclarationEntity(
-    @PrimaryKey val id: String,
-    val bookingId: String,
-    val cabinBags: Int,
-    val checkedBags: Int,
-    val specialItems: String
-)
-
-
-============================================================
-FILE: app/src/main/java/com/airline/checkin/data/local/entity/SavedPassengerEntity.kt
-============================================================
-package com.airline.checkin.data.local.entity
-
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-
-@Entity(tableName = "saved_passengers")
-data class SavedPassengerEntity(
-    @PrimaryKey val id: String,
     val userId: String,
-    val firstName: String,
     val lastName: String,
-    val fullName: String,
-    val docType: String,
-    val docNumber: String,
-    val nationality: String,
-    val dateOfBirth: String,
-    val syncedToRemote: Boolean = false
+    val firstName: String,
+    val flightNumber: String,
+    val departure: String,
+    val destination: String,
+    val departureTime: String,
+    val checkInStatus: Boolean,
+    val seat: SeatData?,
+    val passport: PassportData?,
+    val baggage: BaggageData?,
+    val specialRequests: SpecialRequests?
 )
+
+class Converters {
+    @TypeConverter
+    fun fromSeatData(value: SeatData?): String? {
+        if (value == null) return null
+        val json = JSONObject()
+        json.put("seatId", value.seatId)
+        json.put("seatNumber", value.seatNumber)
+        return json.toString()
+    }
+
+    @TypeConverter
+    fun toSeatData(value: String?): SeatData? {
+        if (value == null) return null
+        return try {
+            val json = JSONObject(value)
+            SeatData(
+                seatId = json.optString("seatId", ""),
+                seatNumber = json.optString("seatNumber", "")
+            )
+        } catch (e: Exception) { null }
+    }
+
+    @TypeConverter
+    fun fromPassportData(value: PassportData?): String? {
+        if (value == null) return null
+        val json = JSONObject()
+        json.put("number", value.number)
+        json.put("dob", value.dob)
+        json.put("nationality", value.nationality)
+        return json.toString()
+    }
+
+    @TypeConverter
+    fun toPassportData(value: String?): PassportData? {
+        if (value == null) return null
+        return try {
+            val json = JSONObject(value)
+            PassportData(
+                number = json.optString("number", ""),
+                dob = json.optString("dob", ""),
+                nationality = json.optString("nationality", "")
+            )
+        } catch (e: Exception) { null }
+    }
+
+    @TypeConverter
+    fun fromBaggageData(value: BaggageData?): String? {
+        if (value == null) return null
+        val json = JSONObject()
+        json.put("cabin", value.cabin)
+        json.put("checked", value.checked)
+        return json.toString()
+    }
+
+    @TypeConverter
+    fun toBaggageData(value: String?): BaggageData? {
+        if (value == null) return null
+        return try {
+            val json = JSONObject(value)
+            BaggageData(
+                cabin = json.optInt("cabin", 0),
+                checked = json.optInt("checked", 0)
+            )
+        } catch (e: Exception) { null }
+    }
+
+    @TypeConverter
+    fun fromSpecialRequests(value: SpecialRequests?): String? {
+        if (value == null) return null
+        val json = JSONObject()
+        json.put("dietary", value.dietary)
+        json.put("wheelchair", value.wheelchair)
+        json.put("infant", value.infant)
+        json.put("pet", value.pet)
+        return json.toString()
+    }
+
+    @TypeConverter
+    fun toSpecialRequests(value: String?): SpecialRequests? {
+        if (value == null) return null
+        return try {
+            val json = JSONObject(value)
+            SpecialRequests(
+                dietary = json.optString("dietary", ""),
+                wheelchair = json.optBoolean("wheelchair", false),
+                infant = json.optBoolean("infant", false),
+                pet = json.optBoolean("pet", false)
+            )
+        } catch (e: Exception) { null }
+    }
+}
 
 
 ============================================================
@@ -707,32 +685,22 @@ package com.airline.checkin.data.local
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.airline.checkin.data.local.dao.*
 import com.airline.checkin.data.local.entity.*
 
 @Database(
     entities = [
         UserEntity::class,
-        FlightEntity::class,
-        BookingEntity::class,
-        PassengerEntity::class,
-        SeatEntity::class,
-        BoardingPassEntity::class,
-        BaggageDeclarationEntity::class,
-        SavedPassengerEntity::class
+        BookingEntity::class
     ],
-    version = 3,
+    version = 5,
     exportSchema = false
 )
+@TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
-    abstract fun flightDao(): FlightDao
     abstract fun bookingDao(): BookingDao
-    abstract fun passengerDao(): PassengerDao
-    abstract fun seatDao(): SeatDao
-    abstract fun boardingPassDao(): BoardingPassDao
-    abstract fun baggageDeclarationDao(): BaggageDeclarationDao
-    abstract fun savedPassengerDao(): SavedPassengerDao
 }
 
 
@@ -781,104 +749,17 @@ class DatabaseSeeder @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
     suspend fun seedIfNeeded() {
-        val existingBooking = firestore.collection("bookings")
-            .whereEqualTo("reference", "ABCDEF")
-            .get()
-            .await()
-        if (!existingBooking.isEmpty) return
-
         val flightRef = firestore.collection("flights").document("FL001")
-
         val batch = firestore.batch()
 
         batch.set(
             flightRef,
             mapOf(
-                "flight_number" to "IDN16821",
-                "origin" to "CGK",
-                "destination" to "DPS",
-                "departureTime" to "16:55",
-                "arrivalTime" to "18:45",
-                "status" to "On Time",
-                "dateKey" to "2026-06-01",
-                "routeKey" to "CGK_DPS",
-                "aircraftType" to "A320",
-                "aircraftId" to "A320",
-                "airline" to "Airline Asia",
-                "stops" to 0,
-                "checkedBagsIncluded" to 1,
-                "carryOnIncluded" to 1,
-                "emissionsKg" to 150,
-                "price" to 120,
-                "currency" to "USD",
-                "durationMinutes" to 110,
-                "pricingSummary" to mapOf(
-                    "ECONOMY" to mapOf("price" to 120, "seatsAvailable" to 120),
-                    "PREMIUM_ECONOMY" to mapOf("price" to 168, "seatsAvailable" to 24),
-                    "BUSINESS" to mapOf("price" to 300, "seatsAvailable" to 12),
-                    "meta" to mapOf("currency" to "USD", "carryOnIncluded" to 1)
-                )
+                "flightNumber" to "IDN16821",
+                "departure" to "CGK",
+                "destination" to "DPS"
             )
         )
-
-        batch.set(
-            firestore.collection("bookings").document("booking_abc123"),
-            mapOf(
-                "reference" to "ABCDEF",
-                "lastName" to "Smith",
-                "passengerName" to "John Smith",
-                "flightId" to "FL001",
-                "passengerId" to "mock-user-001",
-                "checkInStatus" to false,
-                "ticketsCount" to 1,
-                "totalPrice" to 120,
-                "currency" to "USD",
-                "paymentStatus" to "PAID",
-                "cabinClass" to "ECONOMY"
-            )
-        )
-
-        batch.set(
-            firestore.collection("bookings").document("booking_xyz789"),
-            mapOf(
-                "reference" to "XYZABC",
-                "lastName" to "Doe",
-                "passengerName" to "Jane Doe",
-                "flightId" to "FL001",
-                "passengerId" to "mock-user-002",
-                "checkInStatus" to false,
-                "ticketsCount" to 1,
-                "totalPrice" to 120,
-                "currency" to "USD",
-                "paymentStatus" to "PAID",
-                "cabinClass" to "ECONOMY"
-            )
-        )
-
-        val seatDocs = listOf(
-            "S1" to mapOf(
-                "flightId" to "FL001",
-                "seatNumber" to "5A",
-                "type" to "ECONOMY",
-                "isOccupied" to false
-            ),
-            "S2" to mapOf(
-                "flightId" to "FL001",
-                "seatNumber" to "5B",
-                "type" to "ECONOMY",
-                "isOccupied" to true
-            ),
-            "S3" to mapOf(
-                "flightId" to "FL001",
-                "seatNumber" to "5C",
-                "type" to "ECONOMY",
-                "isOccupied" to false
-            )
-        )
-
-        seatDocs.forEach { (id, data) ->
-            batch.set(firestore.collection("seats").document(id), data)
-        }
 
         batch.commit().await()
     }
@@ -894,7 +775,6 @@ import com.airline.checkin.domain.model.*
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.storage.FirebaseStorage
@@ -916,11 +796,6 @@ class FirebaseService @Inject constructor(
     )
 
     private val bookings = firestore.collection("bookings")
-    private val flights = firestore.collection("flights")
-    private val airports = firestore.collection("airports")
-    private val seats = firestore.collection("seats")
-    private val boardingPasses = firestore.collection("boarding_passes")
-    private val baggageDeclarations = firestore.collection("baggage_declarations")
     private val users = firestore.collection("users")
     private val passengerDocs = firestore.collection("passenger_documents")
 
@@ -1023,11 +898,22 @@ class FirebaseService @Inject constructor(
     }
 
     // ---- Bookings ----
-    suspend fun getBookingById(bookingId: String): Booking? {
-        if (bookingId.isBlank()) return null
-        val doc = bookings.document(bookingId).get().await()
+    suspend fun getBookingById(pnr: String): Booking? {
+        if (pnr.isBlank()) return null
+        val doc = bookings.document(pnr).get().await()
         if (!doc.exists()) return null
         return doc.toBooking()
+    }
+
+    suspend fun getBookingByReference(ref: String, lastName: String): Booking? {
+        if (ref.isBlank()) return null
+        val doc = bookings.document(ref).get().await()
+        if (!doc.exists()) return null
+        val booking = doc.toBooking()
+        if (lastName.isNotBlank() && !booking.lastName.equals(lastName, ignoreCase = true)) {
+            return null
+        }
+        return booking
     }
 
     suspend fun getUserBookings(userId: String): List<Booking> {
@@ -1036,185 +922,117 @@ class FirebaseService @Inject constructor(
         return snapshot.documents.map { it.toBooking() }
     }
 
-    suspend fun getBookingByReference(ref: String, lastName: String): Booking? {
-        if (ref.isBlank()) return null
-        val baseQuery = bookings.whereEqualTo("reference", ref)
-        val snapshot = if (lastName.isNotBlank()) {
-            baseQuery.whereEqualTo("lastName", lastName).get().await()
-        } else {
-            baseQuery.get().await()
-        }
-        val doc = snapshot.documents.firstOrNull() ?: return null
-        return doc.toBooking()
-    }
-
-    // ---- Flights ----
-    suspend fun getFlight(flightId: String): Flight? {
-        if (flightId.isBlank()) return null
-        val doc = flights.document(flightId).get().await()
-        if (!doc.exists()) return null
-        return doc.toFlight()
-    }
-
-    // ---- Seats ----
-    suspend fun getSeats(flightId: String): List<Seat> {
-        if (flightId.isBlank()) return emptyList()
-        val snapshot = seats.whereEqualTo("flightId", flightId).get().await()
-        return snapshot.documents.mapNotNull { it.toSeat() }
-    }
-
-    suspend fun selectSeat(seatId: String) {
-        if (seatId.isBlank()) return
-        seats.document(seatId).update("isOccupied", true).await()
-    }
-
-    // ---- Passenger documents (metadata-only) ----
-    suspend fun getPassengerDocuments(userId: String): List<PassengerDocument> {
-        if (userId.isBlank()) return emptyList()
-        val snapshot = passengerDocs.whereEqualTo("userId", userId).get().await()
-        return snapshot.documents.map { doc ->
-            val firstName = doc.getString("firstName") ?: ""
-            val lastName = doc.getString("lastName") ?: ""
-            val fullName = doc.getString("fullName") ?: listOf(firstName, lastName).filter { it.isNotBlank() }.joinToString(" ")
-            PassengerDocument(
-                id = doc.id,
-                userId = doc.getString("userId") ?: "",
-                firstName = firstName,
-                lastName = lastName,
-                fullName = fullName,
-                docType = doc.getString("docType") ?: "",
-                docNumber = doc.getString("docNumber") ?: "",
-                nationality = doc.getString("nationality") ?: "",
-                dateOfBirth = doc.getString("dateOfBirth") ?: ""
-            )
-        }
-    }
-
-    suspend fun createPassengerDocument(doc: PassengerDocument): PassengerDocument {
-        val id = if (doc.id.isNotBlank()) doc.id else passengerDocs.document().id
-        val fullName = doc.fullName.ifBlank {
-            listOf(doc.firstName, doc.lastName).filter { it.isNotBlank() }.joinToString(" ")
-        }
-        val payload = mapOf(
-            "userId" to doc.userId,
-            "firstName" to doc.firstName,
-            "lastName" to doc.lastName,
-            "fullName" to fullName,
-            "docType" to doc.docType,
-            "docNumber" to doc.docNumber,
-            "nationality" to doc.nationality,
-            "dateOfBirth" to doc.dateOfBirth,
-            "createdAt" to FieldValue.serverTimestamp()
-        )
-        passengerDocs.document(id).set(payload).await()
-        return doc.copy(id = id, fullName = fullName)
-    }
-
-    // ---- Boarding Pass ----
-    suspend fun getBoardingPass(bookingId: String): BoardingPass? {
-        if (bookingId.isBlank()) return null
-        val snapshot = boardingPasses.whereEqualTo("bookingId", bookingId)
-            .limit(1)
-            .get()
-            .await()
-        val doc = snapshot.documents.firstOrNull() ?: return null
-        return doc.toBoardingPass()
-    }
-
     // ---- Check-in ----
-    suspend fun submitCheckIn(bookingId: String, baggage: BaggageDeclaration) {
-        if (bookingId.isBlank()) return
-        bookings.document(bookingId)
-            .set(mapOf("checkInStatus" to true), SetOptions.merge())
-            .await()
-
-        val baggageId = if (baggage.id.isNotBlank()) baggage.id else bookingId
-        baggageDeclarations.document(baggageId)
-            .set(
-                mapOf(
-                    "bookingId" to bookingId,
-                    "cabinBags" to baggage.cabinBags,
-                    "checkedBags" to baggage.checkedBags,
-                    "specialItems" to baggage.specialItems
-                ),
-                SetOptions.merge()
+    suspend fun submitCheckIn(pnr: String, booking: Booking) {
+        if (pnr.isBlank()) return
+        val map = mutableMapOf<String, Any>(
+            "checkInStatus" to true
+        )
+        booking.seat?.let {
+            map["seat"] = mapOf(
+                "seatId" to it.seatId,
+                "seatNumber" to it.seatNumber
             )
-            .await()
+        }
+        booking.passport?.let {
+            map["passport"] = mapOf(
+                "number" to it.number,
+                "dob" to it.dob,
+                "nationality" to it.nationality
+            )
+        }
+        booking.baggage?.let {
+            map["baggage"] = mapOf(
+                "cabin" to it.cabin,
+                "checked" to it.checked
+            )
+        }
+        booking.specialRequests?.let {
+            map["specialRequests"] = mapOf(
+                "dietary" to it.dietary,
+                "wheelchair" to it.wheelchair,
+                "infant" to it.infant,
+                "pet" to it.pet
+            )
+        }
+        
+        bookings.document(pnr).update(map).await()
     }
 
-    private fun DocumentSnapshot.toBooking(): Booking = Booking(
-        id = id,
-        reference = getString("reference") ?: "",
-        flightId = getString("flightId") ?: "",
-        passengerId = getString("passengerId") ?: "",
-        passengerName = getString("passengerName") ?: "",
-        cabinClass = getString("cabinClass") ?: "",
-        checkInStatus = getBoolean("checkInStatus") ?: false,
-        ticketsCount = (getLong("ticketsCount") ?: 1L).toInt(),
-        totalPrice = (getLong("totalPrice") ?: getDouble("totalPrice")?.toLong() ?: 0L).toInt(),
-        currency = getString("currency") ?: "USD",
-        paymentStatus = getString("paymentStatus") ?: ""
-    )
+    private fun DocumentSnapshot.toBooking(): Booking {
+        val seatMap = get("seat") as? Map<String, Any>
+        val seatData = seatMap?.let {
+            SeatData(
+                seatId = it["seatId"] as? String ?: "",
+                seatNumber = it["seatNumber"] as? String ?: ""
+            )
+        }
 
-    private fun DocumentSnapshot.toFlight(): Flight = Flight(
-        id = id,
-        flightNumber = getString("flight_number") ?: getString("flightNumber") ?: "",
-        origin = getString("origin") ?: "",
-        destination = getString("destination") ?: "",
-        departureTime = getString("departureTime") ?: "",
-        arrivalTime = getString("arrivalTime") ?: "",
-        dateKey = getString("dateKey") ?: "",
-        status = getString("status") ?: "",
-        airline = getString("airline") ?: "",
-        stops = (getLong("stops") ?: 0L).toInt(),
-        checkedBagsIncluded = (getLong("checkedBagsIncluded") ?: 0L).toInt(),
-        carryOnIncluded = (getLong("carryOnIncluded") ?: 0L).toInt(),
-        emissionsKg = (getLong("emissionsKg") ?: 0L).toInt(),
-        price = (getLong("price") ?: getDouble("price")?.toLong() ?: 0L).toInt(),
-        currency = getString("currency") ?: "USD",
-        durationMinutes = (getLong("durationMinutes") ?: 0L).toInt(),
-        aircraftId = getString("aircraftId") ?: getString("aircraft_id") ?: ""
-    )
+        val passportMap = get("passport") as? Map<String, Any>
+        val passportData = passportMap?.let {
+            PassportData(
+                number = it["number"] as? String ?: "",
+                dob = it["dob"] as? String ?: "",
+                nationality = it["nationality"] as? String ?: ""
+            )
+        }
+        
+        val baggageMap = get("baggage") as? Map<String, Any>
+        val baggageData = baggageMap?.let {
+            BaggageData(
+                cabin = (it["cabin"] as? Number)?.toInt() ?: 0,
+                checked = (it["checked"] as? Number)?.toInt() ?: 0
+            )
+        }
+        
+        val specialMap = get("specialRequests") as? Map<String, Any>
+        val specialRequests = specialMap?.let {
+            SpecialRequests(
+                dietary = it["dietary"] as? String ?: "",
+                wheelchair = it["wheelchair"] as? Boolean ?: false,
+                infant = it["infant"] as? Boolean ?: false,
+                pet = it["pet"] as? Boolean ?: false
+            )
+        }
 
-    private fun DocumentSnapshot.toSeat(): Seat? {
-        val flightId = getString("flightId") ?: return null
-        val seatNumber = getString("seatNumber") ?: return null
-        val typeRaw = getString("type") ?: SeatType.ECONOMY.name
-        val seatType = runCatching { SeatType.valueOf(typeRaw.uppercase()) }
-            .getOrDefault(SeatType.ECONOMY)
-        return Seat(
+        return Booking(
             id = id,
-            flightId = flightId,
-            seatNumber = seatNumber,
-            type = seatType,
-            isOccupied = getBoolean("isOccupied") ?: false
+            lastName = getString("lastName") ?: "",
+            firstName = getString("firstName") ?: "",
+            flightNumber = getString("flightNumber") ?: "",
+            departure = getString("departure") ?: "",
+            destination = getString("destination") ?: "",
+            departureTime = getString("departureTime") ?: "",
+            checkInStatus = getBoolean("checkInStatus") ?: false,
+            seat = seatData,
+            userId = getString("passengerId") ?: "",
+            passport = passportData,
+            baggage = baggageData,
+            specialRequests = specialRequests
         )
     }
 
-    private fun DocumentSnapshot.toBoardingPass(): BoardingPass = BoardingPass(
-        id = id,
-        bookingId = getString("bookingId") ?: "",
-        passengerId = getString("passengerId") ?: "",
-        passengerName = getString("passengerName") ?: getString("passengerId") ?: "",
-        flightNumber = getString("flightNumber") ?: "",
-        seatNumber = getString("seatNumber") ?: "",
-        gate = getString("gate") ?: "",
-        boardingTime = getString("boardingTime") ?: "",
-        qrCode = getString("qrCode") ?: "",
-        isDownloaded = getBoolean("isDownloaded") ?: false,
-        origin = getString("origin") ?: "",
-        destination = getString("destination") ?: ""
-    )
-
-    private fun DocumentSnapshot.toAirport(): Airport? {
-        val code = id
-        if (code.isBlank()) return null
-        return Airport(
-            code = code,
-            name = getString("name") ?: "",
-            city = getString("city") ?: "",
-            country = getString("country") ?: ""
+    suspend fun createMockBooking(userId: String, firstName: String, lastName: String) {
+        val pnr = generateBookingReference()
+        val flightDoc = firestore.collection("flights").document("FL001").get().await()
+        
+        val flightNumber = flightDoc.getString("flightNumber") ?: "IDN16821"
+        val departure = flightDoc.getString("departure") ?: "CGK"
+        val destination = flightDoc.getString("destination") ?: "DPS"
+        val departureTime = java.time.Instant.now().plusSeconds(43200).toString()
+        
+        val bookingData = mapOf(
+            "lastName" to lastName,
+            "firstName" to firstName,
+            "passengerId" to userId,
+            "flightNumber" to flightNumber,
+            "departure" to departure,
+            "destination" to destination,
+            "departureTime" to departureTime,
+            "checkInStatus" to false
         )
+        
+        bookings.document(pnr).set(bookingData).await()
     }
 
     private fun generateBookingReference(): String {
@@ -1231,7 +1049,6 @@ package com.airline.checkin.data.repository
 import com.airline.checkin.data.local.dao.*
 import com.airline.checkin.data.remote.firebase.FirebaseService
 import com.airline.checkin.domain.model.*
-import android.util.Log
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -1280,23 +1097,19 @@ class AuthRepository @Inject constructor(
 
     fun signOut() {
         firebase.signOut()
-        // Note: we intentionally do NOT clear the Room cache here;
-        // the user table is cleared on next login by upsert.
     }
 
     fun isLoggedIn() = firebase.currentUserId() != null
 
-    /** Returns the display name, trying Firestore first then falling back to Room cache */
+    fun getCurrentUserId(): String? = firebase.currentUserId()
+
     suspend fun getUserDisplayName(): String? {
-        // Try remote first
         val remote = try { firebase.getUserDisplayName() } catch (_: Exception) { null }
         if (!remote.isNullOrBlank()) return remote
-        // Fallback to local cache
         val uid = firebase.currentUserId() ?: return null
         return userDao.getById(uid)?.fullName?.takeIf { it.isNotBlank() }
     }
 
-    /** Cache the current user's profile into Room for offline access */
     suspend fun cacheUserLocally() {
         val profile = try { firebase.getUserProfile() } catch (_: Exception) { null }
         if (profile != null) {
@@ -1315,206 +1128,121 @@ class AuthRepository @Inject constructor(
 @Singleton
 class BookingRepository @Inject constructor(
     private val firebase: FirebaseService,
-    private val bookingDao: BookingDao,
-    private val flightDao: FlightDao
+    private val bookingDao: BookingDao
 ) {
     suspend fun getBookingById(bookingId: String): Booking? {
-        return firebase.getBookingById(bookingId)
+        val local = bookingDao.getById(bookingId)?.toDomain()
+        return try {
+            val remote = firebase.getBookingById(bookingId)
+            if (remote != null) {
+                bookingDao.upsert(remote.toEntity())
+                remote
+            } else {
+                local
+            }
+        } catch (_: Exception) {
+            local
+        }
     }
 
     suspend fun getBooking(reference: String, lastName: String): Booking? {
-        return firebase.getBookingByReference(reference, lastName)
+        val remote = firebase.getBookingByReference(reference, lastName)
+        if (remote != null) {
+            bookingDao.upsert(remote.toEntity())
+        }
+        return remote
     }
 
-    suspend fun submitCheckIn(bookingId: String, baggage: BaggageDeclaration) {
-        firebase.submitCheckIn(bookingId, baggage)
-        bookingDao.markCheckedIn(bookingId)
+    suspend fun createMockBooking(userId: String, firstName: String, lastName: String) {
+        firebase.createMockBooking(userId, firstName, lastName)
+    }
+
+    suspend fun getUserBookings(userId: String): List<Booking> {
+        val remote = firebase.getUserBookings(userId)
+        remote.forEach { booking -> bookingDao.upsert(booking.toEntity(userId)) }
+        return remote
+    }
+
+    suspend fun submitCheckIn(bookingId: String, booking: Booking) {
+        firebase.submitCheckIn(bookingId, booking)
+        bookingDao.upsert(booking.copy(id = bookingId, checkInStatus = true).toEntity())
     }
 
     fun observeUserBookings(userId: String): kotlinx.coroutines.flow.Flow<List<Booking>> {
         return bookingDao.getByUserFlow(userId).map { list ->
-            list.map { entity ->
-                Booking(
-                    id = entity.id,
-                    reference = entity.reference,
-                    flightId = entity.flightId,
-                    passengerId = entity.passengerId,
-                    checkInStatus = entity.checkInStatus,
-                    ticketsCount = 1,
-                    totalPrice = 0,
-                    currency = "USD",
-                    paymentStatus = "PAID"
-                )
-            }
+            list.map { entity -> entity.toDomain() }
         }
     }
 
     suspend fun refreshUserBookings(userId: String) {
         val remote = firebase.getUserBookings(userId)
         remote.forEach { booking ->
-            bookingDao.upsert(
-                com.airline.checkin.data.local.entity.BookingEntity(
-                    id = booking.id,
-                    reference = booking.reference,
-                    flightId = booking.flightId,
-                    passengerId = booking.passengerId,
-                    checkInStatus = booking.checkInStatus
-                )
-            )
+            bookingDao.upsert(booking.toEntity(userId))
         }
     }
 }
 
+private fun com.airline.checkin.data.local.entity.BookingEntity.toDomain(): Booking {
+    return Booking(
+        id = id,
+        userId = userId,
+        lastName = lastName,
+        firstName = firstName,
+        flightNumber = flightNumber,
+        departure = departure,
+        destination = destination,
+        departureTime = departureTime,
+        checkInStatus = checkInStatus,
+        seat = seat,
+        passport = passport,
+        baggage = baggage,
+        specialRequests = specialRequests
+    )
+}
+
+private fun Booking.toEntity(fallbackUserId: String = userId): com.airline.checkin.data.local.entity.BookingEntity {
+    return com.airline.checkin.data.local.entity.BookingEntity(
+        id = id,
+        userId = userId.ifBlank { fallbackUserId },
+        lastName = lastName,
+        firstName = firstName,
+        flightNumber = flightNumber,
+        departure = departure,
+        destination = destination,
+        departureTime = departureTime,
+        checkInStatus = checkInStatus,
+        seat = seat,
+        passport = passport,
+        baggage = baggage,
+        specialRequests = specialRequests
+    )
+}
+
 @Singleton
-class FlightRepository @Inject constructor(
-    private val firebase: FirebaseService
-) {
+class FlightRepository @Inject constructor() {
     suspend fun getFlight(flightId: String): Flight? {
-        return firebase.getFlight(flightId)
-    }
-}
-
-@Singleton
-class DocumentRepository @Inject constructor(
-    private val firebase: FirebaseService,
-    private val savedPassengerDao: SavedPassengerDao
-) {
-    suspend fun getPassengerDocuments(userId: String): List<PassengerDocument> {
-        return firebase.getPassengerDocuments(userId)
-    }
-
-    suspend fun createPassengerDocument(doc: PassengerDocument): PassengerDocument {
-        return firebase.createPassengerDocument(doc)
-    }
-
-    fun observeSavedPassengers(userId: String): kotlinx.coroutines.flow.Flow<List<PassengerDocument>> {
-        return savedPassengerDao.getAll(userId).map { list ->
-            list.map { entity ->
-                PassengerDocument(
-                    id = entity.id,
-                    userId = entity.userId,
-                    firstName = entity.firstName,
-                    lastName = entity.lastName,
-                    fullName = entity.fullName,
-                    docType = entity.docType,
-                    docNumber = entity.docNumber,
-                    nationality = entity.nationality,
-                    dateOfBirth = entity.dateOfBirth
-                )
-            }
-        }
-    }
-
-    suspend fun saveTravelerLocally(doc: PassengerDocument) {
-        savedPassengerDao.upsert(
-            com.airline.checkin.data.local.entity.SavedPassengerEntity(
-                id = doc.id,
-                userId = doc.userId,
-                firstName = doc.firstName,
-                lastName = doc.lastName,
-                fullName = doc.fullName,
-                docType = doc.docType,
-                docNumber = doc.docNumber,
-                nationality = doc.nationality,
-                dateOfBirth = doc.dateOfBirth,
-                syncedToRemote = false
-            )
+        return Flight(
+            id = flightId,
+            flightNumber = "IDN16821",
+            origin = "CGK",
+            destination = "DPS",
+            departureTime = "2026-06-05T10:00:00Z",
+            arrivalTime = "2026-06-05T12:00:00Z",
+            dateKey = "2026-06-05",
+            aircraftId = "A320",
+            currency = "USD"
         )
     }
-
-    suspend fun syncUnsyncedToFirestore(userId: String) {
-        val unsynced = savedPassengerDao.getUnsynced(userId)
-        for (entity in unsynced) {
-            try {
-                val doc = PassengerDocument(
-                    id = entity.id,
-                    userId = entity.userId,
-                    firstName = entity.firstName,
-                    lastName = entity.lastName,
-                    fullName = entity.fullName,
-                    docType = entity.docType,
-                    docNumber = entity.docNumber,
-                    nationality = entity.nationality,
-                    dateOfBirth = entity.dateOfBirth
-                )
-                firebase.createPassengerDocument(doc)
-                savedPassengerDao.upsert(entity.copy(syncedToRemote = true))
-            } catch (e: Exception) {
-                Log.e("DocumentRepository", "Failed to sync traveler \${entity.id}", e)
-            }
-        }
-    }
 }
 
 @Singleton
-class SeatRepository @Inject constructor(
-    private val firebase: FirebaseService,
-    private val seatDao: SeatDao
-) {
+class SeatRepository @Inject constructor() {
     suspend fun getSeats(flightId: String): List<Seat> {
-        val remote = firebase.getSeats(flightId)
-        // cache locally
-        seatDao.upsertAll(remote.map {
-            com.airline.checkin.data.local.entity.SeatEntity(
-                id = it.id,
-                flightId = it.flightId,
-                seatNumber = it.seatNumber,
-                type = it.type.name,
-                isOccupied = it.isOccupied
-            )
-        })
-        return remote
-    }
-
-    suspend fun selectSeat(seatId: String) {
-        firebase.selectSeat(seatId)
-        seatDao.markOccupied(seatId)
-    }
-}
-
-@Singleton
-class BoardingPassRepository @Inject constructor(
-    private val firebase: FirebaseService,
-    private val boardingPassDao: BoardingPassDao
-) {
-    suspend fun getBoardingPass(bookingId: String): BoardingPass? {
-        // Try local cache first
-        val cached = boardingPassDao.getByBooking(bookingId)
-        if (cached != null) return BoardingPass(
-            id = cached.id,
-            bookingId = cached.bookingId,
-            passengerId = cached.passengerId,
-            passengerName = cached.passengerName,
-            flightNumber = cached.flightNumber,
-            seatNumber = cached.seatNumber,
-            gate = cached.gate,
-            boardingTime = cached.boardingTime,
-            qrCode = cached.qrCode,
-            isDownloaded = cached.isDownloaded,
-            origin = cached.origin,
-            destination = cached.destination
+        // Return some dummy occupied seats
+        return listOf(
+            Seat(id = "1", seatNumber = "1A", isOccupied = true, flightId = flightId),
+            Seat(id = "2", seatNumber = "2C", isOccupied = true, flightId = flightId)
         )
-        // Fetch from Firebase
-        val remote = firebase.getBoardingPass(bookingId)
-        if (remote != null) {
-            boardingPassDao.upsert(
-                com.airline.checkin.data.local.entity.BoardingPassEntity(
-                    id = remote.id,
-                    bookingId = remote.bookingId,
-                    passengerId = remote.passengerId,
-                    passengerName = remote.passengerName,
-                    flightNumber = remote.flightNumber,
-                    seatNumber = remote.seatNumber,
-                    gate = remote.gate,
-                    boardingTime = remote.boardingTime,
-                    qrCode = remote.qrCode,
-                    isDownloaded = remote.isDownloaded,
-                    origin = remote.origin,
-                    destination = remote.destination
-                )
-            )
-        }
-        return remote
     }
 }
 
@@ -1553,13 +1281,7 @@ object DatabaseModule {
         ).fallbackToDestructiveMigration().build()
 
     @Provides fun provideUserDao(db: AppDatabase): UserDao = db.userDao()
-    @Provides fun provideFlightDao(db: AppDatabase): FlightDao = db.flightDao()
     @Provides fun provideBookingDao(db: AppDatabase): BookingDao = db.bookingDao()
-    @Provides fun providePassengerDao(db: AppDatabase): PassengerDao = db.passengerDao()
-    @Provides fun provideSeatDao(db: AppDatabase): SeatDao = db.seatDao()
-    @Provides fun provideBoardingPassDao(db: AppDatabase): BoardingPassDao = db.boardingPassDao()
-    @Provides fun provideBaggageDao(db: AppDatabase): BaggageDeclarationDao = db.baggageDeclarationDao()
-    @Provides fun provideSavedPassengerDao(db: AppDatabase): SavedPassengerDao = db.savedPassengerDao()
 }
 
 @Module
@@ -1610,6 +1332,48 @@ data class PassengerDocument(
     val dateOfBirth: String = ""
 )
 
+data class PassportData(
+    val number: String = "",
+    val dob: String = "",
+    val nationality: String = ""
+)
+
+data class BaggageData(
+    val cabin: Int = 0,
+    val checked: Int = 0
+)
+
+data class SpecialRequests(
+    val dietary: String = "",
+    val wheelchair: Boolean = false,
+    val infant: Boolean = false,
+    val pet: Boolean = false
+)
+
+data class SeatData(
+    val seatId: String = "",
+    val seatNumber: String = ""
+)
+
+data class Booking(
+    val id: String = "",
+    val lastName: String = "",
+    val firstName: String = "",
+    val flightNumber: String = "",
+    val departure: String = "",
+    val destination: String = "",
+    val departureTime: String = "",
+    val checkInStatus: Boolean = false,
+    val seat: SeatData? = null,
+    val passport: PassportData? = null,
+    val baggage: BaggageData? = null,
+    val specialRequests: SpecialRequests? = null,
+    val userId: String = "",
+    val flightId: String = "",
+    val passengerName: String = "",
+    val cabinClass: String = ""
+)
+
 data class Flight(
     val id: String = "",
     val flightNumber: String = "",
@@ -1618,74 +1382,29 @@ data class Flight(
     val departureTime: String = "",
     val arrivalTime: String = "",
     val dateKey: String = "",
-    val status: String = "",
-    val airline: String = "",
-    val stops: Int = 0,
-    val checkedBagsIncluded: Int = 0,
-    val carryOnIncluded: Int = 0,
-    val emissionsKg: Int = 0,
-    val price: Int = 0,
-    val currency: String = "USD",
-    val durationMinutes: Int = 0,
-    val aircraftId: String = ""
-)
-
-data class Booking(
-    val id: String = "",
-    val reference: String = "",
-    val flightId: String = "",
-    val passengerId: String = "",
-    val passengerName: String = "",
-    val cabinClass: String = "",
-    val checkInStatus: Boolean = false,
-    val ticketsCount: Int = 1,
-    val totalPrice: Int = 0,
-    val currency: String = "USD",
-    val paymentStatus: String = ""
+    val aircraftId: String = "",
+    val currency: String = "USD"
 )
 
 data class Passenger(
     val id: String = "",
-    val bookingId: String = "",
-    val fullName: String = "",
     val passportNumber: String = "",
+    val fullName: String = "",
     val dateOfBirth: String = "",
     val nationality: String = ""
 )
 
-data class Seat(
-    val id: String = "",
-    val flightId: String = "",
-    val seatNumber: String = "",
-    val type: SeatType = SeatType.ECONOMY,
-    val isOccupied: Boolean = false
-)
-
-enum class SeatType { ECONOMY, PREMIUM, BUSINESS, FIRST }
-
-data class BoardingPass(
-    val id: String = "",
-    val bookingId: String = "",
-    val passengerId: String = "",
-    val passengerName: String = "",
-    val flightNumber: String = "",
-    val seatNumber: String = "",
-    val gate: String = "",
-    val boardingTime: String = "",
-    val qrCode: String = "",
-    val isDownloaded: Boolean = false,
-    val origin: String = "",
-    val destination: String = "",
-    val cabinClass: String = ""
-)
-
 data class BaggageDeclaration(
     val id: String = "",
-    val bookingId: String = "",
-    val carryOnIncluded: Int = 0,
     val cabinBags: Int = 0,
-    val checkedBags: Int = 0,
-    val specialItems: String = ""
+    val checkedBags: Int = 0
+)
+
+data class Seat(
+    val id: String = "",
+    val seatNumber: String = "",
+    val isOccupied: Boolean = false,
+    val flightId: String = ""
 )
 
 
@@ -2132,7 +1851,8 @@ data class AuthUiState(
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val repository: AuthRepository
+    private val repository: AuthRepository,
+    private val bookingRepository: com.airline.checkin.data.repository.BookingRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthUiState())
@@ -2141,6 +1861,9 @@ class AuthViewModel @Inject constructor(
     private val _displayName = MutableStateFlow<String?>(null)
     val displayName = _displayName.asStateFlow()
 
+    private val _recentBooking = MutableStateFlow<com.airline.checkin.domain.model.Booking?>(null)
+    val recentBooking = _recentBooking.asStateFlow()
+
     init {
         loadDisplayName()
     }
@@ -2148,6 +1871,11 @@ class AuthViewModel @Inject constructor(
     fun loadDisplayName() {
         viewModelScope.launch {
             _displayName.value = repository.getUserDisplayName()
+            val userId = repository.getCurrentUserId()
+            if (userId != null) {
+                val bookings = bookingRepository.getUserBookings(userId)
+                _recentBooking.value = bookings.maxByOrNull { it.id } ?: bookings.firstOrNull()
+            }
         }
     }
 
@@ -2175,6 +1903,10 @@ class AuthViewModel @Inject constructor(
             _uiState.value = AuthUiState(isLoading = true)
             try {
                 repository.registerWithProfile(email, password, firstName, lastName, phone)
+                val userId = repository.getCurrentUserId()
+                if (userId != null) {
+                    bookingRepository.createMockBooking(userId, firstName, lastName)
+                }
                 loadDisplayName()
                 _uiState.value = AuthUiState(isSuccess = true)
             } catch (e: Exception) {
@@ -2205,6 +1937,10 @@ class AuthViewModel @Inject constructor(
             _uiState.value = AuthUiState(isLoading = true)
             try {
                 repository.saveUserProfile(firstName, lastName, phone)
+                val userId = repository.getCurrentUserId()
+                if (userId != null) {
+                    bookingRepository.createMockBooking(userId, firstName, lastName)
+                }
                 loadDisplayName()
                 _uiState.value = AuthUiState(isSuccess = true)
             } catch (e: Exception) {
@@ -2304,7 +2040,8 @@ fun BoardingPassScreen(
         val storageGranted = permissions[Manifest.permission.WRITE_EXTERNAL_STORAGE] ?: true
         if (storageGranted || Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             coroutineScope.launch {
-                val uriString = PdfGenerator.generateAndSavePdf(context, uiState.boardingPass!!, uiState.qrCodeBitmap)
+                val booking = uiState.booking ?: return@launch
+                val uriString = PdfGenerator.generateAndSavePdf(context, booking, uiState.qrCodeBitmap)
                 if (uriString != null) {
                     savedPdfUri = uriString
                     showSuccessDialog = true
@@ -2331,7 +2068,8 @@ fun BoardingPassScreen(
             permissionLauncher.launch(permissionsToRequest.toTypedArray())
         } else {
             coroutineScope.launch {
-                val uriString = PdfGenerator.generateAndSavePdf(context, uiState.boardingPass!!, uiState.qrCodeBitmap)
+                val booking = uiState.booking ?: return@launch
+                val uriString = PdfGenerator.generateAndSavePdf(context, booking, uiState.qrCodeBitmap)
                 if (uriString != null) {
                     savedPdfUri = uriString
                     showSuccessDialog = true
@@ -2368,9 +2106,9 @@ fun BoardingPassScreen(
                         Button(onClick = { viewModel.loadBoardingPass(bookingId) }, colors = ButtonDefaults.buttonColors(containerColor = PurplePrimary)) { Text("Retry") }
                     }
                 }
-                uiState.boardingPass != null -> {
+                uiState.booking != null -> {
                     BoardingPassContent(
-                        boardingPass = uiState.boardingPass!!,
+                        booking = uiState.booking!!,
                         qrCodeBitmap = uiState.qrCodeBitmap,
                         onDownloadClick = downloadTicket,
                         onViewQrFullScreen = { showQrFullScreen = true }
@@ -2487,7 +2225,7 @@ private fun showDownloadNotification(context: Context, uriString: String?) {
 
 @Composable
 private fun BoardingPassContent(
-    boardingPass: com.airline.checkin.domain.model.BoardingPass,
+    booking: com.airline.checkin.domain.model.Booking,
     qrCodeBitmap: Bitmap?,
     onDownloadClick: () -> Unit,
     onViewQrFullScreen: () -> Unit
@@ -2518,15 +2256,16 @@ private fun BoardingPassContent(
                     verticalArrangement = Arrangement.SpaceEvenly
                 ) {
                     FlightRouteSection(
-                        origin = boardingPass.origin.ifBlank { "—" }, originCity = "—",
-                        destination = boardingPass.destination.ifBlank { "—" }, destinationCity = "—",
+                        origin = booking.departure.ifBlank { "—" }, originCity = "—",
+                        destination = booking.destination.ifBlank { "—" }, destinationCity = "—",
                         duration = "N/A"
                     )
 
                     Column {
                         InfoLabel(label = "Traveler Name")
+                        val travelerName = listOf(booking.firstName, booking.lastName).joinToString(" ").trim()
                         Text(
-                            text = boardingPass.passengerName.ifBlank { boardingPass.passengerId }.ifEmpty { "—" },
+                            text = travelerName.ifEmpty { "—" },
                             fontSize = 18.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = Color.Black
@@ -2537,8 +2276,8 @@ private fun BoardingPassContent(
                         Column(modifier = Modifier.weight(1f)) {
                             InfoLabel(label = "Date")
                             val displayDate = try {
-                                if (boardingPass.boardingTime.isNotBlank()) {
-                                    val instant = java.time.Instant.parse(boardingPass.boardingTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
+                                if (booking.departureTime.isNotBlank()) {
+                                    val instant = java.time.Instant.parse(booking.departureTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
                                     val localDate = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
                                     localDate.format(java.time.format.DateTimeFormatter.ofPattern("EEE, MMM d"))
                                 } else "—"
@@ -2549,7 +2288,7 @@ private fun BoardingPassContent(
                         }
                         Column(modifier = Modifier.weight(1f)) {
                             InfoLabel(label = "Class")
-                            Text(boardingPass.cabinClass.ifBlank { "Economy" }, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                            Text("Economy", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
                         }
                     }
 
@@ -2557,8 +2296,8 @@ private fun BoardingPassContent(
                         Column(modifier = Modifier.weight(1f)) {
                             InfoLabel(label = "Departure")
                             val displayTime = try {
-                                if (boardingPass.boardingTime.isNotBlank()) {
-                                    val instant = java.time.Instant.parse(boardingPass.boardingTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
+                                if (booking.departureTime.isNotBlank()) {
+                                    val instant = java.time.Instant.parse(booking.departureTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
                                     val localDate = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
                                     localDate.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
                                 } else "—"
@@ -2576,15 +2315,15 @@ private fun BoardingPassContent(
                     Row(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.weight(1f)) {
                             InfoLabel(label = "Flight no")
-                            Text(boardingPass.flightNumber.ifEmpty { "N/A" }, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                            Text(booking.flightNumber.ifEmpty { "N/A" }, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
                         }
                         Column(modifier = Modifier.weight(0.6f)) {
                             InfoLabel(label = "Gate")
-                            Text(boardingPass.gate.ifEmpty { "N/A" }, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                            Text("TBD", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
                         }
                         Column(modifier = Modifier.weight(0.6f)) {
                             InfoLabel(label = "Seat")
-                            Text(boardingPass.seatNumber.ifEmpty { "N/A" }, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                            Text(booking.seat?.seatNumber?.ifEmpty { "N/A" } ?: "N/A", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
                         }
                     }
                 }
@@ -2723,8 +2462,8 @@ package com.airline.checkin.ui.boardingpass
 import android.graphics.Bitmap
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.airline.checkin.data.repository.BoardingPassRepository
-import com.airline.checkin.domain.model.BoardingPass
+import com.airline.checkin.data.repository.BookingRepository
+import com.airline.checkin.domain.model.Booking
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -2733,14 +2472,15 @@ import javax.inject.Inject
 
 data class BoardingPassUiState(
     val isLoading: Boolean = false,
-    val boardingPass: BoardingPass? = null,
+    val booking: Booking? = null,
     val qrCodeBitmap: Bitmap? = null,
+    val qrCodePayload: String = "",
     val error: String? = null
 )
 
 @HiltViewModel
 class BoardingPassViewModel @Inject constructor(
-    private val boardingPassRepository: BoardingPassRepository
+    private val bookingRepository: BookingRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(BoardingPassUiState())
@@ -2751,16 +2491,24 @@ class BoardingPassViewModel @Inject constructor(
 
         viewModelScope.launch {
             try {
-                val boardingPass = boardingPassRepository.getBoardingPass(bookingId)
+                val booking = bookingRepository.getBookingById(bookingId)
 
-                if (boardingPass != null) {
-                    _uiState.value = _uiState.value.copy(boardingPass = boardingPass)
+                if (booking != null) {
+                    val fullName = listOf(booking.firstName, booking.lastName)
+                        .joinToString(" ")
+                        .trim()
+                    val seatNumber = booking.seat?.seatNumber.orEmpty()
+                    val qrPayload = "${booking.id}|$fullName|$seatNumber"
+                    val qrBitmap = QrCodeGenerator.generateQrCodeBitmap(qrPayload)
 
-                    val qrBitmap = QrCodeGenerator.generateQrCodeBitmap(boardingPass.qrCode)
-                    _uiState.value = _uiState.value.copy(qrCodeBitmap = qrBitmap)
+                    _uiState.value = _uiState.value.copy(
+                        booking = booking,
+                        qrCodePayload = qrPayload,
+                        qrCodeBitmap = qrBitmap
+                    )
                 } else {
                     _uiState.value = _uiState.value.copy(
-                        error = "Boarding pass not found for booking: $bookingId"
+                        error = "Booking not found for reference: $bookingId"
                     )
                 }
             } catch (e: Exception) {
@@ -2791,7 +2539,7 @@ import android.graphics.pdf.PdfDocument
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
-import com.airline.checkin.domain.model.BoardingPass
+import com.airline.checkin.domain.model.Booking
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -2800,7 +2548,7 @@ import java.io.FileOutputStream
 object PdfGenerator {
     suspend fun generateAndSavePdf(
         context: Context,
-        boardingPass: BoardingPass,
+        booking: Booking,
         qrCodeBitmap: Bitmap?
     ): String? = withContext(Dispatchers.IO) {
         var pdfDocument: PdfDocument? = null
@@ -2843,9 +2591,9 @@ object PdfGenerator {
             canvas.drawText("BOARDING PASS", 400f, 135f, whiteTitlePaint)
 
             // --- Draw Flight Route (Origin -> Destination) ---
-            canvas.drawText(boardingPass.origin.ifEmpty { "—" }, 100f, 320f, hugeRoutePaint)
+            canvas.drawText(booking.departure.ifEmpty { "—" }, 100f, 320f, hugeRoutePaint)
             canvas.drawText("✈", 400f, 305f, planePaint) // Airplane symbol centered
-            canvas.drawText(boardingPass.destination.ifEmpty { "—" }, 540f, 320f, hugeRoutePaint)
+            canvas.drawText(booking.destination.ifEmpty { "—" }, 540f, 320f, hugeRoutePaint)
 
             // --- Draw Grid Details ---
             var currentY = 460f
@@ -2853,7 +2601,8 @@ object PdfGenerator {
             // Row 1: Passenger
             canvas.drawText("Traveler Name", 100f, currentY, labelPaint)
             currentY += 40f
-            canvas.drawText(boardingPass.passengerName.ifBlank { boardingPass.passengerId }.ifEmpty { "—" }, 100f, currentY, valuePaint)
+            val travelerName = listOf(booking.firstName, booking.lastName).joinToString(" ").trim()
+            canvas.drawText(travelerName.ifEmpty { "—" }, 100f, currentY, valuePaint)
 
             currentY += 80f
             // Row 2: Date & Class
@@ -2862,8 +2611,8 @@ object PdfGenerator {
             currentY += 40f
             // Try formatting boarding time to get the date portion.
             val displayDate = try {
-                if (boardingPass.boardingTime.isNotBlank()) {
-                    val instant = java.time.Instant.parse(boardingPass.boardingTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
+                if (booking.departureTime.isNotBlank()) {
+                    val instant = java.time.Instant.parse(booking.departureTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
                     val localDate = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
                     localDate.format(java.time.format.DateTimeFormatter.ofPattern("EEE, MMM d"))
                 } else "—"
@@ -2871,7 +2620,7 @@ object PdfGenerator {
                 "—"
             }
             canvas.drawText(displayDate, 100f, currentY, valuePaint)
-            canvas.drawText(boardingPass.cabinClass.ifBlank { "Economy" }, 450f, currentY, valuePaint)
+            canvas.drawText("Economy", 450f, currentY, valuePaint)
 
             currentY += 80f
             // Row 3: Departure & Arrival
@@ -2879,8 +2628,8 @@ object PdfGenerator {
             canvas.drawText("Arrival", 450f, currentY, labelPaint)
             currentY += 40f
             val displayTime = try {
-                if (boardingPass.boardingTime.isNotBlank()) {
-                    val instant = java.time.Instant.parse(boardingPass.boardingTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
+                if (booking.departureTime.isNotBlank()) {
+                    val instant = java.time.Instant.parse(booking.departureTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
                     val localDate = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
                     localDate.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
                 } else "—"
@@ -2896,9 +2645,9 @@ object PdfGenerator {
             canvas.drawText("Gate", 350f, currentY, labelPaint)
             canvas.drawText("Seat", 550f, currentY, labelPaint)
             currentY += 40f
-            canvas.drawText(boardingPass.flightNumber.ifEmpty { "N/A" }, 100f, currentY, valuePaint)
-            canvas.drawText(boardingPass.gate.ifEmpty { "N/A" }, 350f, currentY, valuePaint)
-            canvas.drawText(boardingPass.seatNumber.ifEmpty { "N/A" }, 550f, currentY, valuePaint)
+            canvas.drawText(booking.flightNumber.ifEmpty { "N/A" }, 100f, currentY, valuePaint)
+            canvas.drawText("TBD", 350f, currentY, valuePaint)
+            canvas.drawText(booking.seat?.seatNumber?.ifEmpty { "N/A" } ?: "N/A", 550f, currentY, valuePaint)
 
             // --- Draw Dashed Divider ---
             currentY += 100f
@@ -2916,7 +2665,7 @@ object PdfGenerator {
             pdfDocument.finishPage(page)
 
             // --- Save Logic ---
-            val fileName = "BoardingPass_${boardingPass.bookingId}.pdf"
+            val fileName = "BoardingPass_${booking.id}.pdf"
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 val resolver = context.contentResolver
@@ -3021,6 +2770,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -3036,6 +2786,35 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import androidx.compose.material3.ExperimentalMaterial3Api
+import android.Manifest
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.content.ContextCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
+import dagger.hilt.android.qualifiers.ApplicationContext
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.compose.ui.platform.LocalContext
+import com.airline.checkin.R
+import com.airline.checkin.domain.model.BaggageData
+import com.airline.checkin.domain.model.PassportData
+import com.airline.checkin.domain.model.SeatData
+import com.airline.checkin.domain.model.SpecialRequests
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import java.util.concurrent.Executors
 
 // ---- ViewModel ----
 
@@ -3046,6 +2825,8 @@ data class CheckInUiState(
     val error: String? = null,
     val currentStep: Int = 1,
     val passenger: Passenger = Passenger(),
+    val selectedSeatId: String = "",
+    val selectedSeatNumber: String = "",
     val baggageList: List<BaggageDeclaration> = emptyList(),
     val mealPreference: String = "",
     val needsWheelchair: Boolean = false,
@@ -3056,7 +2837,8 @@ data class CheckInUiState(
 @HiltViewModel
 class CheckInViewModel @Inject constructor(
     private val bookingRepository: BookingRepository,
-    private val flightRepository: com.airline.checkin.data.repository.FlightRepository
+    private val flightRepository: com.airline.checkin.data.repository.FlightRepository,
+    @ApplicationContext private val appContext: Context
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(CheckInUiState())
@@ -3111,6 +2893,13 @@ class CheckInViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(passenger = passenger)
     }
 
+    fun updateSeat(seatId: String, seatNumber: String) {
+        _uiState.value = _uiState.value.copy(
+            selectedSeatId = seatId,
+            selectedSeatNumber = seatNumber
+        )
+    }
+
     fun addBaggage(baggage: BaggageDeclaration) {
         val updated = _uiState.value.baggageList + baggage
         _uiState.value = _uiState.value.copy(baggageList = updated)
@@ -3135,27 +2924,55 @@ class CheckInViewModel @Inject constructor(
         )
     }
 
-    fun submitCheckIn(onSuccess: () -> Unit) {
-        val bookingId = _uiState.value.booking?.id
+    fun submitCheckIn(canSendNotification: Boolean, onSuccess: () -> Unit) {
+        val currentState = _uiState.value
+        val existingBooking = currentState.booking
+        val bookingId = existingBooking?.id
         if (bookingId.isNullOrBlank()) {
             _uiState.value = _uiState.value.copy(error = "Booking not loaded")
             return
         }
 
-        val baggage = BaggageDeclaration(
-            id = bookingId,
-            bookingId = bookingId,
-            carryOnIncluded = 0,
-            cabinBags = _uiState.value.baggageList.sumOf { it.cabinBags },
-            checkedBags = _uiState.value.baggageList.sumOf { it.checkedBags },
-            specialItems = _uiState.value.baggageList.joinToString(", ") { it.specialItems }
+        val resolvedFirstName = currentState.passenger.fullName.trim()
+            .substringBefore(" ", existingBooking.firstName)
+            .ifBlank { existingBooking.firstName }
+        val resolvedLastName = currentState.passenger.fullName.trim()
+            .substringAfter(" ", existingBooking.lastName)
+            .ifBlank { existingBooking.lastName }
+
+        val checkInPayload = existingBooking.copy(
+            checkInStatus = true,
+            firstName = resolvedFirstName,
+            lastName = resolvedLastName,
+            seat = SeatData(
+                seatId = currentState.selectedSeatId,
+                seatNumber = currentState.selectedSeatNumber
+            ),
+            passport = PassportData(
+                number = currentState.passenger.passportNumber,
+                dob = currentState.passenger.dateOfBirth,
+                nationality = currentState.passenger.nationality
+            ),
+            baggage = BaggageData(
+                cabin = currentState.baggageList.sumOf { it.cabinBags },
+                checked = currentState.baggageList.sumOf { it.checkedBags }
+            ),
+            specialRequests = SpecialRequests(
+                dietary = currentState.mealPreference,
+                wheelchair = currentState.needsWheelchair,
+                infant = currentState.travelingWithInfant,
+                pet = currentState.travelingWithPet
+            )
         )
 
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true, error = null)
             try {
-                bookingRepository.submitCheckIn(bookingId, baggage)
+                bookingRepository.submitCheckIn(bookingId, checkInPayload)
                 _uiState.value = _uiState.value.copy(isLoading = false)
+                if (canSendNotification) {
+                    showCheckInCompleteNotification(appContext)
+                }
                 onSuccess()
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
@@ -3280,7 +3097,7 @@ fun MyBookingsScreen(
                         elevation = CardDefaults.cardElevation(4.dp)
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
-                            Text("Reference: ${booking.reference}", style = MaterialTheme.typography.titleMedium)
+                            Text("Reference: ${booking.id}", style = MaterialTheme.typography.titleMedium)
                             Text("Flight: ${booking.flightId}", style = MaterialTheme.typography.bodyMedium)
                             if (booking.checkInStatus) {
                                 Text(
@@ -3556,7 +3373,19 @@ fun CheckInScreen(
         }
 
         else -> when (uiState.currentStep) {
-            1 -> PassportScanStep(onNext = { viewModel.nextStep() })
+            1 -> PassportScanStep(
+                expectedLastName = uiState.booking?.lastName ?: "",
+                expectedFirstName = uiState.booking?.firstName ?: "",
+                onPassportScanned = { passportNumber, lastName, firstName, dob -> 
+                    val updatedPassenger = uiState.passenger.copy(
+                        passportNumber = passportNumber,
+                        fullName = "$firstName $lastName".trim(),
+                        dateOfBirth = dob
+                    )
+                    viewModel.updatePassenger(updatedPassenger)
+                    viewModel.nextStep()
+                }
+            )
             2 -> PassengerDetailsStep(
                 passenger = uiState.passenger,
                 flight = uiState.flight,
@@ -3564,14 +3393,25 @@ fun CheckInScreen(
                 onNext = { viewModel.nextStep() },
                 onBack = { viewModel.prevStep() }
             )
-            3 -> BaggageStep(
+            3 -> {
+                com.airline.checkin.ui.seat.SeatMapScreen(
+                    flightId = uiState.flight?.id ?: "",
+                    passengerIndex = 0,
+                    cabinClass = uiState.booking?.cabinClass ?: "ECONOMY",
+                    onSeatPicked = { seatId, seatNumber ->
+                        viewModel.updateSeat(seatId, seatNumber)
+                        viewModel.nextStep()
+                    }
+                )
+            }
+            4 -> BaggageStep(
                 baggageList = uiState.baggageList,
                 onAdd = { viewModel.addBaggage(it) },
                 onRemove = { viewModel.removeBaggage(it) },
                 onNext = { viewModel.nextStep() },
                 onBack = { viewModel.prevStep() }
             )
-            4 -> SpecialRequestsStep(
+            5 -> SpecialRequestsStep(
                 meal = uiState.mealPreference,
                 wheelchair = uiState.needsWheelchair,
                 infant = uiState.travelingWithInfant,
@@ -3582,7 +3422,7 @@ fun CheckInScreen(
                 onNext = { viewModel.nextStep() },
                 onBack = { viewModel.prevStep() }
             )
-            5 -> ConfirmationStep(
+            6 -> ConfirmationStep(
                 uiState = uiState,
                 viewModel = viewModel,
                 onConfirm = { onDone() },
@@ -3594,36 +3434,206 @@ fun CheckInScreen(
 
 // ---- Step 1: Passport Scan ----
 @Composable
-fun PassportScanStep(onNext: () -> Unit) {
+fun PassportScanStep(
+    expectedLastName: String,
+    expectedFirstName: String,
+    onPassportScanned: (passport: String, lastName: String, firstName: String, dob: String) -> Unit
+) {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    var hasCameraPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { granted -> hasCameraPermission = granted }
+    )
+
+    LaunchedEffect(Unit) {
+        if (!hasCameraPermission) {
+            permissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+    var scannedText by remember { mutableStateOf("Position passport MRZ in frame...") }
+    var validationMessage by remember { mutableStateOf<String?>(null) }
+    var isProcessing by remember { mutableStateOf(true) }
+
+    val cameraExecutor = remember { Executors.newSingleThreadExecutor() }
+    val textRecognizer = remember { TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS) }
+
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         Text("Scan Passport", style = MaterialTheme.typography.headlineMedium)
+        Spacer(Modifier.height(8.dp))
+        Text(
+            text = "Ensure the two lines at the bottom (MRZ) are visible.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
         Spacer(Modifier.height(24.dp))
-        // Camera placeholder box
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(300.dp)
-                .padding(8.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Card(
-                modifier = Modifier.fillMaxSize(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant
+        
+        if (hasCameraPermission) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(350.dp)
+                    .padding(8.dp)
+            ) {
+                AndroidView(
+                    modifier = Modifier.fillMaxSize(),
+                    factory = { ctx ->
+                        val previewView = PreviewView(ctx)
+                        val cameraProviderFuture = ProcessCameraProvider.getInstance(ctx)
+
+                        cameraProviderFuture.addListener({
+                            val cameraProvider = cameraProviderFuture.get()
+                            val preview = Preview.Builder().build().also {
+                                it.setSurfaceProvider(previewView.surfaceProvider)
+                            }
+
+                            val imageAnalysis = ImageAnalysis.Builder()
+                                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                                .build()
+                                .also {
+                                    it.setAnalyzer(cameraExecutor) { imageProxy ->
+                                        if (!isProcessing) {
+                                            imageProxy.close()
+                                            return@setAnalyzer
+                                        }
+
+                                        @androidx.annotation.OptIn(androidx.camera.core.ExperimentalGetImage::class)
+                                        val mediaImage = imageProxy.image
+                                        if (mediaImage != null) {
+                                            val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+                                            textRecognizer.process(image)
+                                                .addOnSuccessListener { visionText ->
+                                                    val text = visionText.text
+                                                    if (text.isNotBlank()) {
+                                                        scannedText = "Reading data... (${text.length} chars found)"
+                                                    }
+
+                                                    // --- MRZ PARSING LOGIC ---
+                                                    val lines = text.split('\n')
+                                                    var parsedLastName = ""
+                                                    var parsedFirstName = ""
+                                                    var parsedPassport = ""
+                                                    var parsedDob = ""
+
+                                                    // 1. Find Name Line (Starts with P< or contains P<)
+                                                    val mrzLine1 = lines.find { it.contains("P<") }
+                                                    if (mrzLine1 != null) {
+                                                        val clean = mrzLine1.substringAfter("P<").replace(" ", "")
+                                                        if (clean.length > 3) {
+                                                            val namesPart = clean.drop(3) // drop 3-letter country code
+                                                            val nameSplit = namesPart.split("<<")
+                                                            if (nameSplit.isNotEmpty()) {
+                                                                parsedLastName = nameSplit[0].replace("<", " ").trim()
+                                                                if (nameSplit.size > 1) {
+                                                                    parsedFirstName = nameSplit[1].replace("<", " ").trim()
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+
+                                                    // 2. Find Passport/DOB Line
+                                                    val mrzLine2 = lines.find { Regex("[A-Z0-9<]{9}\\d[A-Z<]{3}\\d{6}").containsMatchIn(it) }
+                                                    if (mrzLine2 != null) {
+                                                        val match = Regex("([A-Z0-9<]{9})\\d[A-Z<]{3}(\\d{6})").find(mrzLine2)
+                                                        if (match != null) {
+                                                            parsedPassport = match.groupValues[1].replace("<", "")
+                                                            val dobRaw = match.groupValues[2] // Format: YYMMDD
+                                                            val year = dobRaw.substring(0, 2).toIntOrNull() ?: 0
+                                                            val fullYear = if (year > 30) "19$year" else "20$year"
+                                                            parsedDob = "${dobRaw.substring(4, 6)}/${dobRaw.substring(2, 4)}/$fullYear"
+                                                        }
+                                                    }
+
+                                                    // --- VALIDATION LOGIC ---
+                                                    if (parsedPassport.isNotEmpty() && parsedLastName.isNotEmpty()) {
+                                                        // Check against booking expected name
+                                                        if (parsedLastName.equals(expectedLastName, ignoreCase = true)) {
+                                                            isProcessing = false // Stop camera analysis
+                                                            scannedText = "✅ Success: $parsedLastName ($parsedPassport)"
+                                                            validationMessage = null
+                                                            
+                                                            onPassportScanned(parsedPassport, parsedLastName, parsedFirstName, parsedDob)
+                                                        } else {
+                                                            validationMessage = "Name mismatch!\nBooking: $expectedLastName\nPassport: $parsedLastName"
+                                                        }
+                                                    }
+                                                }
+                                                .addOnCompleteListener {
+                                                    imageProxy.close()
+                                                }
+                                        } else {
+                                            imageProxy.close()
+                                        }
+                                    }
+                                }
+
+                            try {
+                                cameraProvider.unbindAll()
+                                cameraProvider.bindToLifecycle(
+                                    lifecycleOwner,
+                                    CameraSelector.DEFAULT_BACK_CAMERA,
+                                    preview,
+                                    imageAnalysis
+                                )
+                            } catch (e: Exception) {
+                                scannedText = "Camera Error: ${e.message}"
+                            }
+                        }, ContextCompat.getMainExecutor(ctx))
+
+                        previewView
+                    }
                 )
+            }
+        } else {
+            Card(
+                modifier = Modifier.fillMaxWidth().height(300.dp).padding(8.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
             ) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("📷 Camera Preview", style = MaterialTheme.typography.bodyLarge)
+                    Text("Camera permission required", style = MaterialTheme.typography.bodyLarge)
                 }
             }
         }
-        Spacer(Modifier.height(32.dp))
-        Button(onClick = onNext, modifier = Modifier.fillMaxWidth()) {
-            Text("Passport Scanned → Next")
+        
+        Spacer(Modifier.height(16.dp))
+
+        // Feedback Texts
+        Text(
+            text = scannedText,
+            color = if (scannedText.startsWith("✅")) Color(0xFF4CAF50) else MaterialTheme.colorScheme.onSurface,
+            fontWeight = FontWeight.Medium
+        )
+        
+        if (validationMessage != null) {
+            Spacer(Modifier.height(8.dp))
+            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer)) {
+                Text(
+                    text = validationMessage!!,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                    modifier = Modifier.padding(12.dp),
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+
+        Spacer(Modifier.height(16.dp))
+        Button(onClick = { 
+            // Give fallback manual entry in case of unreadable passports
+            onPassportScanned("MOCK12345", expectedLastName, expectedFirstName, "01/01/1990") 
+        }, modifier = Modifier.fillMaxWidth()) {
+            Text("Skip (Manual Entry)")
         }
     }
 }
@@ -4045,7 +4055,17 @@ fun ConfirmationStep(
     onConfirm: () -> Unit,
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
+
+    val notificationPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        viewModel.submitCheckIn(canSendNotification = granted) {
+            showDialog = false
+            onConfirm()
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(24.dp),
@@ -4095,7 +4115,7 @@ fun ConfirmationStep(
                     "TBD"
                 }
                 Text("Departure: $depTime  Arrival: $arrTime")
-                Text("Gate: TBD  Seat: TBD")
+                Text("Gate: TBD  Seat: ${uiState.selectedSeatNumber.ifBlank { "TBD" }}")
                 Spacer(Modifier.height(16.dp))
                 // QR code placeholder
                 Box(
@@ -4139,9 +4159,19 @@ fun ConfirmationStep(
             text = { Text("Your booking has been saved successfully") },
             confirmButton = {
                 Button(onClick = {
-                    viewModel.submitCheckIn {
-                        showDialog = false
-                        onConfirm()
+                    val needsRuntimePermission = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                        ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.POST_NOTIFICATIONS
+                        ) != PackageManager.PERMISSION_GRANTED
+
+                    if (needsRuntimePermission) {
+                        notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                    } else {
+                        viewModel.submitCheckIn(canSendNotification = true) {
+                            showDialog = false
+                            onConfirm()
+                        }
                     }
                 }) { Text("See Ticket") }
             },
@@ -4152,6 +4182,30 @@ fun ConfirmationStep(
             }
         )
     }
+}
+
+private const val CHECK_IN_CHANNEL_ID = "check_in_updates"
+
+private fun showCheckInCompleteNotification(context: Context) {
+    val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val channel = NotificationChannel(
+            CHECK_IN_CHANNEL_ID,
+            "Check-In Updates",
+            NotificationManager.IMPORTANCE_DEFAULT
+        )
+        notificationManager.createNotificationChannel(channel)
+    }
+
+    val notification = NotificationCompat.Builder(context, CHECK_IN_CHANNEL_ID)
+        .setSmallIcon(R.drawable.ic_launcher_foreground)
+        .setContentTitle("Check-in Complete!")
+        .setContentText("Your boarding pass is ready.")
+        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        .setAutoCancel(true)
+        .build()
+
+    NotificationManagerCompat.from(context).notify((System.currentTimeMillis() % Int.MAX_VALUE).toInt(), notification)
 }
 
 ============================================================
@@ -4208,6 +4262,7 @@ import java.time.LocalTime
 @Composable
 fun HomeScreen(
     userName: String?,
+    recentBooking: com.airline.checkin.domain.model.Booking? = null,
     onViewBookings: () -> Unit,
     onProfileClick: () -> Unit
 ) {
@@ -4264,6 +4319,20 @@ fun HomeScreen(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    if (recentBooking != null) {
+                        Spacer(Modifier.height(12.dp))
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text(
+                                text = "Your booking reference: ${recentBooking.id} · Last name: ${recentBooking.lastName}",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                            )
+                        }
+                    }
                 }
 
                 // Avatar
@@ -4631,21 +4700,14 @@ FILE: app/src/main/java/com/airline/checkin/ui/profile/ProfileScreens.kt
 package com.airline.checkin.ui.profile
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -4654,7 +4716,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.airline.checkin.domain.model.PassengerDocument
 
 @Composable
 fun ProfileScreen(
@@ -4662,12 +4723,9 @@ fun ProfileScreen(
     onEditProfile: () -> Unit,
     onSignOut: () -> Unit,
     onBack: () -> Unit,
-    onAddNewTraveler: () -> Unit,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val initial = userName?.firstOrNull()?.uppercase() ?: "?"
-    val savedPassengers by viewModel.savedPassengers.collectAsState()
-    val syncStatus by viewModel.syncStatus.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize()) {
         Row(
@@ -4679,34 +4737,6 @@ fun ProfileScreen(
             IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, contentDescription = "Back") }
             Spacer(Modifier.width(8.dp))
             Text("Profile", style = MaterialTheme.typography.titleLarge)
-        }
-
-        // Add Sync Banner if there are unsynced
-        val count by viewModel.unsyncedCount.collectAsState()
-        if (count > 0) {
-            Surface(
-                color = MaterialTheme.colorScheme.secondaryContainer,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier.padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        "$count unsynced traveler(s)",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer
-                    )
-                    Button(
-                        onClick = { viewModel.triggerSync() },
-                        enabled = syncStatus != "syncing",
-                        modifier = Modifier.height(36.dp)
-                    ) {
-                        Text(if (syncStatus == "syncing") "Syncing..." else "Sync now")
-                    }
-                }
-            }
         }
 
         Card(
@@ -4741,75 +4771,8 @@ fun ProfileScreen(
             }
         }
 
-        // Saved Travelers Section
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text("Saved Travelers", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-            IconButton(onClick = onAddNewTraveler) {
-                Icon(Icons.Filled.Add, contentDescription = "Add Traveler")
-            }
-        }
+        Spacer(Modifier.weight(1f))
 
-        if (savedPassengers.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    "No saved travelers yet. Add one to speed up booking.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            ) {
-                items(savedPassengers) { traveler ->
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                    ) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Column {
-                                Text(traveler.fullName, fontWeight = FontWeight.Medium)
-                                Text(
-                                    "${traveler.docType} • ${traveler.docNumber}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                            IconButton(onClick = { viewModel.deleteTraveler(traveler.id) }) {
-                                Icon(
-                                    Icons.Filled.Delete,
-                                    contentDescription = "Delete",
-                                    tint = MaterialTheme.colorScheme.error
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Sign out button at the bottom
         OutlinedButton(
             onClick = onSignOut,
             modifier = Modifier
@@ -4834,210 +4797,17 @@ FILE: app/src/main/java/com/airline/checkin/ui/profile/ProfileViewModel.kt
 package com.airline.checkin.ui.profile
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.airline.checkin.data.local.dao.SavedPassengerDao
-import com.airline.checkin.data.repository.DocumentRepository
-import com.airline.checkin.domain.model.PassengerDocument
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val documentRepository: DocumentRepository,
-    private val savedPassengerDao: SavedPassengerDao,
     private val auth: FirebaseAuth
 ) : ViewModel() {
 
     val userId: String
         get() = auth.currentUser?.uid ?: ""
-
-    private val _syncStatus = MutableStateFlow("idle")
-    val syncStatus: StateFlow<String> = _syncStatus.asStateFlow()
-
-    val unsyncedCount: StateFlow<Int> = if (userId.isNotEmpty()) {
-        savedPassengerDao.getAll(userId).map { list ->
-            list.count { !it.syncedToRemote }
-        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 0)
-    } else {
-        MutableStateFlow(0)
-    }
-
-    val savedPassengers: StateFlow<List<PassengerDocument>> = 
-        if (userId.isNotEmpty()) {
-            documentRepository.observeSavedPassengers(userId)
-                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
-        } else {
-            MutableStateFlow(emptyList())
-        }
-
-    fun deleteTraveler(id: String) {
-        viewModelScope.launch {
-            savedPassengerDao.deleteById(id)
-        }
-    }
-
-    fun triggerSync() {
-        if (userId.isEmpty()) return
-        viewModelScope.launch {
-            _syncStatus.value = "syncing"
-            try {
-                documentRepository.syncUnsyncedToFirestore(userId)
-                _syncStatus.value = "done"
-            } catch (e: Exception) {
-                _syncStatus.value = "error"
-            }
-        }
-    }
-
-    fun saveTravelerLocally(doc: PassengerDocument) {
-        viewModelScope.launch {
-            documentRepository.saveTravelerLocally(doc)
-        }
-    }
-}
-
-
-============================================================
-FILE: app/src/main/java/com/airline/checkin/ui/profile/SavedTravelerFormScreen.kt
-============================================================
-package com.airline.checkin.ui.profile
-
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import com.airline.checkin.domain.model.PassengerDocument
-import java.util.UUID
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SavedTravelerFormScreen(
-    onBack: () -> Unit,
-    viewModel: ProfileViewModel = hiltViewModel()
-) {
-    var firstName by remember { mutableStateOf("") }
-    var lastName by remember { mutableStateOf("") }
-    var docType by remember { mutableStateOf("Passport") }
-    var docNumber by remember { mutableStateOf("") }
-    var nationality by remember { mutableStateOf("") }
-    var dateOfBirth by remember { mutableStateOf("") }
-
-    var expanded by remember { mutableStateOf(false) }
-    val docTypes = listOf("Passport", "National ID", "Driver's License")
-
-    Column(modifier = Modifier.fillMaxSize()) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onBack) { Icon(Icons.Filled.ArrowBack, contentDescription = "Back") }
-            Spacer(Modifier.width(8.dp))
-            Text("Add Saved Traveler", style = MaterialTheme.typography.titleLarge)
-        }
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-        ) {
-            OutlinedTextField(
-                value = firstName,
-                onValueChange = { firstName = it },
-                label = { Text("First name") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(Modifier.height(8.dp))
-            OutlinedTextField(
-                value = lastName,
-                onValueChange = { lastName = it },
-                label = { Text("Last name") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(Modifier.height(8.dp))
-            
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = it }
-            ) {
-                OutlinedTextField(
-                    value = docType,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Document type") },
-                    modifier = Modifier.menuAnchor().fillMaxWidth(),
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) }
-                )
-                ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
-                    docTypes.forEach { type ->
-                        DropdownMenuItem(
-                            text = { Text(type) },
-                            onClick = {
-                                docType = type
-                                expanded = false
-                            }
-                        )
-                    }
-                }
-            }
-            Spacer(Modifier.height(8.dp))
-
-            OutlinedTextField(
-                value = docNumber,
-                onValueChange = { docNumber = it },
-                label = { Text("Document number") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(Modifier.height(8.dp))
-            OutlinedTextField(
-                value = nationality,
-                onValueChange = { nationality = it },
-                label = { Text("Nationality") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(Modifier.height(8.dp))
-            OutlinedTextField(
-                value = dateOfBirth,
-                onValueChange = { dateOfBirth = it },
-                label = { Text("Date of Birth") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            
-            Spacer(Modifier.weight(1f))
-            Button(
-                onClick = {
-                    val doc = PassengerDocument(
-                        id = UUID.randomUUID().toString(),
-                        userId = viewModel.userId,
-                        firstName = firstName,
-                        lastName = lastName,
-                        fullName = "$firstName $lastName".trim(),
-                        docType = docType,
-                        docNumber = docNumber,
-                        nationality = nationality,
-                        dateOfBirth = dateOfBirth
-                    )
-                    viewModel.saveTravelerLocally(doc)
-                    onBack()
-                },
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp)
-            ) {
-                Text("Save")
-            }
-        }
-    }
 }
 
 
@@ -5503,6 +5273,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -5519,9 +5290,7 @@ import com.airline.checkin.ui.checkin.CheckInScreen
 import com.airline.checkin.ui.checkin.MyBookingsScreen
 import com.airline.checkin.ui.home.HomeScreen
 import com.airline.checkin.ui.profile.ProfileScreen
-import com.airline.checkin.ui.profile.SavedTravelerFormScreen
 import com.airline.checkin.ui.onboarding.OnboardingScreen
-import com.airline.checkin.ui.seat.SeatMapScreen
 
 object Routes {
     const val ONBOARDING     = "onboarding"
@@ -5530,11 +5299,9 @@ object Routes {
     const val HOME           = "home"
     const val CHECK_IN_LOOKUP = "check_in_lookup"
     const val PROFILE        = "profile"
-    const val NEW_SAVED_TRAVELER = "profile/traveler/new"
     const val MY_BOOKINGS    = "my_bookings"
     const val BOOKING_FOUND  = "booking_found/{bookingId}"
     const val CHECK_IN       = "check_in/{bookingId}"
-    const val SEAT_MAP       = "seat_map/{flightId}/{passengerIndex}/{cabinClass}"
     const val BOARDING_PASS  = "boarding_pass/{bookingId}"
 }
 
@@ -5621,8 +5388,10 @@ fun AppNavGraph(
             composable(Routes.HOME) {
                 val authViewModel: AuthViewModel = hiltViewModel()
                 val userName by authViewModel.displayName.collectAsState()
+                val recentBooking by authViewModel.recentBooking.collectAsState()
                 HomeScreen(
                     userName = userName,
+                    recentBooking = recentBooking,
                     onViewBookings = { navController.navigate(Routes.MY_BOOKINGS) },
                     onProfileClick = { navController.navigate(Routes.PROFILE) }
                 )
@@ -5634,19 +5403,12 @@ fun AppNavGraph(
                 ProfileScreen(
                     userName = userName,
                     onEditProfile = { navController.navigate(Routes.COMPLETE_PROFILE) },
-                    onAddNewTraveler = { navController.navigate(Routes.NEW_SAVED_TRAVELER) },
                     onSignOut = {
                         authViewModel.signOut()
                         navController.navigate(Routes.WELCOME) {
                             popUpTo(Routes.HOME) { inclusive = true }
                         }
                     },
-                    onBack = { navController.popBackStack() }
-                )
-            }
-
-            composable(Routes.NEW_SAVED_TRAVELER) {
-                SavedTravelerFormScreen(
                     onBack = { navController.popBackStack() }
                 )
             }
@@ -5679,26 +5441,8 @@ fun AppNavGraph(
                 val bookingId = backStack.arguments?.getString("bookingId") ?: ""
                 CheckInScreen(
                     bookingId  = bookingId,
-                    onGoToSeat = { flightId -> navController.navigate("seat_map/$flightId/0/ECONOMY") },
+                    onGoToSeat = { /* Deprecated */ },
                     onDone     = { navController.navigate("boarding_pass/$bookingId") }
-                )
-            }
-
-            composable(Routes.SEAT_MAP) { backStack ->
-                val flightId = backStack.arguments?.getString("flightId") ?: ""
-                val passengerIndex = backStack.arguments?.getString("passengerIndex")?.toIntOrNull() ?: 0
-                val cabinClass = backStack.arguments?.getString("cabinClass") ?: "ECONOMY"
-
-                com.airline.checkin.ui.seat.SeatMapScreen(
-                    flightId = flightId,
-                    passengerIndex = passengerIndex,
-                    cabinClass = cabinClass,
-                    onSeatPicked = { seatId, seatNumber ->
-                        navController.previousBackStackEntry?.savedStateHandle?.set("pickedSeat_idx", passengerIndex)
-                        navController.previousBackStackEntry?.savedStateHandle?.set("pickedSeat_id", seatId)
-                        navController.previousBackStackEntry?.savedStateHandle?.set("pickedSeat_num", seatNumber)
-                        navController.popBackStack()
-                    }
                 )
             }
 
@@ -6010,6 +5754,13 @@ dependencies {
 
     // QR Code generation
     implementation(libs.zxing.core)
+
+    // CameraX and MLKit
+    implementation("androidx.camera:camera-camera2:1.3.4")
+    implementation("androidx.camera:camera-lifecycle:1.3.4")
+    implementation("androidx.camera:camera-view:1.3.4")
+    implementation("com.google.mlkit:text-recognition:16.0.1")
+    implementation("com.google.guava:guava:31.1-android")
 }
 
 
@@ -7575,7 +7326,7 @@ pluginManagement {
     }
 }
 plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
 }
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)

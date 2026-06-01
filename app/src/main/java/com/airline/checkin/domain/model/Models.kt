@@ -26,6 +26,48 @@ data class PassengerDocument(
     val dateOfBirth: String = ""
 )
 
+data class PassportData(
+    val number: String = "",
+    val dob: String = "",
+    val nationality: String = ""
+)
+
+data class BaggageData(
+    val cabin: Int = 0,
+    val checked: Int = 0
+)
+
+data class SpecialRequests(
+    val dietary: String = "",
+    val wheelchair: Boolean = false,
+    val infant: Boolean = false,
+    val pet: Boolean = false
+)
+
+data class SeatData(
+    val seatId: String = "",
+    val seatNumber: String = ""
+)
+
+data class Booking(
+    val id: String = "",
+    val lastName: String = "",
+    val firstName: String = "",
+    val flightNumber: String = "",
+    val departure: String = "",
+    val destination: String = "",
+    val departureTime: String = "",
+    val checkInStatus: Boolean = false,
+    val seat: SeatData? = null,
+    val passport: PassportData? = null,
+    val baggage: BaggageData? = null,
+    val specialRequests: SpecialRequests? = null,
+    val userId: String = "",
+    val flightId: String = "",
+    val passengerName: String = "",
+    val cabinClass: String = ""
+)
+
 data class Flight(
     val id: String = "",
     val flightNumber: String = "",
@@ -34,72 +76,27 @@ data class Flight(
     val departureTime: String = "",
     val arrivalTime: String = "",
     val dateKey: String = "",
-    val status: String = "",
-    val airline: String = "",
-    val stops: Int = 0,
-    val checkedBagsIncluded: Int = 0,
-    val carryOnIncluded: Int = 0,
-    val emissionsKg: Int = 0,
-    val price: Int = 0,
-    val currency: String = "USD",
-    val durationMinutes: Int = 0,
-    val aircraftId: String = ""
-)
-
-data class Booking(
-    val id: String = "",
-    val reference: String = "",
-    val flightId: String = "",
-    val passengerId: String = "",
-    val passengerName: String = "",
-    val cabinClass: String = "",
-    val checkInStatus: Boolean = false,
-    val ticketsCount: Int = 1,
-    val totalPrice: Int = 0,
-    val currency: String = "USD",
-    val paymentStatus: String = ""
+    val aircraftId: String = "",
+    val currency: String = "USD"
 )
 
 data class Passenger(
     val id: String = "",
-    val bookingId: String = "",
-    val fullName: String = "",
     val passportNumber: String = "",
+    val fullName: String = "",
     val dateOfBirth: String = "",
     val nationality: String = ""
 )
 
-data class Seat(
-    val id: String = "",
-    val flightId: String = "",
-    val seatNumber: String = "",
-    val type: SeatType = SeatType.ECONOMY,
-    val isOccupied: Boolean = false
-)
-
-enum class SeatType { ECONOMY, PREMIUM, BUSINESS, FIRST }
-
-data class BoardingPass(
-    val id: String = "",
-    val bookingId: String = "",
-    val passengerId: String = "",
-    val passengerName: String = "",
-    val flightNumber: String = "",
-    val seatNumber: String = "",
-    val gate: String = "",
-    val boardingTime: String = "",
-    val qrCode: String = "",
-    val isDownloaded: Boolean = false,
-    val origin: String = "",
-    val destination: String = "",
-    val cabinClass: String = ""
-)
-
 data class BaggageDeclaration(
     val id: String = "",
-    val bookingId: String = "",
-    val carryOnIncluded: Int = 0,
     val cabinBags: Int = 0,
-    val checkedBags: Int = 0,
-    val specialItems: String = ""
+    val checkedBags: Int = 0
+)
+
+data class Seat(
+    val id: String = "",
+    val seatNumber: String = "",
+    val isOccupied: Boolean = false,
+    val flightId: String = ""
 )

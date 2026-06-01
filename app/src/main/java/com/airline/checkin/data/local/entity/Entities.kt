@@ -2,6 +2,12 @@ package com.airline.checkin.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.TypeConverter
+import com.airline.checkin.domain.model.BaggageData
+import com.airline.checkin.domain.model.PassportData
+import com.airline.checkin.domain.model.SeatData
+import com.airline.checkin.domain.model.SpecialRequests
+import org.json.JSONObject
 
 @Entity(tableName = "users")
 data class UserEntity(
@@ -11,66 +17,111 @@ data class UserEntity(
     val phone: String
 )
 
-@Entity(tableName = "flights")
-data class FlightEntity(
-    @PrimaryKey val id: String,
-    val flightNumber: String,
-    val origin: String,
-    val destination: String,
-    val departureTime: String,
-    val arrivalTime: String,
-    val status: String
-)
-
 @Entity(tableName = "bookings")
 data class BookingEntity(
     @PrimaryKey val id: String,
-    val reference: String,
-    val flightId: String,
-    val passengerId: String,
-    val checkInStatus: Boolean
-)
-
-@Entity(tableName = "passengers")
-data class PassengerEntity(
-    @PrimaryKey val id: String,
-    val bookingId: String,
-    val fullName: String,
-    val passportNumber: String,
-    val dateOfBirth: String,
-    val nationality: String
-)
-
-@Entity(tableName = "seats")
-data class SeatEntity(
-    @PrimaryKey val id: String,
-    val flightId: String,
-    val seatNumber: String,
-    val type: String,
-    val isOccupied: Boolean
-)
-
-@Entity(tableName = "boarding_passes")
-data class BoardingPassEntity(
-    @PrimaryKey val id: String,
-    val bookingId: String,
-    val passengerId: String,
-    val passengerName: String = "",
+    val userId: String,
+    val lastName: String,
+    val firstName: String,
     val flightNumber: String,
-    val seatNumber: String,
-    val gate: String,
-    val boardingTime: String,
-    val qrCode: String,
-    val isDownloaded: Boolean,
-    val origin: String = "",
-    val destination: String = ""
+    val departure: String,
+    val destination: String,
+    val departureTime: String,
+    val checkInStatus: Boolean,
+    val seat: SeatData?,
+    val passport: PassportData?,
+    val baggage: BaggageData?,
+    val specialRequests: SpecialRequests?
 )
 
-@Entity(tableName = "baggage_declarations")
-data class BaggageDeclarationEntity(
-    @PrimaryKey val id: String,
-    val bookingId: String,
-    val cabinBags: Int,
-    val checkedBags: Int,
-    val specialItems: String
-)
+class Converters {
+    @TypeConverter
+    fun fromSeatData(value: SeatData?): String? {
+        if (value == null) return null
+        val json = JSONObject()
+        json.put("seatId", value.seatId)
+        json.put("seatNumber", value.seatNumber)
+        return json.toString()
+    }
+
+    @TypeConverter
+    fun toSeatData(value: String?): SeatData? {
+        if (value == null) return null
+        return try {
+            val json = JSONObject(value)
+            SeatData(
+                seatId = json.optString("seatId", ""),
+                seatNumber = json.optString("seatNumber", "")
+            )
+        } catch (e: Exception) { null }
+    }
+
+    @TypeConverter
+    fun fromPassportData(value: PassportData?): String? {
+        if (value == null) return null
+        val json = JSONObject()
+        json.put("number", value.number)
+        json.put("dob", value.dob)
+        json.put("nationality", value.nationality)
+        return json.toString()
+    }
+
+    @TypeConverter
+    fun toPassportData(value: String?): PassportData? {
+        if (value == null) return null
+        return try {
+            val json = JSONObject(value)
+            PassportData(
+                number = json.optString("number", ""),
+                dob = json.optString("dob", ""),
+                nationality = json.optString("nationality", "")
+            )
+        } catch (e: Exception) { null }
+    }
+
+    @TypeConverter
+    fun fromBaggageData(value: BaggageData?): String? {
+        if (value == null) return null
+        val json = JSONObject()
+        json.put("cabin", value.cabin)
+        json.put("checked", value.checked)
+        return json.toString()
+    }
+
+    @TypeConverter
+    fun toBaggageData(value: String?): BaggageData? {
+        if (value == null) return null
+        return try {
+            val json = JSONObject(value)
+            BaggageData(
+                cabin = json.optInt("cabin", 0),
+                checked = json.optInt("checked", 0)
+            )
+        } catch (e: Exception) { null }
+    }
+
+    @TypeConverter
+    fun fromSpecialRequests(value: SpecialRequests?): String? {
+        if (value == null) return null
+        val json = JSONObject()
+        json.put("dietary", value.dietary)
+        json.put("wheelchair", value.wheelchair)
+        json.put("infant", value.infant)
+        json.put("pet", value.pet)
+        return json.toString()
+    }
+
+    @TypeConverter
+    fun toSpecialRequests(value: String?): SpecialRequests? {
+        if (value == null) return null
+        return try {
+            val json = JSONObject(value)
+            SpecialRequests(
+                dietary = json.optString("dietary", ""),
+                wheelchair = json.optBoolean("wheelchair", false),
+                infant = json.optBoolean("infant", false),
+                pet = json.optBoolean("pet", false)
+            )
+        } catch (e: Exception) { null }
+    }
+}

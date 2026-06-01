@@ -83,4 +83,11 @@ dependencies {
 
     // QR Code generation
     implementation(libs.zxing.core)
+
+    // CameraX and MLKit
+    implementation("androidx.camera:camera-camera2:1.3.4")
+    implementation("androidx.camera:camera-lifecycle:1.3.4")
+    implementation("androidx.camera:camera-view:1.3.4")
+    implementation("com.google.mlkit:text-recognition:16.0.1")
+    implementation("com.google.guava:guava:31.1-android")
 }

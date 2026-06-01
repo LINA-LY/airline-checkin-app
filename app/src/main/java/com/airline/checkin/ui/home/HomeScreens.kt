@@ -49,6 +49,7 @@ import java.time.LocalTime
 @Composable
 fun HomeScreen(
     userName: String?,
+    recentBooking: com.airline.checkin.domain.model.Booking? = null,
     onViewBookings: () -> Unit,
     onProfileClick: () -> Unit
 ) {
@@ -105,6 +106,20 @@ fun HomeScreen(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    if (recentBooking != null) {
+                        Spacer(Modifier.height(12.dp))
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text(
+                                text = "Your booking reference: ${recentBooking.id} · Last name: ${recentBooking.lastName}",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+                            )
+                        }
+                    }
                 }
 
                 // Avatar

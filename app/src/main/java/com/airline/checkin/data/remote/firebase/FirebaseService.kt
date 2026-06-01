@@ -4,7 +4,6 @@ import com.airline.checkin.domain.model.*
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.storage.FirebaseStorage
@@ -26,11 +25,6 @@ class FirebaseService @Inject constructor(
     )
 
     private val bookings = firestore.collection("bookings")
-    private val flights = firestore.collection("flights")
-    private val airports = firestore.collection("airports")
-    private val seats = firestore.collection("seats")
-    private val boardingPasses = firestore.collection("boarding_passes")
-    private val baggageDeclarations = firestore.collection("baggage_declarations")
     private val users = firestore.collection("users")
     private val passengerDocs = firestore.collection("passenger_documents")
 
@@ -133,11 +127,22 @@ class FirebaseService @Inject constructor(
     }
 
     // ---- Bookings ----
-    suspend fun getBookingById(bookingId: String): Booking? {
-        if (bookingId.isBlank()) return null
-        val doc = bookings.document(bookingId).get().await()
+    suspend fun getBookingById(pnr: String): Booking? {
+        if (pnr.isBlank()) return null
+        val doc = bookings.document(pnr).get().await()
         if (!doc.exists()) return null
         return doc.toBooking()
+    }
+
+    suspend fun getBookingByReference(ref: String, lastName: String): Booking? {
+        if (ref.isBlank()) return null
+        val doc = bookings.document(ref).get().await()
+        if (!doc.exists()) return null
+        val booking = doc.toBooking()
+        if (lastName.isNotBlank() && !booking.lastName.equals(lastName, ignoreCase = true)) {
+            return null
+        }
+        return booking
     }
 
     suspend fun getUserBookings(userId: String): List<Booking> {
@@ -146,185 +151,117 @@ class FirebaseService @Inject constructor(
         return snapshot.documents.map { it.toBooking() }
     }
 
-    suspend fun getBookingByReference(ref: String, lastName: String): Booking? {
-        if (ref.isBlank()) return null
-        val baseQuery = bookings.whereEqualTo("reference", ref)
-        val snapshot = if (lastName.isNotBlank()) {
-            baseQuery.whereEqualTo("lastName", lastName).get().await()
-        } else {
-            baseQuery.get().await()
-        }
-        val doc = snapshot.documents.firstOrNull() ?: return null
-        return doc.toBooking()
-    }
-
-    // ---- Flights ----
-    suspend fun getFlight(flightId: String): Flight? {
-        if (flightId.isBlank()) return null
-        val doc = flights.document(flightId).get().await()
-        if (!doc.exists()) return null
-        return doc.toFlight()
-    }
-
-    // ---- Seats ----
-    suspend fun getSeats(flightId: String): List<Seat> {
-        if (flightId.isBlank()) return emptyList()
-        val snapshot = seats.whereEqualTo("flightId", flightId).get().await()
-        return snapshot.documents.mapNotNull { it.toSeat() }
-    }
-
-    suspend fun selectSeat(seatId: String) {
-        if (seatId.isBlank()) return
-        seats.document(seatId).update("isOccupied", true).await()
-    }
-
-    // ---- Passenger documents (metadata-only) ----
-    suspend fun getPassengerDocuments(userId: String): List<PassengerDocument> {
-        if (userId.isBlank()) return emptyList()
-        val snapshot = passengerDocs.whereEqualTo("userId", userId).get().await()
-        return snapshot.documents.map { doc ->
-            val firstName = doc.getString("firstName") ?: ""
-            val lastName = doc.getString("lastName") ?: ""
-            val fullName = doc.getString("fullName") ?: listOf(firstName, lastName).filter { it.isNotBlank() }.joinToString(" ")
-            PassengerDocument(
-                id = doc.id,
-                userId = doc.getString("userId") ?: "",
-                firstName = firstName,
-                lastName = lastName,
-                fullName = fullName,
-                docType = doc.getString("docType") ?: "",
-                docNumber = doc.getString("docNumber") ?: "",
-                nationality = doc.getString("nationality") ?: "",
-                dateOfBirth = doc.getString("dateOfBirth") ?: ""
-            )
-        }
-    }
-
-    suspend fun createPassengerDocument(doc: PassengerDocument): PassengerDocument {
-        val id = if (doc.id.isNotBlank()) doc.id else passengerDocs.document().id
-        val fullName = doc.fullName.ifBlank {
-            listOf(doc.firstName, doc.lastName).filter { it.isNotBlank() }.joinToString(" ")
-        }
-        val payload = mapOf(
-            "userId" to doc.userId,
-            "firstName" to doc.firstName,
-            "lastName" to doc.lastName,
-            "fullName" to fullName,
-            "docType" to doc.docType,
-            "docNumber" to doc.docNumber,
-            "nationality" to doc.nationality,
-            "dateOfBirth" to doc.dateOfBirth,
-            "createdAt" to FieldValue.serverTimestamp()
-        )
-        passengerDocs.document(id).set(payload).await()
-        return doc.copy(id = id, fullName = fullName)
-    }
-
-    // ---- Boarding Pass ----
-    suspend fun getBoardingPass(bookingId: String): BoardingPass? {
-        if (bookingId.isBlank()) return null
-        val snapshot = boardingPasses.whereEqualTo("bookingId", bookingId)
-            .limit(1)
-            .get()
-            .await()
-        val doc = snapshot.documents.firstOrNull() ?: return null
-        return doc.toBoardingPass()
-    }
-
     // ---- Check-in ----
-    suspend fun submitCheckIn(bookingId: String, baggage: BaggageDeclaration) {
-        if (bookingId.isBlank()) return
-        bookings.document(bookingId)
-            .set(mapOf("checkInStatus" to true), SetOptions.merge())
-            .await()
-
-        val baggageId = if (baggage.id.isNotBlank()) baggage.id else bookingId
-        baggageDeclarations.document(baggageId)
-            .set(
-                mapOf(
-                    "bookingId" to bookingId,
-                    "cabinBags" to baggage.cabinBags,
-                    "checkedBags" to baggage.checkedBags,
-                    "specialItems" to baggage.specialItems
-                ),
-                SetOptions.merge()
+    suspend fun submitCheckIn(pnr: String, booking: Booking) {
+        if (pnr.isBlank()) return
+        val map = mutableMapOf<String, Any>(
+            "checkInStatus" to true
+        )
+        booking.seat?.let {
+            map["seat"] = mapOf(
+                "seatId" to it.seatId,
+                "seatNumber" to it.seatNumber
             )
-            .await()
+        }
+        booking.passport?.let {
+            map["passport"] = mapOf(
+                "number" to it.number,
+                "dob" to it.dob,
+                "nationality" to it.nationality
+            )
+        }
+        booking.baggage?.let {
+            map["baggage"] = mapOf(
+                "cabin" to it.cabin,
+                "checked" to it.checked
+            )
+        }
+        booking.specialRequests?.let {
+            map["specialRequests"] = mapOf(
+                "dietary" to it.dietary,
+                "wheelchair" to it.wheelchair,
+                "infant" to it.infant,
+                "pet" to it.pet
+            )
+        }
+        
+        bookings.document(pnr).update(map).await()
     }
 
-    private fun DocumentSnapshot.toBooking(): Booking = Booking(
-        id = id,
-        reference = getString("reference") ?: "",
-        flightId = getString("flightId") ?: "",
-        passengerId = getString("passengerId") ?: "",
-        passengerName = getString("passengerName") ?: "",
-        cabinClass = getString("cabinClass") ?: "",
-        checkInStatus = getBoolean("checkInStatus") ?: false,
-        ticketsCount = (getLong("ticketsCount") ?: 1L).toInt(),
-        totalPrice = (getLong("totalPrice") ?: getDouble("totalPrice")?.toLong() ?: 0L).toInt(),
-        currency = getString("currency") ?: "USD",
-        paymentStatus = getString("paymentStatus") ?: ""
-    )
+    private fun DocumentSnapshot.toBooking(): Booking {
+        val seatMap = get("seat") as? Map<String, Any>
+        val seatData = seatMap?.let {
+            SeatData(
+                seatId = it["seatId"] as? String ?: "",
+                seatNumber = it["seatNumber"] as? String ?: ""
+            )
+        }
 
-    private fun DocumentSnapshot.toFlight(): Flight = Flight(
-        id = id,
-        flightNumber = getString("flight_number") ?: getString("flightNumber") ?: "",
-        origin = getString("origin") ?: "",
-        destination = getString("destination") ?: "",
-        departureTime = getString("departureTime") ?: "",
-        arrivalTime = getString("arrivalTime") ?: "",
-        dateKey = getString("dateKey") ?: "",
-        status = getString("status") ?: "",
-        airline = getString("airline") ?: "",
-        stops = (getLong("stops") ?: 0L).toInt(),
-        checkedBagsIncluded = (getLong("checkedBagsIncluded") ?: 0L).toInt(),
-        carryOnIncluded = (getLong("carryOnIncluded") ?: 0L).toInt(),
-        emissionsKg = (getLong("emissionsKg") ?: 0L).toInt(),
-        price = (getLong("price") ?: getDouble("price")?.toLong() ?: 0L).toInt(),
-        currency = getString("currency") ?: "USD",
-        durationMinutes = (getLong("durationMinutes") ?: 0L).toInt(),
-        aircraftId = getString("aircraftId") ?: getString("aircraft_id") ?: ""
-    )
+        val passportMap = get("passport") as? Map<String, Any>
+        val passportData = passportMap?.let {
+            PassportData(
+                number = it["number"] as? String ?: "",
+                dob = it["dob"] as? String ?: "",
+                nationality = it["nationality"] as? String ?: ""
+            )
+        }
+        
+        val baggageMap = get("baggage") as? Map<String, Any>
+        val baggageData = baggageMap?.let {
+            BaggageData(
+                cabin = (it["cabin"] as? Number)?.toInt() ?: 0,
+                checked = (it["checked"] as? Number)?.toInt() ?: 0
+            )
+        }
+        
+        val specialMap = get("specialRequests") as? Map<String, Any>
+        val specialRequests = specialMap?.let {
+            SpecialRequests(
+                dietary = it["dietary"] as? String ?: "",
+                wheelchair = it["wheelchair"] as? Boolean ?: false,
+                infant = it["infant"] as? Boolean ?: false,
+                pet = it["pet"] as? Boolean ?: false
+            )
+        }
 
-    private fun DocumentSnapshot.toSeat(): Seat? {
-        val flightId = getString("flightId") ?: return null
-        val seatNumber = getString("seatNumber") ?: return null
-        val typeRaw = getString("type") ?: SeatType.ECONOMY.name
-        val seatType = runCatching { SeatType.valueOf(typeRaw.uppercase()) }
-            .getOrDefault(SeatType.ECONOMY)
-        return Seat(
+        return Booking(
             id = id,
-            flightId = flightId,
-            seatNumber = seatNumber,
-            type = seatType,
-            isOccupied = getBoolean("isOccupied") ?: false
+            lastName = getString("lastName") ?: "",
+            firstName = getString("firstName") ?: "",
+            flightNumber = getString("flightNumber") ?: "",
+            departure = getString("departure") ?: "",
+            destination = getString("destination") ?: "",
+            departureTime = getString("departureTime") ?: "",
+            checkInStatus = getBoolean("checkInStatus") ?: false,
+            seat = seatData,
+            userId = getString("passengerId") ?: "",
+            passport = passportData,
+            baggage = baggageData,
+            specialRequests = specialRequests
         )
     }
 
-    private fun DocumentSnapshot.toBoardingPass(): BoardingPass = BoardingPass(
-        id = id,
-        bookingId = getString("bookingId") ?: "",
-        passengerId = getString("passengerId") ?: "",
-        passengerName = getString("passengerName") ?: getString("passengerId") ?: "",
-        flightNumber = getString("flightNumber") ?: "",
-        seatNumber = getString("seatNumber") ?: "",
-        gate = getString("gate") ?: "",
-        boardingTime = getString("boardingTime") ?: "",
-        qrCode = getString("qrCode") ?: "",
-        isDownloaded = getBoolean("isDownloaded") ?: false,
-        origin = getString("origin") ?: "",
-        destination = getString("destination") ?: ""
-    )
-
-    private fun DocumentSnapshot.toAirport(): Airport? {
-        val code = id
-        if (code.isBlank()) return null
-        return Airport(
-            code = code,
-            name = getString("name") ?: "",
-            city = getString("city") ?: "",
-            country = getString("country") ?: ""
+    suspend fun createMockBooking(userId: String, firstName: String, lastName: String) {
+        val pnr = generateBookingReference()
+        val flightDoc = firestore.collection("flights").document("FL001").get().await()
+        
+        val flightNumber = flightDoc.getString("flightNumber") ?: "IDN16821"
+        val departure = flightDoc.getString("departure") ?: "CGK"
+        val destination = flightDoc.getString("destination") ?: "DPS"
+        val departureTime = java.time.Instant.now().plusSeconds(43200).toString()
+        
+        val bookingData = mapOf(
+            "lastName" to lastName,
+            "firstName" to firstName,
+            "passengerId" to userId,
+            "flightNumber" to flightNumber,
+            "departure" to departure,
+            "destination" to destination,
+            "departureTime" to departureTime,
+            "checkInStatus" to false
         )
+        
+        bookings.document(pnr).set(bookingData).await()
     }
 
     private fun generateBookingReference(): String {

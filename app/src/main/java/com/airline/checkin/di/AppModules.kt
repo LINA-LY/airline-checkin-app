@@ -29,13 +29,7 @@ object DatabaseModule {
         ).fallbackToDestructiveMigration().build()
 
     @Provides fun provideUserDao(db: AppDatabase): UserDao = db.userDao()
-    @Provides fun provideFlightDao(db: AppDatabase): FlightDao = db.flightDao()
     @Provides fun provideBookingDao(db: AppDatabase): BookingDao = db.bookingDao()
-    @Provides fun providePassengerDao(db: AppDatabase): PassengerDao = db.passengerDao()
-    @Provides fun provideSeatDao(db: AppDatabase): SeatDao = db.seatDao()
-    @Provides fun provideBoardingPassDao(db: AppDatabase): BoardingPassDao = db.boardingPassDao()
-    @Provides fun provideBaggageDao(db: AppDatabase): BaggageDeclarationDao = db.baggageDeclarationDao()
-    @Provides fun provideSavedPassengerDao(db: AppDatabase): SavedPassengerDao = db.savedPassengerDao()
 }
 
 @Module
