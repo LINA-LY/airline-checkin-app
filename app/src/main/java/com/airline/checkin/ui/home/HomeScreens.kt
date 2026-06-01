@@ -39,6 +39,7 @@ fun HomeScreen(
     recentBooking: Booking? = null,
     onViewBookings: () -> Unit,
     onProfileClick: () -> Unit,
+    onFindBooking: (reference: String, lastName: String) -> Unit = { _, _ -> },
     authViewModel: AuthViewModel = hiltViewModel()
 ) {
     val userBookings by authViewModel.userBookings.collectAsState()
@@ -123,7 +124,7 @@ fun HomeScreen(
             Spacer(Modifier.height(16.dp))
 
             Button(
-                onClick = { onViewBookings() },
+                onClick = { if (bookingRef.isNotBlank() && lastName.isNotBlank()) onFindBooking(bookingRef, lastName) },
                 modifier = Modifier.fillMaxWidth().height(AppDimens.buttonHeight),
                 shape = RoundedCornerShape(AppDimens.radiusFull),
                 colors = ButtonDefaults.buttonColors(containerColor = AppColors.Primary)

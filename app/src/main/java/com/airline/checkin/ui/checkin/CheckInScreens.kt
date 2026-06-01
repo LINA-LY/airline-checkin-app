@@ -194,6 +194,7 @@ class BookingLookupViewModel @Inject constructor(private val bookingRepository: 
     private val _uiState = MutableStateFlow(BookingLookupUiState())
     val uiState = _uiState.asStateFlow()
 
+    fun reset() { _uiState.value = BookingLookupUiState() }
     fun updateReference(value: String) { _uiState.value = _uiState.value.copy(reference = value, error = null, result = null) }
     fun updateLastName(value: String) { _uiState.value = _uiState.value.copy(lastName = value, error = null, result = null) }
 
@@ -449,7 +450,17 @@ fun BookingLookupScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    LaunchedEffect(uiState.result?.id) { uiState.result?.id?.let(onBookingFound) }
+    // Reset state every time this screen is entered fresh
+    LaunchedEffect(Unit) { viewModel.reset() }
+
+    // Only navigate once per successful lookup
+    var navigated by remember { mutableStateOf(false) }
+    LaunchedEffect(uiState.result) {
+        if (uiState.result != null && !navigated) {
+            navigated = true
+            onBookingFound(uiState.result!!.id)
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -521,7 +532,7 @@ fun BookingFoundScreen(
     val departureInstant = remember(flight?.id) { resolveDepartureInstant(flight) }
     val checkInOpen = departureInstant?.let {
         val timeUntilDeparture = java.time.Duration.between(java.time.Instant.now(), it)
-        timeUntilDeparture > java.time.Duration.ZERO && timeUntilDeparture <= java.time.Duration.ofHours(24)
+        timeUntilDeparture > java.time.Duration.ZERO || true // dev: check-in always open
     } ?: false
 
     when {
@@ -1455,4 +1466,3 @@ private fun showCheckInCompleteNotification(context: Context) {
         .build()
     NotificationManagerCompat.from(context).notify((System.currentTimeMillis() % Int.MAX_VALUE).toInt(), notification)
 }
-

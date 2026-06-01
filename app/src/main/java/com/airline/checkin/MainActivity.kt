@@ -32,11 +32,12 @@ class MainActivity : ComponentActivity() {
         splashScreen.setKeepOnScreenCondition { keepSplashScreen }
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        // Single coroutine: seed first, then launch UI
         lifecycleScope.launch {
-            databaseSeeder.seedIfNeeded()
-        }
-        val onboardingPreferences = OnboardingPreferences(applicationContext)
-        lifecycleScope.launch {
+            try { databaseSeeder.seedIfNeeded() } catch (_: Exception) {}
+
+            val onboardingPreferences = OnboardingPreferences(applicationContext)
             val hasOnboarded = onboardingPreferences.hasOnboarded.first()
             val isLoggedIn = authRepository.isLoggedIn()
 

@@ -136,15 +136,21 @@ class FirebaseService @Inject constructor(
 
     suspend fun getBookingByReference(ref: String, lastName: String): Booking? {
         if (ref.isBlank()) return null
-        val doc = bookings.document(ref).get().await()
-        if (!doc.exists()) return null
-        val booking = doc.toBooking()
-        if (lastName.isNotBlank() && !booking.lastName.equals(lastName, ignoreCase = true)) {
-            return null
+        // First try direct document lookup (if PNR is used as doc ID)
+        val directDoc = bookings.document(ref.uppercase()).get().await()
+        if (directDoc.exists()) {
+            val booking = directDoc.toBooking()
+            if (lastName.isBlank() || booking.lastName.equals(lastName, ignoreCase = true)) return booking
         }
+        // Fallback: query by pnr field
+        val snapshot = bookings
+            .whereEqualTo("pnr", ref.uppercase())
+            .get().await()
+        val doc = snapshot.documents.firstOrNull() ?: return null
+        val booking = doc.toBooking()
+        if (lastName.isNotBlank() && !booking.lastName.equals(lastName, ignoreCase = true)) return null
         return booking
     }
-
     suspend fun getUserBookings(userId: String): List<Booking> {
         if (userId.isBlank()) return emptyList()
         val snapshot = bookings.whereEqualTo("passengerId", userId).get().await()
@@ -229,8 +235,17 @@ class FirebaseService @Inject constructor(
             lastName = getString("lastName") ?: "",
             firstName = getString("firstName") ?: "",
             flightNumber = getString("flightNumber") ?: "",
-            departure = getString("departure") ?: "",
-            destination = getString("destination") ?: "",
+            departure = getString("departure") ?: getString("origin") ?: "",
+            destination = getString("destination") ?: getString("destination") ?: "",
+
+// And add these two missing fields:
+            flightId = getString("flightId") ?: getString("flight_id") ?: id,
+            cabinClass = getString("cabinClass") ?: getString("cabin_class") ?: "",
+            passengerName = run {
+                val fn = getString("firstName") ?: ""
+                val ln = getString("lastName") ?: ""
+                "$fn $ln".trim()
+            },
             departureTime = getString("departureTime") ?: "",
             checkInStatus = getBoolean("checkInStatus") ?: false,
             seat = seatData,
