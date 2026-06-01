@@ -3,56 +3,81 @@ package com.airline.checkin.ui.auth
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Phone
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.VisibilityOff
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.airline.checkin.R
+import com.airline.checkin.ui.AppColors
+import com.airline.checkin.ui.AppDimens
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 
-// ---- Welcome ----
+private enum class AuthMode { SignIn, SignUp }
 
-private enum class AuthMode {
-    SignIn,
-    SignUp
+// ─── Helpers: parse Firebase error codes into human messages ───────────────
+
+private fun mapAuthError(raw: String?): String {
+    if (raw == null) return "Something went wrong. Please try again."
+    return when {
+        raw.contains("wrong-password", ignoreCase = true) ||
+                raw.contains("INVALID_PASSWORD", ignoreCase = true) ||
+                raw.contains("invalid-credential", ignoreCase = true) ->
+            "Incorrect password. Please try again."
+
+        raw.contains("user-not-found", ignoreCase = true) ||
+                raw.contains("USER_NOT_FOUND", ignoreCase = true) ->
+            "No account found with that email address."
+
+        raw.contains("email-already-in-use", ignoreCase = true) ||
+                raw.contains("EMAIL_EXISTS", ignoreCase = true) ->
+            "An account with this email already exists. Try signing in."
+
+        raw.contains("weak-password", ignoreCase = true) ->
+            "Password must be at least 6 characters."
+
+        raw.contains("invalid-email", ignoreCase = true) ->
+            "Please enter a valid email address."
+
+        raw.contains("too-many-requests", ignoreCase = true) ->
+            "Too many attempts. Please wait a moment and try again."
+
+        raw.contains("network", ignoreCase = true) ->
+            "Network error. Check your connection and try again."
+
+        else -> "Something went wrong. Please try again."
+    }
 }
+
+// ─── Welcome / Auth Screen ───────────────────────────────────────────────────
 
 @Composable
 fun WelcomeScreen(
@@ -65,11 +90,21 @@ fun WelcomeScreen(
     var showGoogleError by remember { mutableStateOf(false) }
     val webClientId = remember { context.getString(R.string.default_web_client_id) }
     var authMode by remember { mutableStateOf(AuthMode.SignIn) }
+
+    // Form fields
     var firstName by remember { mutableStateOf("") }
-    var lastName by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var lastName  by remember { mutableStateOf("") }
+    var email     by remember { mutableStateOf("") }
+    var phone     by remember { mutableStateOf("") }
+    var password  by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+
+    // Inline validation state (shown on submit attempt only)
+    var submitted by remember { mutableStateOf(false) }
+
+    val passwordMismatch = authMode == AuthMode.SignUp &&
+            submitted && confirmPassword.isNotBlank() && password != confirmPassword
 
     val googleSignInClient = remember(webClientId) {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -86,237 +121,252 @@ fun WelcomeScreen(
         try {
             val account = task.getResult(ApiException::class.java)
             val idToken = account.idToken
-            if (idToken.isNullOrBlank()) {
-                showGoogleError = true
-            } else {
-                viewModel.signInWithGoogle(idToken)
-            }
+            if (idToken.isNullOrBlank()) showGoogleError = true
+            else viewModel.signInWithGoogle(idToken)
         } catch (e: ApiException) {
             showGoogleError = true
         }
     }
 
     LaunchedEffect(uiState.isSuccess) {
-        if (uiState.isSuccess) {
-            onAuthSuccess()
-            viewModel.clearStatus()
-        }
+        if (uiState.isSuccess) { onAuthSuccess(); viewModel.clearStatus() }
+    }
+    LaunchedEffect(uiState.requiresProfile) {
+        if (uiState.requiresProfile) { onProfileRequired(); viewModel.clearStatus() }
     }
 
-    LaunchedEffect(uiState.requiresProfile) {
-        if (uiState.requiresProfile) {
-            onProfileRequired()
-            viewModel.clearStatus()
-        }
-    }
+    // Reset submitted flag when switching modes
+    LaunchedEffect(authMode) { submitted = false }
 
     val canSubmit = when (authMode) {
         AuthMode.SignIn -> email.isNotBlank() && password.isNotBlank()
-        AuthMode.SignUp -> firstName.isNotBlank() && lastName.isNotBlank() && email.isNotBlank() && phone.isNotBlank() && password.isNotBlank()
+        AuthMode.SignUp -> firstName.isNotBlank() && lastName.isNotBlank() &&
+                email.isNotBlank() && phone.isNotBlank() && password.isNotBlank() && confirmPassword.isNotBlank()
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp)
+            .background(AppColors.White)
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 24.dp)
     ) {
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(56.dp))
+
+        // Title
         Text(
-            text = "Hello, Welcome!",
-            style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.fillMaxWidth()
+            text = if (authMode == AuthMode.SignIn) "Welcome back" else "Create account",
+            fontSize = 28.sp,
+            fontWeight = FontWeight.Bold,
+            color = AppColors.Gray900
         )
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(4.dp))
         Text(
             text = if (authMode == AuthMode.SignIn)
-                "Sign in to continue your journey."
+                "Sign in to continue your journey"
             else
-                "Create an account to start planning your trip.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.fillMaxWidth()
+                "Join us and start planning your trip",
+            fontSize = 14.sp,
+            color = AppColors.Gray500
         )
 
-        Spacer(Modifier.height(22.dp))
+        Spacer(Modifier.height(28.dp))
 
-        SocialLoginButton(
-            label = "Continue with Google",
-            iconRes = R.drawable.google,
-            enabled = !uiState.isLoading && webClientId.isNotBlank(),
-            isLoading = uiState.isLoading,
+        // Google button
+        OutlinedButton(
             onClick = {
-                // Sign out from the Google client first so the account picker always shows,
-                // preventing auto-selection of a previously cached Google account.
                 googleSignInClient.signOut().addOnCompleteListener {
                     googleLauncher.launch(googleSignInClient.signInIntent)
                 }
+            },
+            enabled = !uiState.isLoading && webClientId.isNotBlank(),
+            modifier = Modifier.fillMaxWidth().height(AppDimens.buttonHeight),
+            shape = RoundedCornerShape(AppDimens.radiusLarge),
+            border = ButtonDefaults.outlinedButtonBorder.copy(
+                brush = androidx.compose.ui.graphics.SolidColor(AppColors.Gray300)
+            ),
+            colors = ButtonDefaults.outlinedButtonColors(contentColor = AppColors.Gray900)
+        ) {
+            if (uiState.isLoading) {
+                CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = AppColors.Primary)
+            } else {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Image(
+                        painter = painterResource(id = R.drawable.google),
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(Modifier.width(10.dp))
+                    Text("Continue with Google", fontWeight = FontWeight.Medium)
+                }
             }
-        )
+        }
 
-        Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(20.dp))
 
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Divider(modifier = Modifier.weight(1f))
-            Text("  or  ", color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Divider(modifier = Modifier.weight(1f))
+            HorizontalDivider(modifier = Modifier.weight(1f), color = AppColors.Gray300)
+            Text("  or  ", color = AppColors.Gray500, fontSize = 13.sp)
+            HorizontalDivider(modifier = Modifier.weight(1f), color = AppColors.Gray300)
         }
 
-        Spacer(Modifier.height(18.dp))
+        Spacer(Modifier.height(20.dp))
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                if (authMode == AuthMode.SignUp) {
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        OutlinedTextField(
-                            value = firstName,
-                            onValueChange = { firstName = it },
-                            label = { Text("First name") },
-                            modifier = Modifier.weight(1f),
-                            singleLine = true
-                        )
-                        OutlinedTextField(
-                            value = lastName,
-                            onValueChange = { lastName = it },
-                            label = { Text("Last name") },
-                            modifier = Modifier.weight(1f),
-                            singleLine = true
-                        )
-                    }
-                }
-
-                OutlinedTextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    label = { Text("Email") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
+        // Form fields
+        if (authMode == AuthMode.SignUp) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                AppTextField(
+                    value = firstName,
+                    onValueChange = { firstName = it },
+                    label = "First name",
+                    icon = Icons.Outlined.Person,
+                    modifier = Modifier.weight(1f),
+                    error = if (submitted && firstName.isBlank()) "Required" else null
                 )
+                AppTextField(
+                    value = lastName,
+                    onValueChange = { lastName = it },
+                    label = "Last name",
+                    modifier = Modifier.weight(1f),
+                    error = if (submitted && lastName.isBlank()) "Required" else null
+                )
+            }
+            Spacer(Modifier.height(12.dp))
+        }
 
-                if (authMode == AuthMode.SignUp) {
-                    OutlinedTextField(
-                        value = phone,
-                        onValueChange = { phone = it },
-                        label = { Text("Phone number") },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
+        AppTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = "Email address",
+            icon = Icons.Outlined.Email,
+            keyboardType = KeyboardType.Email,
+            error = if (submitted && email.isBlank()) "Required" else null
+        )
+        Spacer(Modifier.height(12.dp))
+
+        if (authMode == AuthMode.SignUp) {
+            AppTextField(
+                value = phone,
+                onValueChange = { phone = it },
+                label = "Phone number",
+                icon = Icons.Outlined.Phone,
+                keyboardType = KeyboardType.Phone,
+                error = if (submitted && phone.isBlank()) "Required" else null
+            )
+            Spacer(Modifier.height(12.dp))
+        }
+
+        AppTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = "Password",
+            icon = Icons.Outlined.Lock,
+            keyboardType = KeyboardType.Password,
+            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            trailingIcon = {
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(
+                        if (passwordVisible) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
+                        contentDescription = null,
+                        tint = AppColors.Gray500,
+                        modifier = Modifier.size(18.dp)
                     )
                 }
+            },
+            error = if (submitted && password.isBlank()) "Required" else null
+        )
 
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    label = { Text("Password") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    visualTransformation = PasswordVisualTransformation()
-                )
+        if (authMode == AuthMode.SignUp) {
+            Spacer(Modifier.height(12.dp))
+            AppTextField(
+                value = confirmPassword,
+                onValueChange = { confirmPassword = it },
+                label = "Confirm password",
+                icon = Icons.Outlined.Lock,
+                keyboardType = KeyboardType.Password,
+                visualTransformation = PasswordVisualTransformation(),
+                error = if (passwordMismatch) "Passwords do not match" else null
+            )
+        }
 
-                if (authMode == AuthMode.SignIn) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        TextButton(onClick = { }) { Text("Forgot password") }
-                    }
+        if (authMode == AuthMode.SignIn) {
+            Spacer(Modifier.height(4.dp))
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = { }) {
+                    Text("Forgot password?", color = AppColors.Primary, fontSize = 13.sp)
                 }
             }
         }
 
-        Spacer(Modifier.height(16.dp))
+        // Server-side error message
+        uiState.error?.let { raw ->
+            Spacer(Modifier.height(8.dp))
+            ErrorBanner(message = mapAuthError(raw))
+        }
+
+        if (showGoogleError) {
+            Spacer(Modifier.height(8.dp))
+            ErrorBanner(message = "Google sign-in failed. Please try again.")
+        }
+
+        Spacer(Modifier.height(20.dp))
 
         Button(
             onClick = {
+                submitted = true
+                if (!canSubmit) return@Button
+                if (authMode == AuthMode.SignUp && password != confirmPassword) return@Button
                 if (authMode == AuthMode.SignIn) {
                     viewModel.signIn(email.trim(), password)
                 } else {
                     viewModel.register(email.trim(), password, firstName.trim(), lastName.trim(), phone.trim())
                 }
             },
-            modifier = Modifier.fillMaxWidth().height(52.dp),
-            enabled = canSubmit && !uiState.isLoading,
-            shape = RoundedCornerShape(16.dp)
+            modifier = Modifier.fillMaxWidth().height(AppDimens.buttonHeight),
+            enabled = !uiState.isLoading,
+            shape = RoundedCornerShape(AppDimens.radiusFull),
+            colors = ButtonDefaults.buttonColors(containerColor = AppColors.Primary)
         ) {
             if (uiState.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = Color.White)
             } else {
-                Text(if (authMode == AuthMode.SignIn) "Sign In" else "Sign Up")
-            }
-        }
-
-        uiState.error?.let { error ->
-            Spacer(Modifier.height(12.dp))
-            Text(text = error, color = MaterialTheme.colorScheme.error)
-        }
-
-        Spacer(Modifier.height(10.dp))
-
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-            if (authMode == AuthMode.SignIn) {
-                Text("Don't have an account?")
-                TextButton(onClick = { authMode = AuthMode.SignUp }) { Text("Sign up") }
-            } else {
-                Text("Already have an account?")
-                TextButton(onClick = { authMode = AuthMode.SignIn }) { Text("Sign in") }
-            }
-        }
-    }
-
-    if (showGoogleError) {
-        AlertDialog(
-            onDismissRequest = { showGoogleError = false },
-            title = { Text("Google sign-in failed") },
-            text = { Text("Please try again.") },
-            confirmButton = {
-                TextButton(onClick = { showGoogleError = false }) { Text("OK") }
-            }
-        )
-    }
-}
-
-@Composable
-private fun SocialLoginButton(
-    label: String,
-    iconRes: Int,
-    enabled: Boolean,
-    isLoading: Boolean = false,
-    onClick: () -> Unit = {}
-) {
-    OutlinedButton(
-        onClick = onClick,
-        enabled = enabled,
-        modifier = Modifier.fillMaxWidth().height(52.dp),
-        shape = RoundedCornerShape(16.dp)
-    ) {
-        if (isLoading) {
-            CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
-        } else {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-                Image(
-                    painter = painterResource(id = iconRes),
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp)
+                Text(
+                    text = if (authMode == AuthMode.SignIn) "Sign In" else "Create Account",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
                 )
-                Spacer(Modifier.width(12.dp))
-                Text(label)
             }
         }
+
+        Spacer(Modifier.height(16.dp))
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = if (authMode == AuthMode.SignIn) "Don't have an account? " else "Already have an account? ",
+                color = AppColors.Gray500,
+                fontSize = 14.sp
+            )
+            Text(
+                text = if (authMode == AuthMode.SignIn) "Sign up" else "Sign in",
+                color = AppColors.Primary,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.clickable {
+                    authMode = if (authMode == AuthMode.SignIn) AuthMode.SignUp else AuthMode.SignIn
+                    submitted = false
+                }
+            )
+        }
+
+        Spacer(Modifier.height(32.dp))
     }
 }
 
-// ---- Complete Profile ----
+// ─── Complete Profile Screen ──────────────────────────────────────────────────
 
 @Composable
 fun CompleteProfileScreen(
@@ -325,14 +375,12 @@ fun CompleteProfileScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var firstName by remember { mutableStateOf("") }
-    var lastName by remember { mutableStateOf("") }
-    var phone by remember { mutableStateOf("") }
+    var lastName  by remember { mutableStateOf("") }
+    var phone     by remember { mutableStateOf("") }
+    var submitted by remember { mutableStateOf(false) }
 
     LaunchedEffect(uiState.isSuccess) {
-        if (uiState.isSuccess) {
-            onProfileSaved()
-            viewModel.clearStatus()
-        }
+        if (uiState.isSuccess) { onProfileSaved(); viewModel.clearStatus() }
     }
 
     val canSubmit = firstName.isNotBlank() && lastName.isNotBlank() && phone.isNotBlank()
@@ -340,76 +388,156 @@ fun CompleteProfileScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp)
+            .background(AppColors.White)
+            .padding(horizontal = 24.dp)
     ) {
+        Spacer(Modifier.height(56.dp))
+        Text("Complete profile", fontSize = 28.sp, fontWeight = FontWeight.Bold, color = AppColors.Gray900)
+        Spacer(Modifier.height(4.dp))
+        Text("Add your details to finish signing up.", fontSize = 14.sp, color = AppColors.Gray500)
         Spacer(Modifier.height(32.dp))
-        Text("Complete your profile", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.SemiBold)
-        Spacer(Modifier.height(8.dp))
-        Text(
-            text = "Add your name and phone number to finish sign up.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            AppTextField(
+                value = firstName,
+                onValueChange = { firstName = it },
+                label = "First name",
+                modifier = Modifier.weight(1f),
+                error = if (submitted && firstName.isBlank()) "Required" else null
+            )
+            AppTextField(
+                value = lastName,
+                onValueChange = { lastName = it },
+                label = "Last name",
+                modifier = Modifier.weight(1f),
+                error = if (submitted && lastName.isBlank()) "Required" else null
+            )
+        }
+        Spacer(Modifier.height(12.dp))
+        AppTextField(
+            value = phone,
+            onValueChange = { phone = it },
+            label = "Phone number",
+            icon = Icons.Outlined.Phone,
+            keyboardType = KeyboardType.Phone,
+            error = if (submitted && phone.isBlank()) "Required" else null
         )
+
+        uiState.error?.let {
+            Spacer(Modifier.height(8.dp))
+            ErrorBanner(message = mapAuthError(it))
+        }
+
         Spacer(Modifier.height(24.dp))
 
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    OutlinedTextField(
-                        value = firstName,
-                        onValueChange = { firstName = it },
-                        label = { Text("First name") },
-                        modifier = Modifier.weight(1f),
-                        singleLine = true
-                    )
-                    OutlinedTextField(
-                        value = lastName,
-                        onValueChange = { lastName = it },
-                        label = { Text("Last name") },
-                        modifier = Modifier.weight(1f),
-                        singleLine = true
-                    )
-                }
-
-                OutlinedTextField(
-                    value = phone,
-                    onValueChange = { phone = it },
-                    label = { Text("Phone number") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
-                )
-            }
-        }
-
-        Spacer(Modifier.height(20.dp))
-
         Button(
-            onClick = { viewModel.saveProfile(firstName.trim(), lastName.trim(), phone.trim()) },
-            modifier = Modifier.fillMaxWidth().height(52.dp),
-            enabled = canSubmit && !uiState.isLoading,
-            shape = RoundedCornerShape(16.dp)
+            onClick = {
+                submitted = true
+                if (canSubmit) viewModel.saveProfile(firstName.trim(), lastName.trim(), phone.trim())
+            },
+            modifier = Modifier.fillMaxWidth().height(AppDimens.buttonHeight),
+            enabled = !uiState.isLoading,
+            shape = RoundedCornerShape(AppDimens.radiusFull),
+            colors = ButtonDefaults.buttonColors(containerColor = AppColors.Primary)
         ) {
             if (uiState.isLoading) {
-                CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = Color.White)
             } else {
-                Text("Save profile")
+                Text("Save & Continue", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
             }
-        }
-
-        uiState.error?.let { error ->
-            Spacer(Modifier.height(12.dp))
-            Text(text = error, color = MaterialTheme.colorScheme.error)
         }
     }
 }
 
+// ─── Reusable Components ──────────────────────────────────────────────────────
+
+@Composable
+fun AppTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String,
+    modifier: Modifier = Modifier.fillMaxWidth(),
+    icon: ImageVector? = null,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    trailingIcon: @Composable (() -> Unit)? = null,
+    readOnly: Boolean = false,
+    error: String? = null,
+    singleLine: Boolean = true
+) {
+    Column(modifier = modifier) {
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            label = { Text(label, fontSize = 14.sp) },
+            leadingIcon = icon?.let {
+                { Icon(it, contentDescription = null, tint = if (error != null) AppColors.Error else AppColors.Gray500, modifier = Modifier.size(18.dp)) }
+            },
+            trailingIcon = trailingIcon,
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = singleLine,
+            readOnly = readOnly,
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+            visualTransformation = visualTransformation,
+            shape = RoundedCornerShape(AppDimens.radiusLarge),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = AppColors.Primary,
+                unfocusedBorderColor = AppColors.Gray300,
+                errorBorderColor = AppColors.Error,
+                focusedLabelColor = AppColors.Primary,
+                cursorColor = AppColors.Primary
+            ),
+            isError = error != null
+        )
+        if (error != null) {
+            Spacer(Modifier.height(2.dp))
+            Text(error, color = AppColors.Error, fontSize = 11.sp, modifier = Modifier.padding(start = 4.dp))
+        }
+    }
+}
+
+@Composable
+fun ErrorBanner(message: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(AppDimens.radiusMedium))
+            .background(AppColors.ErrorLight)
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(16.dp)
+                .background(AppColors.Error, RoundedCornerShape(AppDimens.radiusFull)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("!", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+        }
+        Text(message, color = AppColors.Error, fontSize = 13.sp, modifier = Modifier.weight(1f))
+    }
+}
+
+@Composable
+fun SuccessBanner(message: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(AppDimens.radiusMedium))
+            .background(AppColors.SuccessLight)
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(16.dp)
+                .background(AppColors.Success, RoundedCornerShape(AppDimens.radiusFull)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("✓", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+        }
+        Text(message, color = AppColors.Success, fontSize = 13.sp, modifier = Modifier.weight(1f))
+    }
+}

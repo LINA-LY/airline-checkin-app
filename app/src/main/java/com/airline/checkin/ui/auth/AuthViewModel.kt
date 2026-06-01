@@ -31,6 +31,9 @@ class AuthViewModel @Inject constructor(
     private val _recentBooking = MutableStateFlow<com.airline.checkin.domain.model.Booking?>(null)
     val recentBooking = _recentBooking.asStateFlow()
 
+    private val _userBookings = MutableStateFlow<List<com.airline.checkin.domain.model.Booking>>(emptyList())
+    val userBookings = _userBookings.asStateFlow()
+
     init {
         loadDisplayName()
     }
@@ -42,6 +45,7 @@ class AuthViewModel @Inject constructor(
             if (userId != null) {
                 val bookings = bookingRepository.getUserBookings(userId)
                 _recentBooking.value = bookings.maxByOrNull { it.id } ?: bookings.firstOrNull()
+                _userBookings.value = bookings
             }
         }
     }

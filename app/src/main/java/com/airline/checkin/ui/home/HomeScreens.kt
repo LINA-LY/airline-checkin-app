@@ -1,289 +1,279 @@
 package com.airline.checkin.ui.home
 
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AirplaneTicket
-import androidx.compose.material.icons.filled.ConfirmationNumber
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.material.icons.outlined.Flight
+import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import java.time.LocalTime
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.airline.checkin.domain.model.Booking
+import com.airline.checkin.ui.AppColors
+import com.airline.checkin.ui.AppDimens
+import com.airline.checkin.ui.auth.AppTextField
+import com.airline.checkin.ui.auth.AuthViewModel
 
 @Composable
 fun HomeScreen(
     userName: String?,
-    recentBooking: com.airline.checkin.domain.model.Booking? = null,
+    recentBooking: Booking? = null,
     onViewBookings: () -> Unit,
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    authViewModel: AuthViewModel = hiltViewModel()
 ) {
-    val greeting = remember {
-        val hour = LocalTime.now().hour
-        when {
-            hour < 12 -> "Good morning"
-            hour < 17 -> "Good afternoon"
-            else      -> "Good evening"
-        }
-    }
+    val userBookings by authViewModel.userBookings.collectAsState()
 
-    val displayName = userName ?: "Traveler"
-    val initial = displayName.firstOrNull()?.uppercase() ?: "?"
+    var bookingRef by remember { mutableStateOf("") }
+    var lastName   by remember { mutableStateOf("") }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(AppColors.Gray50)
             .verticalScroll(rememberScrollState())
     ) {
-        // ---- Hero Header ----
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    Brush.verticalGradient(
-                        colors = listOf(
-                            MaterialTheme.colorScheme.primaryContainer,
-                            MaterialTheme.colorScheme.background
-                        )
-                    )
-                )
-                .padding(start = 24.dp, end = 24.dp, top = 48.dp, bottom = 24.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.Top
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = "$greeting,",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
-                    Text(
-                        text = displayName,
-                        style = MaterialTheme.typography.headlineMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = "Where are you flying today?",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    if (recentBooking != null) {
-                        Spacer(Modifier.height(12.dp))
-                        Card(
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f)),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Text(
-                                text = "Your booking reference: ${recentBooking.id} · Last name: ${recentBooking.lastName}",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onPrimaryContainer,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-                            )
-                        }
-                    }
-                }
-
-                // Avatar
-                Box(
-                    modifier = Modifier
-                        .size(52.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary)
-                        .clickable { onProfileClick() },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = initial,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
-        }
-
-        // ---- Quick Action Row ----
+        // ── Top bar ──────────────────────────────────────────────
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                .background(AppColors.White)
+                .padding(start = 20.dp, end = 20.dp, top = 52.dp, bottom = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            QuickActionButton(
-                icon = Icons.Default.AirplaneTicket,
-                label = "My Bookings",
-                onClick = onViewBookings,
-                modifier = Modifier.weight(1f)
-            )
+            Column {
+                Text(
+                    text = "Hello, ${userName ?: "Traveler"}",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AppColors.Gray900
+                )
+                Text(
+                    text = "Find your booking below",
+                    fontSize = 13.sp,
+                    color = AppColors.Gray500
+                )
+            }
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(AppColors.PrimaryFaint)
+                    .border(1.dp, AppColors.PrimaryLight, CircleShape)
+                    .clickable { onProfileClick() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Outlined.Person,
+                    contentDescription = "Profile",
+                    tint = AppColors.Primary,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
 
-        Spacer(Modifier.height(24.dp))
-
-        // ---- Feature Cards ----
-        Column(
-            modifier = Modifier.padding(horizontal = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            FeatureCard(
-                icon = Icons.Default.AirplaneTicket,
-                title = "My Bookings",
-                description = "View your bookings, check in, and access boarding passes.",
-                primaryLabel = "View bookings",
-                onPrimary = onViewBookings,
-                accentColor = MaterialTheme.colorScheme.secondary
-            )
-        }
-
-        Spacer(Modifier.height(24.dp))
-    }
-}
-
-
-@Composable
-private fun QuickActionButton(
-    icon: ImageVector,
-    label: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val scale by animateFloatAsState(if (isPressed) 0.92f else 1f, label = "scale")
-
-    Card(
-        modifier = modifier
-            .scale(scale)
-            .clickable(interactionSource = interactionSource, indication = null) { onClick() },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
+        // ── Booking Lookup Card ───────────────────────────────────
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .background(AppColors.White)
+                .padding(horizontal = 20.dp, vertical = 16.dp)
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = label,
-                modifier = Modifier.size(28.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-            Spacer(Modifier.height(6.dp))
             Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium,
-                fontWeight = FontWeight.SemiBold
+                text = "Find my booking",
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = AppColors.Gray900
             )
+            Spacer(Modifier.height(16.dp))
+
+            AppTextField(
+                value = bookingRef,
+                onValueChange = { bookingRef = it },
+                label = "Booking reference",
+                icon = Icons.Outlined.Flight
+            )
+            Spacer(Modifier.height(12.dp))
+            AppTextField(
+                value = lastName,
+                onValueChange = { lastName = it },
+                label = "Last name"
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            Button(
+                onClick = { onViewBookings() },
+                modifier = Modifier.fillMaxWidth().height(AppDimens.buttonHeight),
+                shape = RoundedCornerShape(AppDimens.radiusFull),
+                colors = ButtonDefaults.buttonColors(containerColor = AppColors.Primary)
+            ) {
+                Icon(Icons.Outlined.Search, contentDescription = null, modifier = Modifier.size(18.dp))
+                Spacer(Modifier.width(8.dp))
+                Text("Find my booking", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+            }
         }
+
+        HorizontalDivider(color = AppColors.Gray100)
+
+        // ── My Flights Section ────────────────────────────────────
+        if (userBookings.isNotEmpty()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("My flights", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = AppColors.Gray900)
+                Text(
+                    "See all",
+                    fontSize = 13.sp,
+                    color = AppColors.Primary,
+                    fontWeight = FontWeight.Medium,
+                    modifier = Modifier.clickable { onViewBookings() }
+                )
+            }
+
+            userBookings.take(3).forEach { booking ->
+                HomeFlightCard(booking = booking, onClick = { onViewBookings() })
+                Spacer(Modifier.height(4.dp))
+            }
+        } else {
+            Spacer(Modifier.height(32.dp))
+            Box(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Outlined.Flight, contentDescription = null, tint = AppColors.Gray300, modifier = Modifier.size(40.dp))
+                    Spacer(Modifier.height(10.dp))
+                    Text(
+                        text = "No flights found.\nEnter your booking reference above.",
+                        color = AppColors.Gray500,
+                        textAlign = TextAlign.Center,
+                        fontSize = 14.sp
+                    )
+                }
+            }
+        }
+
+        Spacer(Modifier.height(40.dp))
     }
 }
 
 @Composable
-private fun FeatureCard(
-    icon: ImageVector,
-    title: String,
-    description: String,
-    primaryLabel: String,
-    onPrimary: () -> Unit,
-    accentColor: Color = MaterialTheme.colorScheme.primary,
-    secondaryLabel: String? = null,
-    onSecondary: (() -> Unit)? = null
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-    ) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(RoundedCornerShape(12.dp))
-                        .background(accentColor.copy(alpha = 0.12f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = accentColor,
-                        modifier = Modifier.size(22.dp)
-                    )
-                }
-                Spacer(Modifier.width(12.dp))
-                Text(
-                    text = title,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold
-                )
-            }
-            Spacer(Modifier.height(8.dp))
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+private fun HomeFlightCard(booking: Booking, onClick: () -> Unit) {
+    val (depTime, arrTime, dateDisplay) = remember(booking.id) {
+        try {
+            val norm = booking.departureTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it }
+            val depInstant = java.time.Instant.parse(norm)
+            val ld = java.time.LocalDateTime.ofInstant(depInstant, java.time.ZoneId.systemDefault())
+            Triple(
+                ld.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")),
+                ld.plusHours(2).format(java.time.format.DateTimeFormatter.ofPattern("HH:mm")),
+                ld.format(java.time.format.DateTimeFormatter.ofPattern("EEE, MMM d"))
             )
-            Spacer(Modifier.height(16.dp))
+        } catch (e: Exception) { Triple("--:--", "--:--", "—") }
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 6.dp)
+            .clip(RoundedCornerShape(AppDimens.radiusLarge))
+            .background(AppColors.White)
+            .border(1.dp, AppColors.Gray100, RoundedCornerShape(AppDimens.radiusLarge))
+            .clickable { onClick() }
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Route row
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Button(
-                    onClick = onPrimary,
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(12.dp)
-                ) {
-                    Text(primaryLabel)
+                Column(horizontalAlignment = Alignment.Start) {
+                    Text(booking.departure.take(3).uppercase().ifEmpty { "???" }, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = AppColors.Gray900)
+                    Text(depTime, fontSize = 12.sp, color = AppColors.Gray500)
                 }
-                if (secondaryLabel != null && onSecondary != null) {
-                    OutlinedButton(
-                        onClick = onSecondary,
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(12.dp)
-                    ) {
-                        Text(secondaryLabel)
+
+                Box(
+                    modifier = Modifier.weight(1f).height(48.dp).padding(horizontal = 8.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Canvas(modifier = Modifier.fillMaxWidth().height(28.dp)) {
+                        drawArc(
+                            color = AppColors.Primary,
+                            startAngle = 180f,
+                            sweepAngle = 180f,
+                            useCenter = false,
+                            topLeft = Offset(size.width * 0.05f, 0f),
+                            size = androidx.compose.ui.geometry.Size(size.width * 0.9f, size.height * 2.2f),
+                            style = Stroke(width = 2.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(8f, 8f), 0f))
+                        )
+                    }
+                    Icon(Icons.Outlined.Flight, contentDescription = null, modifier = Modifier.size(18.dp).rotate(90f), tint = AppColors.Primary)
+                }
+
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(booking.destination.take(3).uppercase().ifEmpty { "???" }, fontSize = 22.sp, fontWeight = FontWeight.Bold, color = AppColors.Gray900)
+                    Text(arrTime, fontSize = 12.sp, color = AppColors.Gray500)
+                }
+            }
+
+            Spacer(Modifier.height(12.dp))
+            HorizontalDivider(color = AppColors.Gray100)
+            Spacer(Modifier.height(10.dp))
+
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Date", fontSize = 11.sp, color = AppColors.Gray500)
+                    Text(dateDisplay, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = AppColors.Gray700)
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Class", fontSize = 11.sp, color = AppColors.Gray500)
+                    Text(booking.cabinClass.ifBlank { "Economy" }, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = AppColors.Gray700)
+                }
+                Column(modifier = Modifier.weight(1f), horizontalAlignment = Alignment.End) {
+                    if (booking.checkInStatus) {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(AppDimens.radiusFull))
+                                .background(AppColors.SuccessLight)
+                                .padding(horizontal = 8.dp, vertical = 3.dp)
+                        ) {
+                            Text("Checked in", fontSize = 11.sp, color = AppColors.Success, fontWeight = FontWeight.SemiBold)
+                        }
+                    } else {
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(AppDimens.radiusFull))
+                                .background(AppColors.PrimaryFaint)
+                                .padding(horizontal = 8.dp, vertical = 3.dp)
+                        ) {
+                            Text("Check in", fontSize = 11.sp, color = AppColors.Primary, fontWeight = FontWeight.SemiBold)
+                        }
                     }
                 }
             }
