@@ -118,8 +118,11 @@ class BookingRepository @Inject constructor(
     }
 
     suspend fun submitCheckIn(bookingId: String, booking: Booking) {
-        firebase.submitCheckIn(bookingId, booking)
+        // 1. Save to Room DB FIRST! So the local app instantly knows we are checked in.
         bookingDao.upsert(booking.copy(id = bookingId, checkInStatus = true).toEntity())
+
+        // 2. Tell Firebase (it will sync in the background when the internet returns)
+        firebase.submitCheckIn(bookingId, booking)
     }
 
     fun observeUserBookings(userId: String): kotlinx.coroutines.flow.Flow<List<Booking>> {

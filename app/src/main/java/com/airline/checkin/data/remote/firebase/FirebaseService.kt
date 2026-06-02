@@ -191,7 +191,7 @@ class FirebaseService @Inject constructor(
             )
         }
         
-        bookings.document(pnr).update(map).await()
+        bookings.document(pnr).update(map)
     }
 
     private fun DocumentSnapshot.toBooking(): Booking {
