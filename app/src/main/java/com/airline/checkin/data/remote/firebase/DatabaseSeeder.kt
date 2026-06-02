@@ -1,7 +1,6 @@
 package com.airline.checkin.data.remote.firebase
 
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.tasks.await
 import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -10,13 +9,14 @@ import javax.inject.Singleton
 class DatabaseSeeder @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
-    suspend fun seedIfNeeded() {
+    // Removed 'suspend' and all '.await()' calls to prevent offline blocking
+    fun seedIfNeeded() {
         val departure1 = Instant.now().plusSeconds(12 * 3600).toString()
         val departure2 = Instant.now().plusSeconds(14 * 3600).toString()
 
         // Force server writes, bypassing cache
-        firestore.disableNetwork().await()
-        firestore.enableNetwork().await()
+        firestore.disableNetwork()
+        firestore.enableNetwork()
 
         firestore.collection("flights").document("FL001").set(mapOf(
             "flightNumber"  to "AH1000",
@@ -26,7 +26,7 @@ class DatabaseSeeder @Inject constructor(
             "departureTime" to departure1,
             "arrivalTime"   to Instant.now().plusSeconds(16 * 3600).toString(),
             "dateKey"       to departure1.take(10)
-        )).await()
+        ))
 
         firestore.collection("bookings").document("ABCDEF").set(mapOf(
             "pnr"           to "ABCDEF",
@@ -40,7 +40,7 @@ class DatabaseSeeder @Inject constructor(
             "departureTime" to departure1,
             "cabinClass"    to "ECONOMY",
             "checkInStatus" to false
-        )).await()
+        ))
 
         firestore.collection("bookings").document("XYZ123").set(mapOf(
             "pnr"           to "XYZ123",
@@ -54,6 +54,6 @@ class DatabaseSeeder @Inject constructor(
             "departureTime" to departure2,
             "cabinClass"    to "BUSINESS",
             "checkInStatus" to false
-        )).await()
+        ))
     }
 }

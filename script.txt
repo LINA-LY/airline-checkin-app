@@ -63,6 +63,7 @@ DIRECTORY STRUCTURE
 |   |   +---830a2c57-5512-46f6-b3e8-8ea6e047eeb0/
 |   |   +---84017eb5-1420-49b3-919e-67b1a923986f/
 |   |   +---88728429-fd62-49ba-8473-6f8f4069d4c1/
+|   |   +---8ab4d593-5db2-40f2-9e68-3f2bb4e26861/
 |   |   +---8f6ec34b-6fbb-44ad-8ec5-eb8086d09298/
 |   |   +---8fb65980-636d-4f7d-9a8d-6333b43291f5/
 |   |   +---929e75c1-72a1-4d25-aa6e-e36df069194a/
@@ -75,6 +76,7 @@ DIRECTORY STRUCTURE
 |   |   +---aa27ba42-954c-4b6b-bf19-3a3ce4cd0422/
 |   |   +---ac932f2b-853c-4097-b417-7c495f278d71/
 |   |   +---b5796sydiln0jl7d2id6qrcqt/
+|   |   +---bbd45ac6-9428-45cc-9407-1073c19e9733/
 |   |   +---bpgwimf0a7rq6mwp0goa5abq9/
 |   |   +---bz5zxzg97cega7hqellilpc41/
 |   |   +---c17c920a-1bf1-4ccd-be3d-bd73c346d650/
@@ -87,6 +89,7 @@ DIRECTORY STRUCTURE
 |   |   +---d2041a1c-84cc-4d91-8b54-0d2d92b8c81d/
 |   |   +---d2395000-8ee9-4aea-b67f-6dafe5487f33/
 |   |   +---d831ca26-2023-4178-92a1-be0431cfa80b/
+|   |   +---d89a8047-1f0e-4ef5-84be-637e2b32282f/
 |   |   +---da068119-3ecb-4d45-bcea-cfb3dc8ea1cd/
 |   |   +---dbc98506-5d00-4b21-a8ff-ba9b76118ec8/
 |   |   +---de7fb39d-591b-4005-bec8-df85e1f6e91f/
@@ -94,6 +97,7 @@ DIRECTORY STRUCTURE
 |   |   +---e034d929-8545-484d-8904-e6905d0297cb/
 |   |   +---e2a295fa-b6d3-484f-9666-ec73e0a19d0f/
 |   |   +---e3493406-c159-4c3c-b155-8bdfda35d6e3/
+|   |   +---e3afb13f-14c5-4128-8a2c-0b43d6d74b28/
 |   |   +---e4857221-8e58-4c32-a353-548d884bf926/
 |   |   +---e93a6igejsan7yz7j8p240l6i/
 |   |   +---f4b5c3f7-d443-48dd-9032-4b7fdc18ef59/
@@ -898,7 +902,7 @@ class FirebaseService @Inject constructor(
             )
         }
         
-        bookings.document(pnr).update(map).await()
+        bookings.document(pnr).update(map)
     }
 
     private fun DocumentSnapshot.toBooking(): Booking {
@@ -1115,8 +1119,11 @@ class BookingRepository @Inject constructor(
     }
 
     suspend fun submitCheckIn(bookingId: String, booking: Booking) {
-        firebase.submitCheckIn(bookingId, booking)
+        // 1. Save to Room DB FIRST! So the local app instantly knows we are checked in.
         bookingDao.upsert(booking.copy(id = bookingId, checkInStatus = true).toEntity())
+
+        // 2. Tell Firebase (it will sync in the background when the internet returns)
+        firebase.submitCheckIn(bookingId, booking)
     }
 
     fun observeUserBookings(userId: String): kotlinx.coroutines.flow.Flow<List<Booking>> {

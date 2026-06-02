@@ -696,8 +696,13 @@ fun CheckInScreen(
                 1 -> PassportScanStep(
                     expectedLastName = uiState.booking?.lastName ?: "",
                     expectedFirstName = uiState.booking?.firstName ?: "",
-                    onPassportScanned = { passport, last, first, dob ->
-                        viewModel.updatePassenger(uiState.passenger.copy(passportNumber = passport, fullName = "$first $last".trim(), dateOfBirth = dob))
+                    onPassportScanned = { passport, last, first, dob, nationality ->
+                        viewModel.updatePassenger(uiState.passenger.copy(
+                            passportNumber = passport, 
+                            fullName = "$first $last".trim(), 
+                            dateOfBirth = dob,
+                            nationality = nationality.ifBlank { uiState.passenger.nationality }
+                        ))
                         viewModel.nextStep()
                     }
                 )
@@ -773,7 +778,7 @@ enum class ScanState { WAITING, DETECTING, MISMATCH, SUCCESS, TIMEOUT, ERROR }
 fun PassportScanStep(
     expectedLastName: String,
     expectedFirstName: String,
-    onPassportScanned: (passport: String, lastName: String, firstName: String, dob: String) -> Unit
+    onPassportScanned: (passport: String, lastName: String, firstName: String, dob: String, nationality: String) -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -831,35 +836,93 @@ fun PassportScanStep(
                                                 val text = visionText.text.uppercase()
                                                 if (text.isBlank()) return@addOnSuccessListener
                                                 if (scanState == ScanState.WAITING) scanState = ScanState.DETECTING
-                                                var parsedLast = ""; var parsedFirst = ""; var parsedPassport = ""; var parsedDob = ""
-                                                val cleanLines = text.split('\n').map { it.replace(" ", "<").replace("«", "<<") }
-                                                val mrzLine1 = cleanLines.find { it.startsWith("P") && it.contains("<") && it.length > 20 }
-                                                val mrzLine2 = cleanLines.find { it.length > 20 && it != mrzLine1 && it.count { c -> c.isDigit() } > 5 }
-                                                if (mrzLine1 != null) {
-                                                    val namesPart = mrzLine1.substringAfter("P<").drop(3)
+                                                
+                                                var parsedLast = ""
+                                                var parsedFirst = ""
+                                                var parsedPassport = ""
+                                                var parsedDob = ""
+                                                var parsedNationality = ""
+
+                                                val cleanText = text.replace(" ", "").replace("\n", "")
+
+                                                // 1. Precise MRZ Line 1 Parse
+                                                val mrz1Regex = Regex("P[A-Z<]([A-Z]{3})([A-Z0-9<]+)")
+                                                val mrz1Match = mrz1Regex.find(cleanText)
+                                                if (mrz1Match != null) {
+                                                    val nat = mrz1Match.groupValues[1]
+                                                    if (nat == "DZA" || nat == "ALG") parsedNationality = "Algerian"
+
+                                                    val namesPart = mrz1Match.groupValues[2]
                                                     val nameSplit = namesPart.split("<<")
-                                                    if (nameSplit.isNotEmpty()) { parsedLast = nameSplit[0].replace("<", "").trim(); if (nameSplit.size > 1) parsedFirst = nameSplit[1].replace("<", " ").trim() }
-                                                }
-                                                if (mrzLine2 != null) {
-                                                    Regex("^([A-Z0-9<]{9})").find(mrzLine2)?.let { parsedPassport = it.groupValues[1].replace("<", "") }
-                                                    if (mrzLine2.length >= 19) {
-                                                        val dobRaw = mrzLine2.substring(13, 19)
-                                                        if (dobRaw.all { it.isDigit() }) {
-                                                            val y = dobRaw.substring(0, 2).toIntOrNull() ?: 0
-                                                            parsedDob = "${dobRaw.substring(4, 6)}/${dobRaw.substring(2, 4)}/${if (y > 30) "19$y" else "20$y"}"
-                                                        }
+                                                    if (nameSplit.isNotEmpty()) { 
+                                                        parsedLast = nameSplit[0].replace("<", "").trim()
+                                                        if (nameSplit.size > 1) parsedFirst = nameSplit[1].replace("<", " ").trim() 
                                                     }
                                                 }
-                                                if (parsedPassport.length < 6) Regex("\\b[A-Z0-9]{9}\\b").find(text)?.let { parsedPassport = it.value }
-                                                if (parsedDob.isEmpty()) Regex("\\b\\d{2}\\s[A-Z]{3}\\s\\d{4}\\b").find(text)?.let { parsedDob = it.value }
-                                                if (parsedLast.isEmpty() || !parsedLast.equals(expectedLastName, ignoreCase = true)) {
-                                                    if (expectedLastName.isNotBlank() && text.contains(expectedLastName.uppercase())) parsedLast = expectedLastName.uppercase()
+
+                                                // 2. Precise MRZ Line 2 Parse
+                                                val mrz2Regex = Regex("([A-Z0-9<]{9})\\d([A-Z<]{3})(\\d{6})\\d[MF<]")
+                                                val mrz2Match = mrz2Regex.find(cleanText)
+                                                if (mrz2Match != null) {
+                                                    parsedPassport = mrz2Match.groupValues[1].replace("<", "")
+                                                    val nat = mrz2Match.groupValues[2]
+                                                    if (nat == "DZA" || nat == "ALG") parsedNationality = "Algerian"
+                                                    
+                                                    val dobRaw = mrz2Match.groupValues[3]
+                                                    val y = dobRaw.substring(0, 2).toIntOrNull() ?: 0
+                                                    parsedDob = "${dobRaw.substring(4, 6)}/${dobRaw.substring(2, 4)}/${if (y > 30) "19$y" else "20$y"}"
                                                 }
+
+                                                // 3. Robust Fallbacks for VIZ (Visual Inspection Zone)
+                                                if (parsedPassport.length < 6) {
+                                                    Regex("\\b[A-Z0-9]{9}\\b").find(text)?.let { parsedPassport = it.value }
+                                                }
+
+                                                // Nationality fallback matching English, Arabic or Country Code
+                                                if (parsedNationality.isEmpty() && (text.contains("ALGERIAN") || text.contains("جزائرية") || text.contains("DZA"))) {
+                                                    parsedNationality = "Algerian"
+                                                }
+
+                                                // Complex DOB Fallback to ignore Arabic characters (e.g. "14 جوان / JUINE 2002")
+                                                if (parsedDob.isEmpty()) {
+                                                    Regex("(\\d{2})\\s*[^0-9A-Za-z<]*\\s*([A-Z]+|\\d{2})\\s*(\\d{4})").find(text)?.let { match ->
+                                                        val d = match.groupValues[1]
+                                                        val mStr = match.groupValues[2]
+                                                        val y = match.groupValues[3]
+                                                        
+                                                        val m = when {
+                                                            mStr.contains("JAN") -> "01"
+                                                            mStr.contains("FEB") || mStr.contains("FEV") -> "02"
+                                                            mStr.contains("MAR") -> "03"
+                                                            mStr.contains("APR") || mStr.contains("AVR") -> "04"
+                                                            mStr.contains("MAY") || mStr.contains("MAI") -> "05"
+                                                            mStr.contains("JUN") || mStr.contains("JUIN") -> "06"
+                                                            mStr.contains("JUL") || mStr.contains("JUIL") -> "07"
+                                                            mStr.contains("AUG") || mStr.contains("AOU") -> "08"
+                                                            mStr.contains("SEP") -> "09"
+                                                            mStr.contains("OCT") -> "10"
+                                                            mStr.contains("NOV") -> "11"
+                                                            mStr.contains("DEC") -> "12"
+                                                            mStr.toIntOrNull() != null -> mStr.padStart(2, '0')
+                                                            else -> "01"
+                                                        }
+                                                        parsedDob = "$d/$m/$y"
+                                                    }
+                                                }
+
+                                                // Auto-correct last name if OCR failed reading it perfectly but it exists in block
+                                                if (parsedLast.isEmpty() || !parsedLast.equals(expectedLastName, ignoreCase = true)) {
+                                                    if (expectedLastName.isNotBlank() && text.contains(expectedLastName.uppercase())) {
+                                                        parsedLast = expectedLastName.uppercase()
+                                                    }
+                                                }
+
                                                 if (parsedPassport.isNotEmpty() && parsedLast.isNotEmpty()) {
                                                     if (parsedLast.equals(expectedLastName, ignoreCase = true)) {
-                                                        isProcessing = false; scanState = ScanState.SUCCESS; mismatchMsg = null
-                                                        // Populate form: if firstName missing from MRZ, fall back to booking first name
-                                                        onPassportScanned(parsedPassport, parsedLast, parsedFirst.ifBlank { expectedFirstName }, parsedDob)
+                                                        isProcessing = false
+                                                        scanState = ScanState.SUCCESS
+                                                        mismatchMsg = null
+                                                        onPassportScanned(parsedPassport, parsedLast, parsedFirst.ifBlank { expectedFirstName }, parsedDob, parsedNationality)
                                                     } else {
                                                         scanState = ScanState.MISMATCH
                                                         mismatchMsg = "Passport name (${parsedLast}) does not match booking name (${expectedLastName}). Check document and try again."
@@ -919,7 +982,7 @@ fun PassportScanStep(
         Spacer(Modifier.height(20.dp))
 
         OutlinedButton(
-            onClick = { onPassportScanned("MANUAL000", expectedLastName, expectedFirstName, "") },
+            onClick = { onPassportScanned("MANUAL000", expectedLastName, expectedFirstName, "", "") },
             modifier = Modifier.fillMaxWidth().height(AppDimens.buttonHeight),
             shape = RoundedCornerShape(AppDimens.radiusFull),
             border = ButtonDefaults.outlinedButtonBorder.copy(brush = androidx.compose.ui.graphics.SolidColor(AppColors.Primary)),
