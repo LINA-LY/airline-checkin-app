@@ -169,16 +169,27 @@ fun SplashScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color.White) // Added white background so it looks clean
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        // --- THIS IS HOW YOU USE YOUR LOGO ---
+        Image(
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = "App Logo",
+            modifier = Modifier.size(140.dp) // Adjust size if needed (e.g. 100.dp to 200.dp)
+        )
+        // -------------------------------------
+        
+        Spacer(Modifier.height(24.dp))
         Text(
             text = "Airline Check-in",
             style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
+            color = Color.Black
         )
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(32.dp))
         CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
     }
 }

@@ -1,122 +1,6 @@
 ============================================================
 DIRECTORY STRUCTURE
 ============================================================
-+---.gradle/
-|   +---9.0.0/
-|   |   +---checksums/
-|   |   +---executionHistory/
-|   |   +---expanded/
-|   |   +---fileChanges/
-|   |   +---fileHashes/
-|   |   +---vcsMetadata/
-|   |   \---gc.properties
-|   +---9.2.0/
-|   |   +---checksums/
-|   |   +---expanded/
-|   |   +---fileChanges/
-|   |   +---fileHashes/
-|   |   +---vcsMetadata/
-|   |   \---gc.properties
-|   +---buildOutputCleanup/
-|   |   \---cache.properties
-|   +---configuration-cache/
-|   |   +---0161ed0d-fdaf-40d4-8c1b-2b96405762f0/
-|   |   +---04f94f6b-57ac-4112-9151-c3b7e0e2eb44/
-|   |   +---058851df-de1f-4029-b10e-4dad62521b7c/
-|   |   +---05ca39f4-1172-4e21-a70f-4c822fc1ca5f/
-|   |   +---09b39a4c-2fe3-42bd-8397-6888ea46dd39/
-|   |   +---13f872ba-d24a-457e-a4a5-cb1588aa4760/
-|   |   +---16f1b364-beed-414c-81e3-abd91cb74493/
-|   |   +---18b79f1a-1f9d-41fe-9d1a-b0fb396446d5/
-|   |   +---21ddf8e5-a9ff-4a19-867c-a84bd9e4081a/
-|   |   +---270c7477-4c3e-412e-b737-1f72b6d8a8de/
-|   |   +---28687b88-fd5c-4560-98c2-611e47756098/
-|   |   +---2bcb7858-2e1a-4458-aa33-77aaccc5d160/
-|   |   +---2d13a05b-2ef9-4738-a08a-f2fef8cd557b/
-|   |   +---2v4gpm18gvrn9gubfauuj6tbe/
-|   |   +---335ffbc5-c71c-42cd-b5f2-ca9c329ab71e/
-|   |   +---3844d034-b0bf-4199-a85c-02abed794951/
-|   |   +---3eaf52b2-b5f9-4f0e-bcb9-4bd96e8331da/
-|   |   +---3fcb6bdd-2eba-4439-a05e-788c54c3ffa9/
-|   |   +---40bcfb01-e807-44d1-ad68-f2d923c490d8/
-|   |   +---44034f52-f805-402c-8493-afcf5d23b5c2/
-|   |   +---465732aa-3a0a-4e3d-9615-5f9ab54f1003/
-|   |   +---472ce732-1458-4f7d-ac3a-e3740a036d56/
-|   |   +---47c27260-27c8-48e4-a546-5fd99d989fc7/
-|   |   +---48c46dea-9bde-43a9-bfa2-c3a4d23ff95b/
-|   |   +---493a12ec-3189-4e36-addc-f0658355834f/
-|   |   +---4f6119b3-dbdd-4958-be1d-e48825a1dd04/
-|   |   +---522f9131-40b1-460d-ab27-fff52cfefc5c/
-|   |   +---5cf26f80-4c47-4832-bfc4-49ec5159e960/
-|   |   +---5d5ad22e-5b0a-4771-947a-c4d985b58910/
-|   |   +---5d77c1ec-6110-483d-8991-990ec2df782d/
-|   |   +---5eb9ae7f-7892-4b07-b8ee-1ea900a986a9/
-|   |   +---5tx95t8y4lfunsr8c2cse8jx2/
-|   |   +---67efa14c-b03f-475f-ad71-f628db26a819/
-|   |   +---696c8c0c-5bb5-402d-933a-2d21e13d6a13/
-|   |   +---6997a640-a083-419a-8544-6da3a25274c5/
-|   |   +---69a3a5de-a3c7-471c-ab05-137ff18e29bb/
-|   |   +---6a1c7702-71af-4c6e-a56c-203a2b112298/
-|   |   +---6b72713b-d1dd-4a2d-98cc-202f47839f24/
-|   |   +---704e35da-da13-41d9-894e-00da299d8711/
-|   |   +---78c82631-fca8-4f71-8977-576e75295757/
-|   |   +---830a2c57-5512-46f6-b3e8-8ea6e047eeb0/
-|   |   +---84017eb5-1420-49b3-919e-67b1a923986f/
-|   |   +---88728429-fd62-49ba-8473-6f8f4069d4c1/
-|   |   +---8ab4d593-5db2-40f2-9e68-3f2bb4e26861/
-|   |   +---8f6ec34b-6fbb-44ad-8ec5-eb8086d09298/
-|   |   +---8fb65980-636d-4f7d-9a8d-6333b43291f5/
-|   |   +---929e75c1-72a1-4d25-aa6e-e36df069194a/
-|   |   +---934f3fd6-4669-4229-80ef-a734ebb9e51e/
-|   |   +---96d418f5-4b5a-4667-92c8-84f0f8b0ec00/
-|   |   +---a36dd9ab-0c46-406f-afc7-a1d316e7e639/
-|   |   +---a4a355c7-dd35-4b55-93c6-b8ce233fea89/
-|   |   +---a5e355c2-c04c-4775-a40c-f3ad9f56e5bb/
-|   |   +---a5ffbc01-a25b-4be2-9697-e8d314a7297f/
-|   |   +---aa27ba42-954c-4b6b-bf19-3a3ce4cd0422/
-|   |   +---ac932f2b-853c-4097-b417-7c495f278d71/
-|   |   +---b5796sydiln0jl7d2id6qrcqt/
-|   |   +---bbd45ac6-9428-45cc-9407-1073c19e9733/
-|   |   +---bpgwimf0a7rq6mwp0goa5abq9/
-|   |   +---bz5zxzg97cega7hqellilpc41/
-|   |   +---c17c920a-1bf1-4ccd-be3d-bd73c346d650/
-|   |   +---c8e6db8c-018c-42a8-be59-6c77810dd013/
-|   |   +---c9ae6ace-0d1f-4fdf-9a4b-5b097ad1d259/
-|   |   +---cb7ebbcb-677d-4bd9-b1fb-da721ee63ed0/
-|   |   +---ce1965f8-cd6f-4de8-b823-164b3b0e233f/
-|   |   +---cec60c93-58bd-4d72-b9fc-14037cb82db1/
-|   |   +---d1a95bd7-c19c-4c06-a4e1-c5f9b255ec15/
-|   |   +---d2041a1c-84cc-4d91-8b54-0d2d92b8c81d/
-|   |   +---d2395000-8ee9-4aea-b67f-6dafe5487f33/
-|   |   +---d831ca26-2023-4178-92a1-be0431cfa80b/
-|   |   +---d89a8047-1f0e-4ef5-84be-637e2b32282f/
-|   |   +---da068119-3ecb-4d45-bcea-cfb3dc8ea1cd/
-|   |   +---dbc98506-5d00-4b21-a8ff-ba9b76118ec8/
-|   |   +---de7fb39d-591b-4005-bec8-df85e1f6e91f/
-|   |   +---dl60ksgcz0t3aqccz93d3uzkd/
-|   |   +---e034d929-8545-484d-8904-e6905d0297cb/
-|   |   +---e2a295fa-b6d3-484f-9666-ec73e0a19d0f/
-|   |   +---e3493406-c159-4c3c-b155-8bdfda35d6e3/
-|   |   +---e3afb13f-14c5-4128-8a2c-0b43d6d74b28/
-|   |   +---e4857221-8e58-4c32-a353-548d884bf926/
-|   |   +---e93a6igejsan7yz7j8p240l6i/
-|   |   +---f4b5c3f7-d443-48dd-9032-4b7fdc18ef59/
-|   |   +---f5f95785-1842-4025-b5a3-45a441ee449c/
-|   |   +---f81c200a-b736-4ec6-8c23-abc21ea520f5/
-|   |   +---ffc77570-9827-43c8-a7cb-97e625be913d/
-|   |   \---gc.properties
-|   +---kotlin/
-|   |   \---errors/
-|   +---vcs-1/
-|   |   \---gc.properties
-|   \---config.properties
-+---.kotlin/
-|   +---errors/
-|   |   +---errors-1779726054278.log
-|   |   \---errors-1780172183190.log
-|   \---sessions/
-+---.vscode/
-|   \---settings.json
 +---app/
 |   +---src/
 |   |   \---main/
@@ -133,6 +17,7 @@ DIRECTORY STRUCTURE
 |   |       |               |   |   +---entity/
 |   |       |               |   |   |   \---Entities.kt
 |   |       |               |   |   +---AppDatabase.kt
+|   |       |               |   |   +---DocumentPreferences.kt
 |   |       |               |   |   \---OnboardingPreferences.kt
 |   |       |               |   +---remote/
 |   |       |               |   |   \---firebase/
@@ -157,6 +42,8 @@ DIRECTORY STRUCTURE
 |   |       |               |   +---booking/
 |   |       |               |   +---checkin/
 |   |       |               |   |   \---CheckInScreens.kt
+|   |       |               |   +---helpcenter/
+|   |       |               |   |   \---HelpCenterScreen.kt
 |   |       |               |   +---home/
 |   |       |               |   |   \---HomeScreens.kt
 |   |       |               |   +---onboarding/
@@ -200,15 +87,12 @@ DIRECTORY STRUCTURE
 |   +---gradle-daemon-jvm.properties
 |   \---libs.versions.toml
 +---.firebaserc
-+---.gitignore
 +---build.gradle.kts
 +---firebase.json
 +---gradle.properties
 +---gradlew
 +---gradlew.bat
-+---hs_err_pid17596.log
 +---local.properties
-+---README.md
 \---settings.gradle.kts
 
 ============================================================
@@ -614,6 +498,69 @@ abstract class AppDatabase : RoomDatabase() {
 
 
 ============================================================
+FILE: app/src/main/java/com/airline/checkin/data/local/DocumentPreferences.kt
+============================================================
+package com.airline.checkin.data.local
+
+import android.content.Context
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import javax.inject.Inject
+import javax.inject.Singleton
+
+private val Context.docDataStore by preferencesDataStore(name = "saved_docs")
+
+data class SavedPassport(
+    val number: String,
+    val firstName: String,
+    val lastName: String,
+    val dob: String,
+    val nationality: String,
+    val gender: String
+)
+
+@Singleton
+class DocumentPreferences @Inject constructor(@ApplicationContext private val context: Context) {
+    private val numKey = stringPreferencesKey("doc_num")
+    private val fnKey = stringPreferencesKey("doc_fn")
+    private val lnKey = stringPreferencesKey("doc_ln")
+    private val dobKey = stringPreferencesKey("doc_dob")
+    private val natKey = stringPreferencesKey("doc_nat")
+    private val genKey = stringPreferencesKey("doc_gen")
+
+    val savedPassport: Flow<SavedPassport?> = context.docDataStore.data.map { prefs ->
+        val num = prefs[numKey] ?: return@map null
+        SavedPassport(
+            number = num,
+            firstName = prefs[fnKey] ?: "",
+            lastName = prefs[lnKey] ?: "",
+            dob = prefs[dobKey] ?: "",
+            nationality = prefs[natKey] ?: "",
+            gender = prefs[genKey] ?: ""
+        )
+    }
+
+    suspend fun savePassport(num: String, fn: String, ln: String, dob: String, nat: String, gen: String) {
+        context.docDataStore.edit { prefs ->
+            prefs[numKey] = num
+            prefs[fnKey] = fn
+            prefs[lnKey] = ln
+            prefs[dobKey] = dob
+            prefs[natKey] = nat
+            prefs[genKey] = gen
+        }
+    }
+
+    suspend fun clear() {
+        context.docDataStore.edit { it.clear() }
+    }
+}
+
+============================================================
 FILE: app/src/main/java/com/airline/checkin/data/local/OnboardingPreferences.kt
 ============================================================
 package com.airline.checkin.data.local
@@ -649,7 +596,6 @@ FILE: app/src/main/java/com/airline/checkin/data/remote/firebase/DatabaseSeeder.
 package com.airline.checkin.data.remote.firebase
 
 import com.google.firebase.firestore.FirebaseFirestore
-import kotlinx.coroutines.tasks.await
 import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -658,13 +604,14 @@ import javax.inject.Singleton
 class DatabaseSeeder @Inject constructor(
     private val firestore: FirebaseFirestore
 ) {
-    suspend fun seedIfNeeded() {
+    // Removed 'suspend' and all '.await()' calls to prevent offline blocking
+    fun seedIfNeeded() {
         val departure1 = Instant.now().plusSeconds(12 * 3600).toString()
         val departure2 = Instant.now().plusSeconds(14 * 3600).toString()
 
         // Force server writes, bypassing cache
-        firestore.disableNetwork().await()
-        firestore.enableNetwork().await()
+        firestore.disableNetwork()
+        firestore.enableNetwork()
 
         firestore.collection("flights").document("FL001").set(mapOf(
             "flightNumber"  to "AH1000",
@@ -674,7 +621,7 @@ class DatabaseSeeder @Inject constructor(
             "departureTime" to departure1,
             "arrivalTime"   to Instant.now().plusSeconds(16 * 3600).toString(),
             "dateKey"       to departure1.take(10)
-        )).await()
+        ))
 
         firestore.collection("bookings").document("ABCDEF").set(mapOf(
             "pnr"           to "ABCDEF",
@@ -688,7 +635,7 @@ class DatabaseSeeder @Inject constructor(
             "departureTime" to departure1,
             "cabinClass"    to "ECONOMY",
             "checkInStatus" to false
-        )).await()
+        ))
 
         firestore.collection("bookings").document("XYZ123").set(mapOf(
             "pnr"           to "XYZ123",
@@ -702,7 +649,7 @@ class DatabaseSeeder @Inject constructor(
             "departureTime" to departure2,
             "cabinClass"    to "BUSINESS",
             "checkInStatus" to false
-        )).await()
+        ))
     }
 }
 
@@ -1287,7 +1234,8 @@ data class PassengerDocument(
     val docType: String = "",
     val docNumber: String = "",
     val nationality: String = "",
-    val dateOfBirth: String = ""
+    val dateOfBirth: String = "",
+    val gender: String = ""
 )
 
 data class PassportData(
@@ -1349,7 +1297,8 @@ data class Passenger(
     val passportNumber: String = "",
     val fullName: String = "",
     val dateOfBirth: String = "",
-    val nationality: String = ""
+    val nationality: String = "",
+    val gender: String = ""
 )
 
 data class BaggageDeclaration(
@@ -1523,6 +1472,14 @@ fun WelcomeScreen(
             .padding(horizontal = 24.dp)
     ) {
         Spacer(Modifier.height(56.dp))
+
+        // --- App Logo ---
+        Image(
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = "App Logo",
+            modifier = Modifier.size(80.dp)
+        )
+        Spacer(Modifier.height(16.dp))
 
         // Title
         Text(
@@ -2399,6 +2356,22 @@ private fun BoardingPassContent(
                             Text("TBD", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
                         }
                     }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            InfoLabel(label = "Baggage")
+                            val bags = (booking.baggage?.checked ?: 0) + (booking.baggage?.cabin ?: 0)
+                            Text(if (bags > 0) "$bags Pieces" else "0 Pieces", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            InfoLabel(label = "Remarks")
+                            val reqs = mutableListOf<String>()
+                            if (booking.specialRequests?.wheelchair == true) reqs.add("WCHR")
+                            if (booking.specialRequests?.infant == true) reqs.add("INFT")
+                            if (booking.specialRequests?.pet == true) reqs.add("PETC")
+                            Text(if (reqs.isNotEmpty()) reqs.joinToString(", ") else "NONE", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                        }
+                    }
 
                     Row(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.weight(1f)) {
@@ -2737,6 +2710,20 @@ object PdfGenerator {
             canvas.drawText("TBD", 350f, currentY, valuePaint)
             canvas.drawText(booking.seat?.seatNumber?.ifEmpty { "N/A" } ?: "N/A", 550f, currentY, valuePaint)
 
+            currentY += 80f
+            // Row 5: Baggage & Remarks
+            canvas.drawText("Baggage", 100f, currentY, labelPaint)
+            canvas.drawText("Remarks", 450f, currentY, labelPaint)
+            currentY += 40f
+            val bags = (booking.baggage?.checked ?: 0) + (booking.baggage?.cabin ?: 0)
+            canvas.drawText(if (bags > 0) "$bags Pieces" else "0 Pieces", 100f, currentY, valuePaint)
+            
+            val reqs = mutableListOf<String>()
+            if (booking.specialRequests?.wheelchair == true) reqs.add("WCHR")
+            if (booking.specialRequests?.infant == true) reqs.add("INFT")
+            if (booking.specialRequests?.pet == true) reqs.add("PETC")
+            canvas.drawText(if (reqs.isNotEmpty()) reqs.joinToString(", ") else "NONE", 450f, currentY, valuePaint)
+            
             // --- Draw Dashed Divider ---
             currentY += 100f
             canvas.drawLine(80f, currentY, 720f, currentY, dashPaint)
@@ -2888,6 +2875,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewModelScope
 import com.airline.checkin.R
+import com.airline.checkin.data.local.DocumentPreferences
+import com.airline.checkin.data.local.SavedPassport
 import com.airline.checkin.data.repository.BookingRepository
 import com.airline.checkin.domain.model.*
 import com.airline.checkin.ui.AppColors
@@ -2901,7 +2890,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.util.concurrent.Executors
 import javax.inject.Inject
@@ -2911,7 +2902,7 @@ import javax.inject.Inject
 data class CheckInUiState(
     val isLoading: Boolean = false,
     val booking: Booking? = null,
-    val flight: com.airline.checkin.domain.model.Flight? = null,
+    val flight: Flight? = null,
     val error: String? = null,
     val currentStep: Int = 1,
     val passenger: Passenger = Passenger(),
@@ -2928,10 +2919,13 @@ data class CheckInUiState(
 class CheckInViewModel @Inject constructor(
     private val bookingRepository: BookingRepository,
     private val flightRepository: com.airline.checkin.data.repository.FlightRepository,
+    private val docPrefs: DocumentPreferences,
     @ApplicationContext private val appContext: Context
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(CheckInUiState())
     val uiState = _uiState.asStateFlow()
+
+    val savedPassport = docPrefs.savedPassport.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     fun loadBookingById(bookingId: String) {
         viewModelScope.launch {
@@ -2946,6 +2940,10 @@ class CheckInViewModel @Inject constructor(
                 _uiState.value = _uiState.value.copy(isLoading = false, error = e.message)
             }
         }
+    }
+
+    fun saveDocumentLocally(num: String, fn: String, ln: String, dob: String, nat: String, gen: String) {
+        viewModelScope.launch { docPrefs.savePassport(num, fn, ln, dob, nat, gen) }
     }
 
     fun lookupBooking(reference: String, lastName: String) {
@@ -3080,7 +3078,6 @@ fun MyBookingsScreen(
 ) {
     val allBookings by viewModel.bookings.collectAsState()
 
-    // Filter state
     var filterCheckedIn    by remember { mutableStateOf(false) }
     var filterNotCheckedIn by remember { mutableStateOf(false) }
     var filterPast         by remember { mutableStateOf(false) }
@@ -3097,34 +3094,17 @@ fun MyBookingsScreen(
         list
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AppColors.Gray50)
-    ) {
-        // Header
+    Column(modifier = Modifier.fillMaxSize().background(AppColors.Gray50)) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(AppColors.White)
-                .padding(start = 20.dp, end = 20.dp, top = 52.dp, bottom = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier.fillMaxWidth().background(AppColors.White).padding(start = 20.dp, end = 20.dp, top = 52.dp, bottom = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically
         ) {
             Text("Passes", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = AppColors.Gray900)
-            Text(
-                "${displayBookings.size} of ${allBookings.size}",
-                fontSize = 13.sp,
-                color = AppColors.Gray500
-            )
+            Text("${displayBookings.size} of ${allBookings.size}", fontSize = 13.sp, color = AppColors.Gray500)
         }
 
-        // Filter chips
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(AppColors.White)
-                .padding(start = 16.dp, end = 16.dp, bottom = 14.dp),
+            modifier = Modifier.fillMaxWidth().background(AppColors.White).padding(start = 16.dp, end = 16.dp, bottom = 14.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             FilterPill("Checked in", filterCheckedIn) { filterCheckedIn = !filterCheckedIn }
@@ -3136,39 +3116,20 @@ fun MyBookingsScreen(
         HorizontalDivider(color = AppColors.Gray100)
 
         if (displayBookings.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        Icons.Outlined.ConfirmationNumber,
-                        contentDescription = null,
-                        modifier = Modifier.size(48.dp),
-                        tint = AppColors.Gray300
-                    )
+                    Icon(Icons.Outlined.ConfirmationNumber, contentDescription = null, modifier = Modifier.size(48.dp), tint = AppColors.Gray300)
                     Spacer(Modifier.height(12.dp))
-                    Text(
-                        text = if (allBookings.isEmpty()) "No passes found" else "No passes match the filter",
-                        color = AppColors.Gray500,
-                        fontSize = 15.sp
-                    )
+                    Text(text = if (allBookings.isEmpty()) "No passes found" else "No passes match the filter", color = AppColors.Gray500, fontSize = 15.sp)
                 }
             }
         } else {
-            LazyColumn(
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+            LazyColumn(contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 items(displayBookings.size) { i ->
                     val booking = displayBookings[i]
-                    PassCard(
-                        booking = booking,
-                        onClick = {
-                            if (booking.checkInStatus) onNavigateToBoardingPass(booking.id)
-                            else onNavigateToCheckIn(booking.id)
-                        }
-                    )
+                    PassCard(booking = booking, onClick = {
+                        if (booking.checkInStatus) onNavigateToBoardingPass(booking.id) else onNavigateToCheckIn(booking.id)
+                    })
                 }
             }
         }
@@ -3193,12 +3154,7 @@ private fun FilterPill(label: String, selected: Boolean, onClick: () -> Unit) {
             .clickable { onClick() }
             .padding(horizontal = 12.dp, vertical = 6.dp)
     ) {
-        Text(
-            text = label,
-            fontSize = 12.sp,
-            fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-            color = if (selected) Color.White else AppColors.Gray700
-        )
+        Text(text = label, fontSize = 12.sp, fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal, color = if (selected) Color.White else AppColors.Gray700)
     }
 }
 
@@ -3215,47 +3171,21 @@ private fun PassCard(booking: Booking, onClick: () -> Unit) {
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(AppDimens.radiusLarge))
-            .background(AppColors.White)
-            .border(1.dp, AppColors.Gray100, RoundedCornerShape(AppDimens.radiusLarge))
-            .clickable { onClick() }
-            .padding(16.dp)
+        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(AppDimens.radiusLarge)).background(AppColors.White).border(1.dp, AppColors.Gray100, RoundedCornerShape(AppDimens.radiusLarge)).clickable { onClick() }.padding(16.dp)
     ) {
         Column {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(
-                        text = booking.departure.take(3).uppercase().ifEmpty { "???" },
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = AppColors.Gray900
-                    )
+                    Text(text = booking.departure.take(3).uppercase().ifEmpty { "???" }, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = AppColors.Gray900)
                     Icon(Icons.Outlined.Flight, contentDescription = null, tint = AppColors.Primary, modifier = Modifier.size(14.dp))
-                    Text(
-                        text = booking.destination.take(3).uppercase().ifEmpty { "???" },
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = AppColors.Gray900
-                    )
+                    Text(text = booking.destination.take(3).uppercase().ifEmpty { "???" }, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = AppColors.Gray900)
                 }
-                // Status chip
                 val (chipBg, chipText, chipLabel) = when {
                     booking.checkInStatus -> Triple(AppColors.SuccessLight, AppColors.Success, "Checked in")
                     isPast -> Triple(AppColors.Gray100, AppColors.Gray500, "Past")
                     else -> Triple(AppColors.PrimaryFaint, AppColors.Primary, "Check in")
                 }
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(AppDimens.radiusFull))
-                        .background(chipBg)
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                ) {
+                Box(modifier = Modifier.clip(RoundedCornerShape(AppDimens.radiusFull)).background(chipBg).padding(horizontal = 10.dp, vertical = 4.dp)) {
                     Text(chipLabel, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, color = chipText)
                 }
             }
@@ -3290,10 +3220,8 @@ fun BookingLookupScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
-    // Reset state every time this screen is entered fresh
     LaunchedEffect(Unit) { viewModel.reset() }
 
-    // Only navigate once per successful lookup
     var navigated by remember { mutableStateOf(false) }
     LaunchedEffect(uiState.result) {
         if (uiState.result != null && !navigated) {
@@ -3303,10 +3231,7 @@ fun BookingLookupScreen(
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(AppColors.White)
-            .padding(horizontal = 24.dp),
+        modifier = Modifier.fillMaxSize().background(AppColors.White).padding(horizontal = 24.dp),
         verticalArrangement = Arrangement.Center
     ) {
         Text("Find booking", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = AppColors.Gray900)
@@ -3314,19 +3239,9 @@ fun BookingLookupScreen(
         Text("Enter your booking reference to check in", fontSize = 14.sp, color = AppColors.Gray500)
         Spacer(Modifier.height(28.dp))
 
-        AppTextField(
-            value = uiState.reference,
-            onValueChange = viewModel::updateReference,
-            label = "Booking reference",
-            icon = Icons.Outlined.ConfirmationNumber
-        )
+        AppTextField(value = uiState.reference, onValueChange = viewModel::updateReference, label = "Booking reference", icon = Icons.Outlined.ConfirmationNumber)
         Spacer(Modifier.height(12.dp))
-        AppTextField(
-            value = uiState.lastName,
-            onValueChange = viewModel::updateLastName,
-            label = "Last name",
-            icon = Icons.Outlined.Person
-        )
+        AppTextField(value = uiState.lastName, onValueChange = viewModel::updateLastName, label = "Last name", icon = Icons.Outlined.Person)
 
         uiState.error?.let {
             Spacer(Modifier.height(12.dp))
@@ -3336,11 +3251,7 @@ fun BookingLookupScreen(
         Spacer(Modifier.height(20.dp))
 
         Button(
-            onClick = viewModel::lookup,
-            enabled = !uiState.isLoading,
-            modifier = Modifier.fillMaxWidth().height(AppDimens.buttonHeight),
-            shape = RoundedCornerShape(AppDimens.radiusFull),
-            colors = ButtonDefaults.buttonColors(containerColor = AppColors.Primary)
+            onClick = viewModel::lookup, enabled = !uiState.isLoading, modifier = Modifier.fillMaxWidth().height(AppDimens.buttonHeight), shape = RoundedCornerShape(AppDimens.radiusFull), colors = ButtonDefaults.buttonColors(containerColor = AppColors.Primary)
         ) {
             if (uiState.isLoading) {
                 CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp, color = Color.White)
@@ -3385,43 +3296,16 @@ fun BookingFoundScreen(
         booking == null || flight == null -> Box(Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
             Text("Booking not found", color = AppColors.Gray500)
         }
-        else -> Column(
-            modifier = Modifier.fillMaxSize().background(AppColors.Gray50)
-                .verticalScroll(rememberScrollState())
-        ) {
-            // Top bar
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(AppColors.White)
-                    .padding(start = 8.dp, end = 20.dp, top = 48.dp, bottom = 12.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                IconButton(onClick = onBack) {
-                    Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back", tint = AppColors.Gray900)
-                }
+        else -> Column(modifier = Modifier.fillMaxSize().background(AppColors.Gray50).verticalScroll(rememberScrollState())) {
+            Row(modifier = Modifier.fillMaxWidth().background(AppColors.White).padding(start = 8.dp, end = 20.dp, top = 48.dp, bottom = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back", tint = AppColors.Gray900) }
                 Text("Booking details", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AppColors.Gray900)
             }
-
             Spacer(Modifier.height(12.dp))
 
-            // Flight card
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-                    .clip(RoundedCornerShape(AppDimens.radiusXL))
-                    .background(AppColors.White)
-                    .border(1.dp, AppColors.Gray100, RoundedCornerShape(AppDimens.radiusXL))
-                    .padding(20.dp)
-            ) {
+            Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).clip(RoundedCornerShape(AppDimens.radiusXL)).background(AppColors.White).border(1.dp, AppColors.Gray100, RoundedCornerShape(AppDimens.radiusXL)).padding(20.dp)) {
                 Column {
-                    // Route
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                         Column {
                             Text(flight.origin.take(3).uppercase(), fontSize = 32.sp, fontWeight = FontWeight.Bold, color = AppColors.Gray900)
                             Text(flight.origin, fontSize = 12.sp, color = AppColors.Gray500)
@@ -3446,47 +3330,20 @@ fun BookingFoundScreen(
                     Spacer(Modifier.height(16.dp))
 
                     if (booking.checkInStatus) {
-                        Box(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(AppDimens.radiusFull))
-                                .background(AppColors.SuccessLight)
-                                .padding(horizontal = 12.dp, vertical = 6.dp)
-                        ) {
+                        Box(modifier = Modifier.clip(RoundedCornerShape(AppDimens.radiusFull)).background(AppColors.SuccessLight).padding(horizontal = 12.dp, vertical = 6.dp)) {
                             Text("Checked in", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = AppColors.Success)
                         }
                         Spacer(Modifier.height(16.dp))
-                        Button(
-                            onClick = { onViewBoardingPass(booking.id) },
-                            modifier = Modifier.fillMaxWidth().height(AppDimens.buttonHeight),
-                            shape = RoundedCornerShape(AppDimens.radiusFull),
-                            colors = ButtonDefaults.buttonColors(containerColor = AppColors.Primary)
-                        ) {
+                        Button(onClick = { onViewBoardingPass(booking.id) }, modifier = Modifier.fillMaxWidth().height(AppDimens.buttonHeight), shape = RoundedCornerShape(AppDimens.radiusFull), colors = ButtonDefaults.buttonColors(containerColor = AppColors.Primary)) {
                             Text("View boarding pass", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                         }
                     } else if (checkInOpen) {
-                        Button(
-                            onClick = { onStartCheckIn(booking.id) },
-                            modifier = Modifier.fillMaxWidth().height(AppDimens.buttonHeight),
-                            shape = RoundedCornerShape(AppDimens.radiusFull),
-                            colors = ButtonDefaults.buttonColors(containerColor = AppColors.Primary)
-                        ) {
+                        Button(onClick = { onStartCheckIn(booking.id) }, modifier = Modifier.fillMaxWidth().height(AppDimens.buttonHeight), shape = RoundedCornerShape(AppDimens.radiusFull), colors = ButtonDefaults.buttonColors(containerColor = AppColors.Primary)) {
                             Text("Start check-in", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
                         }
                     } else {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(AppDimens.radiusMedium))
-                                .background(AppColors.WarningLight)
-                                .padding(12.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(
-                                "Check-in opens 24 hours before departure",
-                                color = AppColors.Warning,
-                                fontSize = 13.sp,
-                                textAlign = TextAlign.Center
-                            )
+                        Box(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(AppDimens.radiusMedium)).background(AppColors.WarningLight).padding(12.dp), contentAlignment = Alignment.Center) {
+                            Text("Check-in opens 24 hours before departure", color = AppColors.Warning, fontSize = 13.sp, textAlign = TextAlign.Center)
                         }
                     }
                 }
@@ -3494,13 +3351,8 @@ fun BookingFoundScreen(
 
             Spacer(Modifier.height(12.dp))
             OutlinedButton(
-                onClick = onBack,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).height(AppDimens.buttonHeight),
-                shape = RoundedCornerShape(AppDimens.radiusFull),
-                border = ButtonDefaults.outlinedButtonBorder.copy(
-                    brush = androidx.compose.ui.graphics.SolidColor(AppColors.Gray300)
-                ),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = AppColors.Gray700)
+                onClick = onBack, modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).height(AppDimens.buttonHeight), shape = RoundedCornerShape(AppDimens.radiusFull),
+                border = ButtonDefaults.outlinedButtonBorder.copy(brush = androidx.compose.ui.graphics.SolidColor(AppColors.Gray300)), colors = ButtonDefaults.outlinedButtonColors(contentColor = AppColors.Gray700)
             ) { Text("Back") }
 
             Spacer(Modifier.height(32.dp))
@@ -3518,6 +3370,7 @@ fun CheckInScreen(
     viewModel: CheckInViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val savedPassport by viewModel.savedPassport.collectAsState()
 
     LaunchedEffect(bookingId) { viewModel.loadBookingById(bookingId) }
 
@@ -3529,29 +3382,31 @@ fun CheckInScreen(
             ErrorBanner(uiState.error ?: "Something went wrong")
         }
         else -> Column(Modifier.fillMaxSize().background(AppColors.White)) {
-            // Step progress bar
             StepProgressBar(currentStep = uiState.currentStep, totalSteps = 6)
 
             when (uiState.currentStep) {
                 1 -> PassportScanStep(
                     expectedLastName = uiState.booking?.lastName ?: "",
                     expectedFirstName = uiState.booking?.firstName ?: "",
-                    onPassportScanned = { passport, last, first, dob ->
-                        viewModel.updatePassenger(uiState.passenger.copy(passportNumber = passport, fullName = "$first $last".trim(), dateOfBirth = dob))
+                    savedPassport = savedPassport,
+                    onPassportScanned = { passport, last, first, dob, nationality, gender ->
+                        viewModel.saveDocumentLocally(passport, first, last, dob, nationality, gender)
+                        viewModel.updatePassenger(uiState.passenger.copy(
+                            passportNumber = passport, 
+                            fullName = "$first $last".trim(), 
+                            dateOfBirth = dob,
+                            nationality = nationality.ifBlank { uiState.passenger.nationality },
+                            gender = gender
+                        ))
                         viewModel.nextStep()
                     }
                 )
                 2 -> PassengerDetailsStep(
-                    passenger = uiState.passenger,
-                    flight = uiState.flight,
-                    onUpdate = { viewModel.updatePassenger(it) },
-                    onNext = { viewModel.nextStep() },
-                    onBack = { viewModel.prevStep() }
+                    passenger = uiState.passenger, flight = uiState.flight,
+                    onUpdate = { viewModel.updatePassenger(it) }, onNext = { viewModel.nextStep() }, onBack = { viewModel.prevStep() }
                 )
                 3 -> com.airline.checkin.ui.seat.SeatMapScreen(
-                    flightId = uiState.flight?.id ?: "",
-                    passengerIndex = 0,
-                    cabinClass = uiState.booking?.cabinClass ?: "ECONOMY",
+                    flightId = uiState.flight?.id ?: "", passengerIndex = 0, cabinClass = uiState.booking?.cabinClass ?: "ECONOMY",
                     onSeatPicked = { seatId, seatNumber -> viewModel.updateSeat(seatId, seatNumber); viewModel.nextStep() }
                 )
                 4 -> BaggageStep(baggageList = uiState.baggageList, onAdd = { viewModel.addBaggage(it) }, onRemove = { viewModel.removeBaggage(it) }, onNext = { viewModel.nextStep() }, onBack = { viewModel.prevStep() })
@@ -3565,12 +3420,7 @@ fun CheckInScreen(
 @Composable
 private fun StepProgressBar(currentStep: Int, totalSteps: Int) {
     val labels = listOf("Passport", "Details", "Seat", "Baggage", "Extras", "Confirm")
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(AppColors.White)
-            .padding(horizontal = 20.dp, vertical = 12.dp)
-    ) {
+    Column(modifier = Modifier.fillMaxWidth().background(AppColors.White).padding(horizontal = 20.dp, vertical = 12.dp)) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             labels.take(totalSteps).forEachIndexed { i, label ->
                 val step = i + 1
@@ -3578,20 +3428,11 @@ private fun StepProgressBar(currentStep: Int, totalSteps: Int) {
                 val active = step == currentStep
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.weight(1f)) {
                     Box(
-                        modifier = Modifier
-                            .size(24.dp)
-                            .clip(CircleShape)
-                            .background(
-                                when { done -> AppColors.Primary; active -> AppColors.Primary; else -> AppColors.Gray100 }
-                            )
-                            .border(1.dp, if (active || done) AppColors.Primary else AppColors.Gray300, CircleShape),
+                        modifier = Modifier.size(24.dp).clip(CircleShape).background(when { done -> AppColors.Primary; active -> AppColors.Primary; else -> AppColors.Gray100 }).border(1.dp, if (active || done) AppColors.Primary else AppColors.Gray300, CircleShape),
                         contentAlignment = Alignment.Center
                     ) {
-                        if (done) {
-                            Icon(Icons.Outlined.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(12.dp))
-                        } else {
-                            Text("$step", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (active) Color.White else AppColors.Gray500)
-                        }
+                        if (done) Icon(Icons.Outlined.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(12.dp))
+                        else Text("$step", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (active) Color.White else AppColors.Gray500)
                     }
                     Spacer(Modifier.height(2.dp))
                     Text(label, fontSize = 8.sp, color = if (active) AppColors.Primary else AppColors.Gray500, fontWeight = if (active) FontWeight.SemiBold else FontWeight.Normal, textAlign = TextAlign.Center)
@@ -3606,20 +3447,18 @@ private fun StepProgressBar(currentStep: Int, totalSteps: Int) {
 }
 
 // ─── Step 1: Passport Scan ────────────────────────────────────────
-
-enum class ScanState { WAITING, DETECTING, MISMATCH, SUCCESS, TIMEOUT, ERROR }
+enum class ScanState { WAITING, DETECTING, MISMATCH, SUCCESS, TIMEOUT, ERROR } 
 
 @Composable
 fun PassportScanStep(
     expectedLastName: String,
     expectedFirstName: String,
-    onPassportScanned: (passport: String, lastName: String, firstName: String, dob: String) -> Unit
+    savedPassport: SavedPassport?,
+    onPassportScanned: (passport: String, lastName: String, firstName: String, dob: String, nationality: String, gender: String) -> Unit
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    var hasCameraPermission by remember {
-        mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
-    }
+    var hasCameraPermission by remember { mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) }
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted -> hasCameraPermission = granted }
     LaunchedEffect(Unit) { if (!hasCameraPermission) permissionLauncher.launch(Manifest.permission.CAMERA) }
 
@@ -3637,8 +3476,7 @@ fun PassportScanStep(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().background(AppColors.White)
-            .verticalScroll(rememberScrollState()).padding(24.dp),
+        modifier = Modifier.fillMaxSize().background(AppColors.White).verticalScroll(rememberScrollState()).padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text("Scan passport", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = AppColors.Gray900)
@@ -3646,11 +3484,48 @@ fun PassportScanStep(
         Text("Hold passport MRZ strip towards camera", fontSize = 13.sp, color = AppColors.Gray500)
         Spacer(Modifier.height(20.dp))
 
+        if (savedPassport != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(AppDimens.radiusMedium))
+                    .background(AppColors.PrimaryFaint)
+                    .border(1.dp, AppColors.PrimaryLight, RoundedCornerShape(AppDimens.radiusMedium))
+                    .clickable { 
+                        onPassportScanned(
+                            savedPassport.number, 
+                            savedPassport.lastName, 
+                            savedPassport.firstName, 
+                            savedPassport.dob,
+                            savedPassport.nationality,
+                            savedPassport.gender
+                        ) 
+                    }
+                    .padding(16.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Outlined.Badge, contentDescription = null, tint = AppColors.Primary)
+                    Spacer(Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Use Saved Passport", fontWeight = FontWeight.Bold, color = AppColors.Primary)
+                        Text("${savedPassport.firstName} ${savedPassport.lastName} • ${savedPassport.number}", fontSize = 12.sp, color = AppColors.Primary)
+                    }
+                    Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = AppColors.Primary)
+                }
+            }
+           
+            Spacer(Modifier.height(20.dp))
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                HorizontalDivider(modifier = Modifier.weight(1f), color = AppColors.Gray300)
+                Text("  OR SCAN A NEW ONE  ", color = AppColors.Gray500, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                HorizontalDivider(modifier = Modifier.weight(1f), color = AppColors.Gray300)
+            }
+            Spacer(Modifier.height(20.dp))
+        }
+
         if (hasCameraPermission) {
             Box(
-                modifier = Modifier.fillMaxWidth().height(300.dp)
-                    .clip(RoundedCornerShape(AppDimens.radiusXL))
-                    .border(2.dp, AppColors.Primary, RoundedCornerShape(AppDimens.radiusXL))
+                modifier = Modifier.fillMaxWidth().height(300.dp).clip(RoundedCornerShape(AppDimens.radiusXL)).border(2.dp, AppColors.Primary, RoundedCornerShape(AppDimens.radiusXL))
             ) {
                 AndroidView(
                     modifier = Modifier.fillMaxSize(),
@@ -3671,35 +3546,99 @@ fun PassportScanStep(
                                                 val text = visionText.text.uppercase()
                                                 if (text.isBlank()) return@addOnSuccessListener
                                                 if (scanState == ScanState.WAITING) scanState = ScanState.DETECTING
-                                                var parsedLast = ""; var parsedFirst = ""; var parsedPassport = ""; var parsedDob = ""
-                                                val cleanLines = text.split('\n').map { it.replace(" ", "<").replace("«", "<<") }
-                                                val mrzLine1 = cleanLines.find { it.startsWith("P") && it.contains("<") && it.length > 20 }
-                                                val mrzLine2 = cleanLines.find { it.length > 20 && it != mrzLine1 && it.count { c -> c.isDigit() } > 5 }
-                                                if (mrzLine1 != null) {
-                                                    val namesPart = mrzLine1.substringAfter("P<").drop(3)
+                                                
+                                                var parsedLast = ""
+                                                var parsedFirst = ""
+                                                var parsedPassport = ""
+                                                var parsedDob = ""
+                                                var parsedNationality = ""
+                                                var parsedGender = ""
+
+                                                val cleanText = text.replace(" ", "").replace("\n", "")
+
+                                                // 1. Precise MRZ Line 1 Parse
+                                                val mrz1Regex = Regex("P[A-Z<]([A-Z]{3})([A-Z0-9<]+)")
+                                                val mrz1Match = mrz1Regex.find(cleanText)
+                                                if (mrz1Match != null) {
+                                                    val nat = mrz1Match.groupValues[1]
+                                                    if (nat == "DZA" || nat == "ALG") parsedNationality = "Algerian"
+
+                                                    val namesPart = mrz1Match.groupValues[2]
                                                     val nameSplit = namesPart.split("<<")
-                                                    if (nameSplit.isNotEmpty()) { parsedLast = nameSplit[0].replace("<", "").trim(); if (nameSplit.size > 1) parsedFirst = nameSplit[1].replace("<", " ").trim() }
-                                                }
-                                                if (mrzLine2 != null) {
-                                                    Regex("^([A-Z0-9<]{9})").find(mrzLine2)?.let { parsedPassport = it.groupValues[1].replace("<", "") }
-                                                    if (mrzLine2.length >= 19) {
-                                                        val dobRaw = mrzLine2.substring(13, 19)
-                                                        if (dobRaw.all { it.isDigit() }) {
-                                                            val y = dobRaw.substring(0, 2).toIntOrNull() ?: 0
-                                                            parsedDob = "${dobRaw.substring(4, 6)}/${dobRaw.substring(2, 4)}/${if (y > 30) "19$y" else "20$y"}"
-                                                        }
+                                                    if (nameSplit.isNotEmpty()) { 
+                                                        parsedLast = nameSplit[0].replace("<", "").trim()
+                                                        if (nameSplit.size > 1) parsedFirst = nameSplit[1].replace("<", " ").trim() 
                                                     }
                                                 }
-                                                if (parsedPassport.length < 6) Regex("\\b[A-Z0-9]{9}\\b").find(text)?.let { parsedPassport = it.value }
-                                                if (parsedDob.isEmpty()) Regex("\\b\\d{2}\\s[A-Z]{3}\\s\\d{4}\\b").find(text)?.let { parsedDob = it.value }
+
+                                                // 2. Precise MRZ Line 2 Parse (Now captures Gender at the end)
+                                                val mrz2Regex = Regex("([A-Z0-9<]{9})\\d([A-Z<]{3})(\\d{6})\\d([MF<])")
+                                                val mrz2Match = mrz2Regex.find(cleanText)
+                                                if (mrz2Match != null) {
+                                                    parsedPassport = mrz2Match.groupValues[1].replace("<", "")
+                                                    val nat = mrz2Match.groupValues[2]
+                                                    if (nat == "DZA" || nat == "ALG") parsedNationality = "Algerian"
+                                                    
+                                                    // FIX: Kept year as string so "02" doesn't become "2"
+                                                    val dobRaw = mrz2Match.groupValues[3]
+                                                    val yStr = dobRaw.substring(0, 2)
+                                                    val y = yStr.toIntOrNull() ?: 0
+                                                    val yearFull = if (y > 30) "19$yStr" else "20$yStr"
+                                                    parsedDob = "${dobRaw.substring(4, 6)}/${dobRaw.substring(2, 4)}/$yearFull"
+                                                    
+                                                    // Extract Gender from MRZ
+                                                    val g = mrz2Match.groupValues[4]
+                                                    if (g == "M") parsedGender = "Male"
+                                                    else if (g == "F") parsedGender = "Female"
+                                                }
+
+                                                // 3. Robust Fallbacks for VIZ
+                                                if (parsedPassport.length < 6) {
+                                                    Regex("\\b[A-Z0-9]{9}\\b").find(text)?.let { match -> parsedPassport = match.value }
+                                                }
+                                                if (parsedNationality.isEmpty() && (text.contains("ALGERIAN") || text.contains("جزائرية") || text.contains("DZA"))) {
+                                                    parsedNationality = "Algerian"
+                                                }
+                                                // Fallback for Algerian Gender (Arabic / French)
+                                                if (parsedGender.isEmpty()) {
+                                                    if (text.contains("ذ - M") || text.contains("M/M") || text.contains("SEXE M")) parsedGender = "Male"
+                                                    else if (text.contains("أ - F") || text.contains("F/F") || text.contains("SEXE F")) parsedGender = "Female"
+                                                }
+
+                                                // Complex DOB Fallback to ignore Arabic characters
+                                                if (parsedDob.isEmpty()) {
+                                                    Regex("(\\d{2})\\s*[^0-9A-Za-z<]*\\s*([A-Z]+|\\d{2})\\s*(\\d{4})").find(text)?.let { match ->
+                                                        val d = match.groupValues[1]
+                                                        val mStr = match.groupValues[2]
+                                                        val y = match.groupValues[3]
+                                                        val m = when {
+                                                            mStr.contains("JAN") -> "01"
+                                                            mStr.contains("FEB") || mStr.contains("FEV") -> "02"
+                                                            mStr.contains("MAR") -> "03"
+                                                            mStr.contains("APR") || mStr.contains("AVR") -> "04"
+                                                            mStr.contains("MAY") || mStr.contains("MAI") -> "05"
+                                                            mStr.contains("JUN") || mStr.contains("JUIN") -> "06"
+                                                            mStr.contains("JUL") || mStr.contains("JUIL") -> "07"
+                                                            mStr.contains("AUG") || mStr.contains("AOU") -> "08"
+                                                            mStr.contains("SEP") -> "09"
+                                                            mStr.contains("OCT") -> "10"
+                                                            mStr.contains("NOV") -> "11"
+                                                            mStr.contains("DEC") -> "12"
+                                                            mStr.toIntOrNull() != null -> mStr.padStart(2, '0')
+                                                            else -> "01"
+                                                        }
+                                                        parsedDob = "$d/$m/$y"
+                                                    }
+                                                }
+
                                                 if (parsedLast.isEmpty() || !parsedLast.equals(expectedLastName, ignoreCase = true)) {
                                                     if (expectedLastName.isNotBlank() && text.contains(expectedLastName.uppercase())) parsedLast = expectedLastName.uppercase()
                                                 }
+
                                                 if (parsedPassport.isNotEmpty() && parsedLast.isNotEmpty()) {
                                                     if (parsedLast.equals(expectedLastName, ignoreCase = true)) {
                                                         isProcessing = false; scanState = ScanState.SUCCESS; mismatchMsg = null
-                                                        // Populate form: if firstName missing from MRZ, fall back to booking first name
-                                                        onPassportScanned(parsedPassport, parsedLast, parsedFirst.ifBlank { expectedFirstName }, parsedDob)
+                                                        onPassportScanned(parsedPassport, parsedLast, parsedFirst.ifBlank { expectedFirstName }, parsedDob, parsedNationality, parsedGender)
                                                     } else {
                                                         scanState = ScanState.MISMATCH
                                                         mismatchMsg = "Passport name (${parsedLast}) does not match booking name (${expectedLastName}). Check document and try again."
@@ -3720,10 +3659,7 @@ fun PassportScanStep(
             }
         } else {
             Box(
-                modifier = Modifier.fillMaxWidth().height(300.dp)
-                    .clip(RoundedCornerShape(AppDimens.radiusXL))
-                    .background(AppColors.Gray100)
-                    .border(2.dp, AppColors.Gray300, RoundedCornerShape(AppDimens.radiusXL)),
+                modifier = Modifier.fillMaxWidth().height(300.dp).clip(RoundedCornerShape(AppDimens.radiusXL)).background(AppColors.Gray100).border(2.dp, AppColors.Gray300, RoundedCornerShape(AppDimens.radiusXL)),
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -3746,12 +3682,8 @@ fun PassportScanStep(
                 CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp, color = AppColors.Primary)
                 Text("Reading passport data...", color = AppColors.Gray700, fontSize = 13.sp)
             }
-            ScanState.MISMATCH -> {
-                mismatchMsg?.let { ErrorBanner(it) }
-            }
-            ScanState.SUCCESS -> Box(
-                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(AppDimens.radiusMedium)).background(AppColors.SuccessLight).padding(12.dp)
-            ) { Text("Passport verified. Proceeding...", color = AppColors.Success, fontWeight = FontWeight.SemiBold) }
+            ScanState.MISMATCH -> { mismatchMsg?.let { ErrorBanner(it) } }
+            ScanState.SUCCESS -> Box(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(AppDimens.radiusMedium)).background(AppColors.SuccessLight).padding(12.dp)) { Text("Passport verified. Proceeding...", color = AppColors.Success, fontWeight = FontWeight.SemiBold) }
             ScanState.TIMEOUT -> ErrorBanner("Scan timed out. Try better lighting or use manual entry below.")
             ScanState.ERROR -> ErrorBanner("Could not read passport. Retry or use manual entry.")
         }
@@ -3759,7 +3691,7 @@ fun PassportScanStep(
         Spacer(Modifier.height(20.dp))
 
         OutlinedButton(
-            onClick = { onPassportScanned("MANUAL000", expectedLastName, expectedFirstName, "") },
+            onClick = { onPassportScanned("MANUAL000", expectedLastName, expectedFirstName, "", "", "") },
             modifier = Modifier.fillMaxWidth().height(AppDimens.buttonHeight),
             shape = RoundedCornerShape(AppDimens.radiusFull),
             border = ButtonDefaults.outlinedButtonBorder.copy(brush = androidx.compose.ui.graphics.SolidColor(AppColors.Primary)),
@@ -3777,20 +3709,17 @@ fun PassportScanStep(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PassengerDetailsStep(
-    passenger: Passenger,
-    flight: com.airline.checkin.domain.model.Flight?,
-    onUpdate: (Passenger) -> Unit,
-    onNext: () -> Unit,
-    onBack: () -> Unit
+    passenger: Passenger, flight: Flight?,
+    onUpdate: (Passenger) -> Unit, onNext: () -> Unit, onBack: () -> Unit
 ) {
-    var givenName  by remember { mutableStateOf(passenger.fullName.substringBefore(" ")) }
-    var lastName   by remember { mutableStateOf(passenger.fullName.substringAfter(" ", "")) }
+    var givenName by remember { mutableStateOf(passenger.fullName.substringBefore(" ")) }
+    var lastName by remember { mutableStateOf(passenger.fullName.substringAfter(" ", "")) }
     var nationality by remember { mutableStateOf(passenger.nationality) }
-    var dob        by remember { mutableStateOf(passenger.dateOfBirth) }
-    var passport   by remember { mutableStateOf(passenger.passportNumber) }
-    var gender     by remember { mutableStateOf("") }
-    var idType     by remember { mutableStateOf("Passport") }
-    var submitted  by remember { mutableStateOf(false) }
+    var dob by remember { mutableStateOf(passenger.dateOfBirth) }
+    var passport by remember { mutableStateOf(passenger.passportNumber) }
+    var gender by remember { mutableStateOf(passenger.gender) }
+    var idType by remember { mutableStateOf("Passport") }
+    var submitted by remember { mutableStateOf(false) }
     var showDatePicker by remember { mutableStateOf(false) }
     var nationalityExpanded by remember { mutableStateOf(false) }
     var genderExpanded by remember { mutableStateOf(false) }
@@ -3799,7 +3728,6 @@ fun PassengerDetailsStep(
     val genderOptions = listOf("Male", "Female", "Other")
     val idTypeOptions = listOf("Passport", "National ID", "Driver License")
 
-    // Common nationalities
     val nationalityOptions = listOf(
         "Afghan", "Albanian", "Algerian", "American", "Argentinian", "Australian",
         "Austrian", "Bahraini", "Belgian", "Brazilian", "British", "Canadian",
@@ -3814,7 +3742,6 @@ fun PassengerDetailsStep(
         "Emirati", "Venezuelan", "Vietnamese"
     )
 
-    // Validation
     val dobIsMinor: Boolean = remember(dob) {
         if (dob.isBlank()) false
         else runCatching {
@@ -3826,17 +3753,13 @@ fun PassengerDetailsStep(
             } else false
         }.getOrDefault(false)
     }
-
     val isPassportValid = passport.matches(Regex("[A-Z0-9]{6,9}"))
 
     Column(modifier = Modifier.fillMaxSize().background(AppColors.White)) {
-        // Flight info strip
         if (flight != null) {
             Row(
-                modifier = Modifier.fillMaxWidth().background(AppColors.Primary)
-                    .padding(horizontal = 20.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                modifier = Modifier.fillMaxWidth().background(AppColors.Primary).padding(horizontal = 20.dp, vertical = 10.dp),
+                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 Text("${flight.origin} — ${flight.destination}", fontSize = 13.sp, color = Color.White, fontWeight = FontWeight.SemiBold)
                 Text("·", color = Color(0xFFCC99FF))
@@ -3844,82 +3767,40 @@ fun PassengerDetailsStep(
             }
         }
 
-        Column(
-            modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp)
-        ) {
+        Column(modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(24.dp)) {
             Text("Passenger details", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = AppColors.Gray900)
             Spacer(Modifier.height(4.dp))
             Text("Must match travel document exactly", fontSize = 13.sp, color = AppColors.Gray500)
             Spacer(Modifier.height(20.dp))
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                AppTextField(
-                    value = givenName, onValueChange = { givenName = it }, label = "Given names",
-                    modifier = Modifier.weight(1f),
-                    error = if (submitted && givenName.isBlank()) "Required" else null
-                )
-                AppTextField(
-                    value = lastName, onValueChange = { lastName = it }, label = "Surname",
-                    modifier = Modifier.weight(1f),
-                    error = if (submitted && lastName.isBlank()) "Required" else null
-                )
+                AppTextField(value = givenName, onValueChange = { givenName = it }, label = "Given names", modifier = Modifier.weight(1f), error = if (submitted && givenName.isBlank()) "Required" else null)
+                AppTextField(value = lastName, onValueChange = { lastName = it }, label = "Surname", modifier = Modifier.weight(1f), error = if (submitted && lastName.isBlank()) "Required" else null)
             }
             Spacer(Modifier.height(12.dp))
 
-            // Nationality — searchable dropdown
-            ExposedDropdownMenuBox(
-                expanded = nationalityExpanded,
-                onExpandedChange = { nationalityExpanded = !nationalityExpanded }
-            ) {
+            ExposedDropdownMenuBox(expanded = nationalityExpanded, onExpandedChange = { nationalityExpanded = !nationalityExpanded }) {
                 OutlinedTextField(
-                    value = nationality,
-                    onValueChange = { nationality = it; nationalityExpanded = true },
-                    label = { Text("Nationality", fontSize = 14.sp) },
-                    modifier = Modifier.fillMaxWidth().menuAnchor(),
-                    singleLine = true,
-                    shape = RoundedCornerShape(AppDimens.radiusLarge),
+                    value = nationality, onValueChange = { nationality = it; nationalityExpanded = true }, label = { Text("Nationality", fontSize = 14.sp) },
+                    modifier = Modifier.fillMaxWidth().menuAnchor(), singleLine = true, shape = RoundedCornerShape(AppDimens.radiusLarge),
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = nationalityExpanded) },
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = AppColors.Primary, unfocusedBorderColor = AppColors.Gray300, focusedLabelColor = AppColors.Primary
-                    ),
+                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = AppColors.Primary, unfocusedBorderColor = AppColors.Gray300, focusedLabelColor = AppColors.Primary),
                     isError = submitted && nationality.isBlank()
                 )
-                ExposedDropdownMenu(
-                    expanded = nationalityExpanded && nationalityOptions.any { it.contains(nationality, ignoreCase = true) },
-                    onDismissRequest = { nationalityExpanded = false }
-                ) {
+                ExposedDropdownMenu(expanded = nationalityExpanded && nationalityOptions.any { it.contains(nationality, ignoreCase = true) }, onDismissRequest = { nationalityExpanded = false }) {
                     nationalityOptions.filter { it.contains(nationality, ignoreCase = true) }.take(6).forEach { option ->
-                        DropdownMenuItem(
-                            text = { Text(option) },
-                            onClick = { nationality = option; nationalityExpanded = false }
-                        )
+                        DropdownMenuItem(text = { Text(option) }, onClick = { nationality = option; nationalityExpanded = false })
                     }
                 }
             }
-            if (submitted && nationality.isBlank()) {
-                Text("Required", color = AppColors.Error, fontSize = 11.sp, modifier = Modifier.padding(start = 4.dp, top = 2.dp))
-            }
+            if (submitted && nationality.isBlank()) Text("Required", color = AppColors.Error, fontSize = 11.sp, modifier = Modifier.padding(start = 4.dp, top = 2.dp))
             Spacer(Modifier.height(12.dp))
 
-            // Date of birth — tap to open date picker
             OutlinedTextField(
-                value = dob,
-                onValueChange = { dob = it },
-                label = { Text("Date of birth", fontSize = 14.sp) },
-                placeholder = { Text("DD/MM/YYYY", color = AppColors.Gray300) },
-                modifier = Modifier.fillMaxWidth().clickable { showDatePicker = true },
-                singleLine = true,
-                readOnly = true,
-                shape = RoundedCornerShape(AppDimens.radiusLarge),
-                trailingIcon = {
-                    IconButton(onClick = { showDatePicker = true }) {
-                        Icon(Icons.Outlined.CalendarMonth, contentDescription = "Pick date", tint = AppColors.Primary, modifier = Modifier.size(18.dp))
-                    }
-                },
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = AppColors.Primary, unfocusedBorderColor = AppColors.Gray300, focusedLabelColor = AppColors.Primary,
-                    errorBorderColor = AppColors.Error
-                ),
+                value = dob, onValueChange = { dob = it }, label = { Text("Date of birth", fontSize = 14.sp) }, placeholder = { Text("DD/MM/YYYY", color = AppColors.Gray300) },
+                modifier = Modifier.fillMaxWidth().clickable { showDatePicker = true }, singleLine = true, readOnly = true, shape = RoundedCornerShape(AppDimens.radiusLarge),
+                trailingIcon = { IconButton(onClick = { showDatePicker = true }) { Icon(Icons.Outlined.CalendarMonth, contentDescription = "Pick date", tint = AppColors.Primary, modifier = Modifier.size(18.dp)) } },
+                colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = AppColors.Primary, unfocusedBorderColor = AppColors.Gray300, focusedLabelColor = AppColors.Primary, errorBorderColor = AppColors.Error),
                 isError = (submitted && dob.isBlank()) || dobIsMinor
             )
             when {
@@ -3928,12 +3809,10 @@ fun PassengerDetailsStep(
             }
             Spacer(Modifier.height(12.dp))
 
-            // Gender dropdown
             ExposedDropdownMenuBox(expanded = genderExpanded, onExpandedChange = { genderExpanded = !genderExpanded }) {
                 OutlinedTextField(
                     value = gender, onValueChange = {}, readOnly = true, label = { Text("Gender", fontSize = 14.sp) },
-                    modifier = Modifier.fillMaxWidth().menuAnchor(), singleLine = true,
-                    shape = RoundedCornerShape(AppDimens.radiusLarge),
+                    modifier = Modifier.fillMaxWidth().menuAnchor(), singleLine = true, shape = RoundedCornerShape(AppDimens.radiusLarge),
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = genderExpanded) },
                     colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = AppColors.Primary, unfocusedBorderColor = AppColors.Gray300, focusedLabelColor = AppColors.Primary)
                 )
@@ -3943,12 +3822,10 @@ fun PassengerDetailsStep(
             }
             Spacer(Modifier.height(12.dp))
 
-            // ID type
             ExposedDropdownMenuBox(expanded = idTypeExpanded, onExpandedChange = { idTypeExpanded = !idTypeExpanded }) {
                 OutlinedTextField(
                     value = idType, onValueChange = {}, readOnly = true, label = { Text("ID type", fontSize = 14.sp) },
-                    modifier = Modifier.fillMaxWidth().menuAnchor(), singleLine = true,
-                    shape = RoundedCornerShape(AppDimens.radiusLarge),
+                    modifier = Modifier.fillMaxWidth().menuAnchor(), singleLine = true, shape = RoundedCornerShape(AppDimens.radiusLarge),
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = idTypeExpanded) },
                     colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = AppColors.Primary, unfocusedBorderColor = AppColors.Gray300, focusedLabelColor = AppColors.Primary)
                 )
@@ -3959,8 +3836,7 @@ fun PassengerDetailsStep(
             Spacer(Modifier.height(12.dp))
 
             AppTextField(
-                value = passport, onValueChange = { passport = it.uppercase() }, label = "Passport / ID number",
-                icon = Icons.Outlined.Badge,
+                value = passport, onValueChange = { passport = it.uppercase() }, label = "Passport / ID number", icon = Icons.Outlined.Badge,
                 error = when {
                     submitted && passport.isBlank() -> "Required"
                     submitted && passport.isNotBlank() && !isPassportValid -> "Invalid passport number (6–9 alphanumeric characters)"
@@ -3973,30 +3849,18 @@ fun PassengerDetailsStep(
             Button(
                 onClick = {
                     submitted = true
-                    if (givenName.isBlank() || lastName.isBlank() || passport.isBlank() || nationality.isBlank() || dob.isBlank()) return@Button
-                    if (dobIsMinor) return@Button
-                    if (!isPassportValid) return@Button
-                    onUpdate(Passenger(fullName = "$givenName $lastName".trim(), nationality = nationality, dateOfBirth = dob, passportNumber = passport))
+                    if (givenName.isBlank() || lastName.isBlank() || passport.isBlank() || nationality.isBlank() || dob.isBlank() || dobIsMinor || !isPassportValid) return@Button
+                    onUpdate(Passenger(fullName = "$givenName $lastName".trim(), nationality = nationality, dateOfBirth = dob, passportNumber = passport, gender = gender))
                     onNext()
                 },
-                modifier = Modifier.fillMaxWidth().height(AppDimens.buttonHeight),
-                shape = RoundedCornerShape(AppDimens.radiusFull),
-                colors = ButtonDefaults.buttonColors(containerColor = AppColors.Primary)
+                modifier = Modifier.fillMaxWidth().height(AppDimens.buttonHeight), shape = RoundedCornerShape(AppDimens.radiusFull), colors = ButtonDefaults.buttonColors(containerColor = AppColors.Primary)
             ) { Text("Continue", fontSize = 16.sp, fontWeight = FontWeight.SemiBold) }
 
             Spacer(Modifier.height(10.dp))
-
-            OutlinedButton(
-                onClick = onBack,
-                modifier = Modifier.fillMaxWidth().height(AppDimens.buttonHeight),
-                shape = RoundedCornerShape(AppDimens.radiusFull),
-                border = ButtonDefaults.outlinedButtonBorder.copy(brush = androidx.compose.ui.graphics.SolidColor(AppColors.Gray300)),
-                colors = ButtonDefaults.outlinedButtonColors(contentColor = AppColors.Gray700)
-            ) { Text("Back") }
+            OutlinedButton(onClick = onBack, modifier = Modifier.fillMaxWidth().height(AppDimens.buttonHeight), shape = RoundedCornerShape(AppDimens.radiusFull), border = ButtonDefaults.outlinedButtonBorder.copy(brush = androidx.compose.ui.graphics.SolidColor(AppColors.Gray300)), colors = ButtonDefaults.outlinedButtonColors(contentColor = AppColors.Gray700)) { Text("Back") }
         }
     }
 
-    // Date Picker Dialog
     if (showDatePicker) {
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
@@ -4010,28 +3874,13 @@ fun PassengerDetailsStep(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun DatePickerDialog(
-    onDismissRequest: () -> Unit,
-    onDateSelected: (day: Int, month: Int, year: Int) -> Unit
-) {
+private fun DatePickerDialog(onDismissRequest: () -> Unit, onDateSelected: (day: Int, month: Int, year: Int) -> Unit) {
     val state = rememberDatePickerState()
     androidx.compose.material3.DatePickerDialog(
         onDismissRequest = onDismissRequest,
-        confirmButton = {
-            TextButton(onClick = {
-                val ms = state.selectedDateMillis
-                if (ms != null) {
-                    val ld = java.time.Instant.ofEpochMilli(ms).atZone(java.time.ZoneOffset.UTC).toLocalDate()
-                    onDateSelected(ld.dayOfMonth, ld.monthValue, ld.year)
-                } else onDismissRequest()
-            }) { Text("OK", color = AppColors.Primary) }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismissRequest) { Text("Cancel", color = AppColors.Gray500) }
-        }
-    ) {
-        DatePicker(state = state, colors = DatePickerDefaults.colors(selectedDayContainerColor = AppColors.Primary, todayDateBorderColor = AppColors.Primary))
-    }
+        confirmButton = { TextButton(onClick = { val ms = state.selectedDateMillis; if (ms != null) { val ld = java.time.Instant.ofEpochMilli(ms).atZone(java.time.ZoneOffset.UTC).toLocalDate(); onDateSelected(ld.dayOfMonth, ld.monthValue, ld.year) } else onDismissRequest() }) { Text("OK", color = AppColors.Primary) } },
+        dismissButton = { TextButton(onClick = onDismissRequest) { Text("Cancel", color = AppColors.Gray500) } }
+    ) { DatePicker(state = state, colors = DatePickerDefaults.colors(selectedDayContainerColor = AppColors.Primary, todayDateBorderColor = AppColors.Primary)) }
 }
 
 // ─── Step 4: Baggage ──────────────────────────────────────────────
@@ -4039,10 +3888,8 @@ private fun DatePickerDialog(
 @Composable
 fun BaggageStep(
     baggageList: List<BaggageDeclaration>,
-    onAdd: (BaggageDeclaration) -> Unit,
-    onRemove: (Int) -> Unit,
-    onNext: () -> Unit,
-    onBack: () -> Unit
+    onAdd: (BaggageDeclaration) -> Unit, onRemove: (Int) -> Unit,
+    onNext: () -> Unit, onBack: () -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize().background(AppColors.White).padding(24.dp)) {
         Text("Baggage", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = AppColors.Gray900)
@@ -4051,63 +3898,27 @@ fun BaggageStep(
         Spacer(Modifier.height(20.dp))
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            BaggageAddButton(
-                label = "Cabin bag", sublabel = "7 kg",
-                icon = Icons.Outlined.Backpack,
-                modifier = Modifier.weight(1f),
-                onClick = { onAdd(BaggageDeclaration(id = "BAG-${baggageList.size + 1}", cabinBags = 1, checkedBags = 0)) }
-            )
-            BaggageAddButton(
-                label = "Checked bag", sublabel = "20 kg",
-                icon = Icons.Outlined.Luggage,
-                modifier = Modifier.weight(1f),
-                onClick = { onAdd(BaggageDeclaration(id = "BAG-${baggageList.size + 1}", cabinBags = 0, checkedBags = 1)) }
-            )
+            BaggageAddButton(label = "Cabin bag", sublabel = "7 kg", icon = Icons.Outlined.Backpack, modifier = Modifier.weight(1f), onClick = { onAdd(BaggageDeclaration(id = "BAG-${baggageList.size + 1}", cabinBags = 1, checkedBags = 0)) })
+            BaggageAddButton(label = "Checked bag", sublabel = "20 kg", icon = Icons.Outlined.Luggage, modifier = Modifier.weight(1f), onClick = { onAdd(BaggageDeclaration(id = "BAG-${baggageList.size + 1}", cabinBags = 0, checkedBags = 1)) })
         }
-
         Spacer(Modifier.height(20.dp))
 
         if (baggageList.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(AppDimens.radiusLarge))
-                    .background(AppColors.Gray50).padding(20.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("No bags added yet", color = AppColors.Gray500, fontSize = 14.sp)
-            }
+            Box(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(AppDimens.radiusLarge)).background(AppColors.Gray50).padding(20.dp), contentAlignment = Alignment.Center) { Text("No bags added yet", color = AppColors.Gray500, fontSize = 14.sp) }
         } else {
             baggageList.forEachIndexed { index, bag ->
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp)
-                        .clip(RoundedCornerShape(AppDimens.radiusMedium))
-                        .background(AppColors.Gray50)
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+                Row(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp).clip(RoundedCornerShape(AppDimens.radiusMedium)).background(AppColors.Gray50).padding(horizontal = 16.dp, vertical = 12.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Icon(
-                            if (bag.cabinBags > 0) Icons.Outlined.Backpack else Icons.Outlined.Luggage,
-                            contentDescription = null, tint = AppColors.Primary, modifier = Modifier.size(20.dp)
-                        )
-                        Column {
-                            Text(if (bag.cabinBags > 0) "Cabin bag" else "Checked bag", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = AppColors.Gray900)
-                            Text(if (bag.cabinBags > 0) "7 kg" else "20 kg", fontSize = 12.sp, color = AppColors.Gray500)
-                        }
+                        Icon(if (bag.cabinBags > 0) Icons.Outlined.Backpack else Icons.Outlined.Luggage, contentDescription = null, tint = AppColors.Primary, modifier = Modifier.size(20.dp))
+                        Column { Text(if (bag.cabinBags > 0) "Cabin bag" else "Checked bag", fontSize = 14.sp, fontWeight = FontWeight.Medium, color = AppColors.Gray900); Text(if (bag.cabinBags > 0) "7 kg" else "20 kg", fontSize = 12.sp, color = AppColors.Gray500) }
                     }
-                    IconButton(onClick = { onRemove(index) }) {
-                        Icon(Icons.Outlined.Remove, contentDescription = "Remove", tint = AppColors.Error, modifier = Modifier.size(18.dp))
-                    }
+                    IconButton(onClick = { onRemove(index) }) { Icon(Icons.Outlined.Remove, contentDescription = "Remove", tint = AppColors.Error, modifier = Modifier.size(18.dp)) }
                 }
             }
         }
-
         Spacer(Modifier.weight(1f))
         Spacer(Modifier.height(20.dp))
-
-        Button(onClick = onNext, modifier = Modifier.fillMaxWidth().height(AppDimens.buttonHeight), shape = RoundedCornerShape(AppDimens.radiusFull), colors = ButtonDefaults.buttonColors(containerColor = AppColors.Primary)) {
-            Text("Continue", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
-        }
+        Button(onClick = onNext, modifier = Modifier.fillMaxWidth().height(AppDimens.buttonHeight), shape = RoundedCornerShape(AppDimens.radiusFull), colors = ButtonDefaults.buttonColors(containerColor = AppColors.Primary)) { Text("Continue", fontSize = 16.sp, fontWeight = FontWeight.SemiBold) }
         Spacer(Modifier.height(10.dp))
         OutlinedButton(onClick = onBack, modifier = Modifier.fillMaxWidth().height(AppDimens.buttonHeight), shape = RoundedCornerShape(AppDimens.radiusFull), border = ButtonDefaults.outlinedButtonBorder.copy(brush = androidx.compose.ui.graphics.SolidColor(AppColors.Gray300)), colors = ButtonDefaults.outlinedButtonColors(contentColor = AppColors.Gray700)) { Text("Back") }
     }
@@ -4115,12 +3926,7 @@ fun BaggageStep(
 
 @Composable
 private fun BaggageAddButton(label: String, sublabel: String, icon: androidx.compose.ui.graphics.vector.ImageVector, modifier: Modifier, onClick: () -> Unit) {
-    OutlinedButton(
-        onClick = onClick, modifier = modifier.height(80.dp),
-        shape = RoundedCornerShape(AppDimens.radiusLarge),
-        border = ButtonDefaults.outlinedButtonBorder.copy(brush = androidx.compose.ui.graphics.SolidColor(AppColors.Primary)),
-        colors = ButtonDefaults.outlinedButtonColors(contentColor = AppColors.Primary)
-    ) {
+    OutlinedButton(onClick = onClick, modifier = modifier.height(80.dp), shape = RoundedCornerShape(AppDimens.radiusLarge), border = ButtonDefaults.outlinedButtonBorder.copy(brush = androidx.compose.ui.graphics.SolidColor(AppColors.Primary)), colors = ButtonDefaults.outlinedButtonColors(contentColor = AppColors.Primary)) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp))
             Spacer(Modifier.height(4.dp))
@@ -4135,10 +3941,9 @@ private fun BaggageAddButton(label: String, sublabel: String, icon: androidx.com
 @Composable
 fun SpecialRequestsStep(
     meal: String, wheelchair: Boolean, infant: Boolean, pet: Boolean,
-    onUpdate: (String, Boolean, Boolean, Boolean) -> Unit,
-    onNext: () -> Unit, onBack: () -> Unit
+    onUpdate: (String, Boolean, Boolean, Boolean) -> Unit, onNext: () -> Unit, onBack: () -> Unit
 ) {
-    var mealText  by remember { mutableStateOf(meal) }
+    var mealText by remember { mutableStateOf(meal) }
     var wcChecked by remember { mutableStateOf(wheelchair) }
     var infChecked by remember { mutableStateOf(infant) }
     var petChecked by remember { mutableStateOf(pet) }
@@ -4149,34 +3954,21 @@ fun SpecialRequestsStep(
         Text("All optional", fontSize = 13.sp, color = AppColors.Gray500)
         Spacer(Modifier.height(20.dp))
 
-        AppTextField(
-            value = mealText, onValueChange = { mealText = it },
-            label = "Meal preferences",
-            icon = Icons.Outlined.Restaurant,
-            singleLine = false,
-            modifier = Modifier.fillMaxWidth().height(100.dp)
-        )
+        AppTextField(value = mealText, onValueChange = { mealText = it }, label = "Meal preferences", icon = Icons.Outlined.Restaurant, singleLine = false, modifier = Modifier.fillMaxWidth().height(100.dp))
         Spacer(Modifier.height(16.dp))
 
-        listOf(
+        val options = listOf(
             Triple(Icons.Outlined.Accessible, "Wheelchair assistance", wcChecked) to { v: Boolean -> wcChecked = v },
             Triple(Icons.Outlined.ChildCare, "Traveling with infant", infChecked) to { v: Boolean -> infChecked = v },
             Triple(Icons.Outlined.Pets, "Traveling with pet", petChecked) to { v: Boolean -> petChecked = v }
-        ).forEach { (triple, setter) ->
+        )
+        
+        for ((triple, setter) in options) {
             val (icon, label, checked) = triple
-            Row(
-                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(AppDimens.radiusMedium))
-                    .clickable { setter(!checked) }
-                    .padding(vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
+            Row(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(AppDimens.radiusMedium)).clickable { setter(!checked) }.padding(vertical = 12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 Icon(icon, contentDescription = null, tint = if (checked) AppColors.Primary else AppColors.Gray500, modifier = Modifier.size(20.dp))
                 Text(label, fontSize = 14.sp, color = AppColors.Gray900, modifier = Modifier.weight(1f))
-                Checkbox(
-                    checked = checked, onCheckedChange = { setter(it) },
-                    colors = CheckboxDefaults.colors(checkedColor = AppColors.Primary)
-                )
+                Checkbox(checked = checked, onCheckedChange = { setter(it) }, colors = CheckboxDefaults.colors(checkedColor = AppColors.Primary))
             }
             HorizontalDivider(color = AppColors.Gray100)
         }
@@ -4193,12 +3985,7 @@ fun SpecialRequestsStep(
 // ─── Step 6: Confirmation ─────────────────────────────────────────
 
 @Composable
-fun ConfirmationStep(
-    uiState: CheckInUiState,
-    viewModel: CheckInViewModel,
-    onConfirm: () -> Unit,
-    onBack: () -> Unit
-) {
+fun ConfirmationStep(uiState: CheckInUiState, viewModel: CheckInViewModel, onConfirm: () -> Unit, onBack: () -> Unit) {
     val context = LocalContext.current
     var showDialog by remember { mutableStateOf(false) }
 
@@ -4212,11 +3999,7 @@ fun ConfirmationStep(
         Text("Check your details before submitting", fontSize = 13.sp, color = AppColors.Gray500)
         Spacer(Modifier.height(20.dp))
 
-        // Summary card
-        Box(
-            modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(AppDimens.radiusXL))
-                .border(1.dp, AppColors.Gray100, RoundedCornerShape(AppDimens.radiusXL)).padding(20.dp)
-        ) {
+        Box(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(AppDimens.radiusXL)).border(1.dp, AppColors.Gray100, RoundedCornerShape(AppDimens.radiusXL)).padding(20.dp)) {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 val rows = listOf(
                     "Passenger" to uiState.passenger.fullName.ifBlank { "—" },
@@ -4226,7 +4009,7 @@ fun ConfirmationStep(
                     "Passport" to uiState.passenger.passportNumber.ifBlank { "—" },
                     "Bags" to "${uiState.baggageList.sumOf { it.cabinBags }} cabin, ${uiState.baggageList.sumOf { it.checkedBags }} checked"
                 )
-                rows.forEach { (label, value) ->
+                for ((label, value) in rows) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text(label, fontSize = 13.sp, color = AppColors.Gray500)
                         Text(value, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = AppColors.Gray900)
@@ -4234,11 +4017,7 @@ fun ConfirmationStep(
                 }
             }
         }
-
-        uiState.error?.let {
-            Spacer(Modifier.height(12.dp))
-            ErrorBanner(it)
-        }
+        uiState.error?.let { Spacer(Modifier.height(12.dp)); ErrorBanner(it) }
 
         Spacer(Modifier.height(24.dp))
 
@@ -4252,29 +4031,21 @@ fun ConfirmationStep(
 
     if (showDialog) {
         AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title = { Text("Confirm check-in?", fontWeight = FontWeight.Bold) },
-            text = { Text("Once submitted, your boarding pass will be generated.") },
+            onDismissRequest = { showDialog = false }, title = { Text("Confirm check-in?", fontWeight = FontWeight.Bold) }, text = { Text("Once submitted, your boarding pass will be generated.") },
             confirmButton = {
-                Button(
-                    onClick = {
-                        val needsPermission = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                                ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
-                        if (needsPermission) notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                        else viewModel.submitCheckIn(canSendNotification = true) { showDialog = false; onConfirm() }
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = AppColors.Primary)
-                ) { Text("Check in now") }
+                Button(onClick = {
+                    val needsPermission = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+                    if (needsPermission) notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) else viewModel.submitCheckIn(canSendNotification = true) { showDialog = false; onConfirm() }
+                }, colors = ButtonDefaults.buttonColors(containerColor = AppColors.Primary)) { Text("Check in now") }
             },
-            dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Cancel", color = AppColors.Gray500) } },
-            shape = RoundedCornerShape(AppDimens.radiusXL)
+            dismissButton = { TextButton(onClick = { showDialog = false }) { Text("Cancel", color = AppColors.Gray500) } }, shape = RoundedCornerShape(AppDimens.radiusXL)
         )
     }
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────
 
-private fun resolveDepartureInstant(flight: com.airline.checkin.domain.model.Flight?): java.time.Instant? {
+private fun resolveDepartureInstant(flight: Flight?): java.time.Instant? {
     val dt = flight?.departureTime?.trim().orEmpty()
     if (dt.isBlank()) return null
     runCatching { java.time.Instant.parse(if (!dt.endsWith("Z") && !dt.contains("+")) "${dt}Z" else dt) }.getOrNull()?.let { return it }
@@ -4285,7 +4056,7 @@ private fun resolveDepartureInstant(flight: com.airline.checkin.domain.model.Fli
     return date.atTime(time).atZone(java.time.ZoneId.systemDefault()).toInstant()
 }
 
-private fun formatDepartureDisplay(flight: com.airline.checkin.domain.model.Flight?): String {
+private fun formatDepartureDisplay(flight: Flight?): String {
     val instant = resolveDepartureInstant(flight) ?: return flight?.departureTime?.ifBlank { "—" } ?: "—"
     val ldt = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
     return ldt.format(java.time.format.DateTimeFormatter.ofPattern("EEE, MMM d · HH:mm"))
@@ -4294,17 +4065,461 @@ private fun formatDepartureDisplay(flight: com.airline.checkin.domain.model.Flig
 private const val CHECK_IN_CHANNEL_ID = "check_in_updates"
 private fun showCheckInCompleteNotification(context: Context) {
     val nm = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        nm.createNotificationChannel(NotificationChannel(CHECK_IN_CHANNEL_ID, "Check-In Updates", NotificationManager.IMPORTANCE_DEFAULT))
-    }
-    val notification = NotificationCompat.Builder(context, CHECK_IN_CHANNEL_ID)
-        .setSmallIcon(R.drawable.ic_launcher_foreground)
-        .setContentTitle("Check-in complete")
-        .setContentText("Your boarding pass is ready.")
-        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-        .setAutoCancel(true)
-        .build()
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) nm.createNotificationChannel(NotificationChannel(CHECK_IN_CHANNEL_ID, "Check-In Updates", NotificationManager.IMPORTANCE_DEFAULT))
+    val notification = NotificationCompat.Builder(context, CHECK_IN_CHANNEL_ID).setSmallIcon(R.drawable.ic_launcher_foreground).setContentTitle("Check-in complete").setContentText("Your boarding pass is ready.").setPriority(NotificationCompat.PRIORITY_DEFAULT).setAutoCancel(true).build()
     NotificationManagerCompat.from(context).notify((System.currentTimeMillis() % Int.MAX_VALUE).toInt(), notification)
+}
+
+
+
+============================================================
+FILE: app/src/main/java/com/airline/checkin/ui/helpcenter/HelpCenterScreen.kt
+============================================================
+package com.airline.checkin.ui.helpcenter
+
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.Send
+import androidx.compose.material.icons.outlined.Support
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.airline.checkin.ui.AppColors
+import com.airline.checkin.ui.AppDimens
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+import javax.inject.Inject
+
+// ─── Model ────────────────────────────────────────────────────────────────────
+
+data class ChatMessage(
+    val id: String,
+    val text: String,
+    val isUser: Boolean,
+    val time: String = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm"))
+)
+
+data class HelpUiState(
+    val messages: List<ChatMessage> = listOf(
+        ChatMessage(
+            id = "welcome",
+            text = "Hello! I'm your virtual assistant. How can I help you today?\n\nYou can ask me about:\n• Flight check-in\n• Boarding passes\n• Baggage policies\n• Seat selection",
+            isUser = false
+        )
+    ),
+    val inputText: String = "",
+    val isTyping: Boolean = false
+)
+
+// ─── ViewModel ────────────────────────────────────────────────────────────────
+
+@HiltViewModel
+class HelpCenterViewModel @Inject constructor() : ViewModel() {
+
+    private val _state = MutableStateFlow(HelpUiState())
+    val state = _state.asStateFlow()
+
+    fun onInputChange(text: String) {
+        _state.value = _state.value.copy(inputText = text)
+    }
+
+    fun send() {
+        val text = _state.value.inputText.trim()
+        if (text.isBlank()) return
+
+        val userMsg = ChatMessage(id = System.currentTimeMillis().toString(), text = text, isUser = true)
+        _state.value = _state.value.copy(
+            messages = _state.value.messages + userMsg,
+            inputText = "",
+            isTyping = true
+        )
+
+        viewModelScope.launch {
+            delay(1200)
+            val reply = generateReply(text)
+            val botMsg = ChatMessage(id = System.currentTimeMillis().toString(), text = reply, isUser = false)
+            _state.value = _state.value.copy(
+                messages = _state.value.messages + botMsg,
+                isTyping = false
+            )
+        }
+    }
+
+    private fun generateReply(input: String): String {
+        val lower = input.lowercase()
+        return when {
+            lower.contains("check") && lower.contains("in") ->
+                "Online check-in opens 24 hours before your departure. You can check in from the Check-In tab using your booking reference and last name."
+            lower.contains("boarding") || lower.contains("pass") ->
+                "Your boarding pass is available in the Passes tab once you've completed check-in. You can download it as a PDF or show the QR code at the gate."
+            lower.contains("baggage") || lower.contains("luggage") || lower.contains("bag") ->
+                "Standard allowance is 1 carry-on (7 kg) and 1 checked bag (23 kg) for economy. Business class passengers get 2 checked bags (32 kg each)."
+            lower.contains("seat") ->
+                "Seat selection is available during the check-in process. You can choose any available seat on the seat map. Exit rows and extra-legroom seats may incur an additional charge."
+            lower.contains("cancel") ->
+                "Cancellations can be made up to 24 hours before departure for a full refund. After that, a cancellation fee applies. Please contact our support team for assistance."
+            lower.contains("delay") || lower.contains("flight status") ->
+                "For real-time flight status updates, please check the airline's official website or contact the airport directly. We'll send you push notifications if your flight is affected."
+            lower.contains("passport") || lower.contains("document") ->
+                "Ensure your passport is valid for at least 6 months beyond your travel date. You can save your travel documents in the Profile > Travel Documents section."
+            lower.contains("hello") || lower.contains("hi") || lower.contains("help") ->
+                "I'm here to help! Feel free to ask about check-in, boarding passes, baggage, seat selection, or any other travel questions."
+            lower.contains("thank") ->
+                "You're welcome! Is there anything else I can help you with?"
+            lower.contains("arabic") || lower.contains("عربي") || lower.contains("language") ->
+                "You can change the app language in Profile > Preferences. We currently support English and Arabic."
+            else ->
+                "I understand you're asking about \"${input.take(60)}${if (input.length > 60) "…" else ""}\". For complex inquiries, please contact our support team at support@airline.com or call +1-800-AIR-HELP."
+        }
+    }
+}
+
+// ─── Quick Replies ─────────────────────────────────────────────────────────────
+
+private val quickReplies = listOf(
+    "How do I check in?",
+    "Where is my boarding pass?",
+    "Baggage allowance",
+    "Change my seat"
+)
+
+// ─── Screen ───────────────────────────────────────────────────────────────────
+
+@Composable
+fun HelpCenterScreen(
+    onBack: () -> Unit,
+    viewModel: HelpCenterViewModel = androidx.hilt.navigation.compose.hiltViewModel()
+) {
+    val state by viewModel.state.collectAsState()
+    val listState = rememberLazyListState()
+
+    // Auto-scroll to bottom on new messages
+    LaunchedEffect(state.messages.size) {
+        if (state.messages.isNotEmpty()) {
+            listState.animateScrollToItem(state.messages.size - 1)
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(AppColors.Gray50)
+    ) {
+        // ── Top Bar ──────────────────────────────────────────────
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(AppColors.White)
+                .padding(start = 4.dp, end = 20.dp, top = 48.dp, bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onBack) {
+                Icon(
+                    Icons.AutoMirrored.Outlined.ArrowBack,
+                    contentDescription = "Back",
+                    tint = AppColors.Gray900
+                )
+            }
+
+            // Agent avatar
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(AppColors.Primary),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Outlined.Support,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            Spacer(Modifier.width(10.dp))
+
+            Column {
+                Text(
+                    "Help Center",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = AppColors.Gray900
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(6.dp)
+                            .clip(CircleShape)
+                            .background(AppColors.Success)
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text("Virtual assistant · Always online", fontSize = 11.sp, color = AppColors.Gray500)
+                }
+            }
+        }
+
+        HorizontalDivider(color = AppColors.Gray100)
+
+        // ── Messages ─────────────────────────────────────────────
+        LazyColumn(
+            state = listState,
+            modifier = Modifier.weight(1f),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(state.messages, key = { it.id }) { message ->
+                AnimatedVisibility(
+                    visible = true,
+                    enter = fadeIn() + slideInVertically(initialOffsetY = { it / 2 })
+                ) {
+                    MessageBubble(message = message)
+                }
+            }
+
+            if (state.isTyping) {
+                item {
+                    TypingIndicator()
+                }
+            }
+        }
+
+        // ── Quick Replies (shown only when idle) ─────────────────
+        if (!state.isTyping && state.messages.size < 3) {
+            QuickRepliesRow(
+                suggestions = quickReplies,
+                onSelect = { viewModel.onInputChange(it); viewModel.send() }
+            )
+        }
+
+        HorizontalDivider(color = AppColors.Gray100)
+
+        // ── Input Bar ─────────────────────────────────────────────
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(AppColors.White)
+                .padding(horizontal = 16.dp, vertical = 10.dp)
+                .navigationBarsPadding()
+                .imePadding(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            OutlinedTextField(
+                value = state.inputText,
+                onValueChange = viewModel::onInputChange,
+                modifier = Modifier.weight(1f),
+                placeholder = {
+                    Text("Type a message…", color = AppColors.Gray500, fontSize = 14.sp)
+                },
+                shape = RoundedCornerShape(AppDimens.radiusFull),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = AppColors.Primary,
+                    unfocusedBorderColor = AppColors.Gray300,
+                    cursorColor = AppColors.Primary,
+                    focusedContainerColor = AppColors.Gray50,
+                    unfocusedContainerColor = AppColors.Gray50,
+                ),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                keyboardActions = KeyboardActions(onSend = { viewModel.send() }),
+                maxLines = 4,
+                textStyle = LocalTextStyle.current.copy(fontSize = 14.sp, color = AppColors.Gray900)
+            )
+
+            Spacer(Modifier.width(8.dp))
+
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(if (state.inputText.isBlank()) AppColors.Gray100 else AppColors.Primary),
+                contentAlignment = Alignment.Center
+            ) {
+                IconButton(
+                    onClick = viewModel::send,
+                    enabled = state.inputText.isNotBlank()
+                ) {
+                    Icon(
+                        Icons.AutoMirrored.Outlined.Send,
+                        contentDescription = "Send",
+                        tint = if (state.inputText.isBlank()) AppColors.Gray500 else Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            }
+        }
+    }
+}
+
+// ─── Message Bubble ───────────────────────────────────────────────────────────
+
+@Composable
+private fun MessageBubble(message: ChatMessage) {
+    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = if (message.isUser) Arrangement.End else Arrangement.Start
+    ) {
+        if (!message.isUser) {
+            Box(
+                modifier = Modifier
+                    .size(28.dp)
+                    .clip(CircleShape)
+                    .background(AppColors.Primary),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Outlined.Support,
+                    contentDescription = null,
+                    tint = Color.White,
+                    modifier = Modifier.size(14.dp)
+                )
+            }
+            Spacer(Modifier.width(8.dp))
+        }
+
+        Column(
+            horizontalAlignment = if (message.isUser) Alignment.End else Alignment.Start,
+            modifier = Modifier.widthIn(max = 280.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .clip(
+                        RoundedCornerShape(
+                            topStart = 16.dp,
+                            topEnd = 16.dp,
+                            bottomEnd = if (message.isUser) 4.dp else 16.dp,
+                            bottomStart = if (message.isUser) 16.dp else 4.dp
+                        )
+                    )
+                    .background(if (message.isUser) AppColors.Primary else AppColors.White)
+                    .padding(horizontal = 14.dp, vertical = 10.dp)
+            ) {
+                Text(
+                    text = message.text,
+                    fontSize = 14.sp,
+                    color = if (message.isUser) Color.White else AppColors.Gray900,
+                    lineHeight = 20.sp
+                )
+            }
+
+            Spacer(Modifier.height(2.dp))
+            Text(
+                text = message.time,
+                fontSize = 10.sp,
+                color = AppColors.Gray500,
+                modifier = Modifier.padding(horizontal = 4.dp)
+            )
+        }
+
+        if (message.isUser) Spacer(Modifier.width(8.dp))
+    }
+}
+
+// ─── Typing Indicator ─────────────────────────────────────────────────────────
+
+@Composable
+private fun TypingIndicator() {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Start
+    ) {
+        Box(
+            modifier = Modifier
+                .clip(
+                    RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomEnd = 16.dp, bottomStart = 4.dp)
+                )
+                .background(AppColors.White)
+                .padding(horizontal = 16.dp, vertical = 12.dp)
+        ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                repeat(3) { index ->
+                    var visible by remember { mutableStateOf(false) }
+                    LaunchedEffect(Unit) {
+                        delay(index * 200L)
+                        while (true) {
+                            visible = true
+                            delay(600)
+                            visible = false
+                            delay(600)
+                        }
+                    }
+                    Box(
+                        modifier = Modifier
+                            .size(6.dp)
+                            .clip(CircleShape)
+                            .background(if (visible) AppColors.Primary else AppColors.Gray300)
+                    )
+                }
+            }
+        }
+    }
+}
+
+// ─── Quick Replies Row ────────────────────────────────────────────────────────
+
+@Composable
+private fun QuickRepliesRow(
+    suggestions: List<String>,
+    onSelect: (String) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(AppColors.White)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        suggestions.take(2).forEach { suggestion ->
+            SuggestionChip(
+                onClick = { onSelect(suggestion) },
+                label = {
+                    Text(
+                        suggestion,
+                        fontSize = 12.sp,
+                        color = AppColors.Primary,
+                        maxLines = 1
+                    )
+                },
+                colors = SuggestionChipDefaults.suggestionChipColors(
+                    containerColor = AppColors.PrimaryFaint
+                ),
+                border = SuggestionChipDefaults.suggestionChipBorder(
+                    enabled = true,
+                    borderColor = AppColors.PrimaryLight
+                ),
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
 }
 
 ============================================================
@@ -4312,6 +4527,8 @@ FILE: app/src/main/java/com/airline/checkin/ui/home/HomeScreens.kt
 ============================================================
 package com.airline.checkin.ui.home
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -4334,10 +4551,12 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.airline.checkin.domain.model.Booking
 import com.airline.checkin.ui.AppColors
@@ -4354,6 +4573,20 @@ fun HomeScreen(
     onFindBooking: (reference: String, lastName: String) -> Unit = { _, _ -> },
     authViewModel: AuthViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+    val cameraLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) {}
+
+    LaunchedEffect(Unit) {
+        if (ContextCompat.checkSelfPermission(
+                context, android.Manifest.permission.CAMERA
+            ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) {
+            cameraLauncher.launch(android.Manifest.permission.CAMERA)
+        }
+    }
+
     val userBookings by authViewModel.userBookings.collectAsState()
 
     var bookingRef by remember { mutableStateOf("") }
@@ -4768,16 +5001,27 @@ fun SplashScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color.White) // Added white background so it looks clean
             .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        // --- THIS IS HOW YOU USE YOUR LOGO ---
+        Image(
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = "App Logo",
+            modifier = Modifier.size(140.dp) // Adjust size if needed (e.g. 100.dp to 200.dp)
+        )
+        // -------------------------------------
+        
+        Spacer(Modifier.height(24.dp))
         Text(
             text = "Airline Check-in",
             style = MaterialTheme.typography.headlineMedium,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
+            color = Color.Black
         )
-        Spacer(Modifier.height(24.dp))
+        Spacer(Modifier.height(32.dp))
         CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
     }
 }
@@ -4789,6 +5033,7 @@ FILE: app/src/main/java/com/airline/checkin/ui/profile/ProfileScreens.kt
 package com.airline.checkin.ui.profile
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -4808,13 +5053,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.airline.checkin.ui.AppColors
 import com.airline.checkin.ui.AppDimens
+import com.airline.checkin.ui.ThemeViewModel
 import com.airline.checkin.ui.auth.AppTextField
 import com.airline.checkin.ui.auth.ErrorBanner
 
@@ -4824,9 +5069,14 @@ fun ProfileScreen(
     onEditProfile: () -> Unit,
     onSignOut: () -> Unit,
     onBack: () -> Unit,
-    viewModel: ProfileViewModel = hiltViewModel()
+    onHelpCenter: () -> Unit,
+    onAbout: () -> Unit,
+    onSavedDocs: () -> Unit,
+    viewModel: ProfileViewModel = hiltViewModel(),
+    themeViewModel: ThemeViewModel = hiltViewModel()
 ) {
     var showChangePassword by remember { mutableStateOf(false) }
+    val isDarkMode by themeViewModel.isDarkMode.collectAsState()
 
     val displayName = userName ?: "Traveler"
     val initial = displayName.firstOrNull()?.uppercase() ?: "?"
@@ -4867,7 +5117,6 @@ fun ProfileScreen(
             }
             Spacer(Modifier.height(12.dp))
             Text(displayName, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = AppColors.Gray900)
-            Spacer(Modifier.height(4.dp))
             Spacer(Modifier.height(12.dp))
             OutlinedButton(
                 onClick = onEditProfile,
@@ -4883,14 +5132,24 @@ fun ProfileScreen(
 
         Spacer(Modifier.height(12.dp))
 
+        // ── App Settings ─────────────────────────────────────────
+        SectionLabel("App Settings")
+        SettingsCard {
+            SettingsRowSwitch(
+                icon = Icons.Outlined.DarkMode, iconBg = AppColors.Gray100, iconTint = AppColors.Gray900,
+                title = "Dark Mode", subtitle = "Toggle dark/light theme",
+                checked = isDarkMode, onCheckedChange = { themeViewModel.toggle() }
+            )
+        }
+
+        Spacer(Modifier.height(12.dp))
+
         // ── Account Section ──────────────────────────────────────
         SectionLabel("Account")
         SettingsCard {
             SettingsRow(icon = Icons.Outlined.Person, iconBg = AppColors.PrimaryFaint, iconTint = AppColors.Primary, title = "Personal information", subtitle = "Name, phone, email", onClick = onEditProfile)
             RowDivider()
             SettingsRow(icon = Icons.Outlined.Lock, iconBg = Color(0xFFFEE2E2), iconTint = AppColors.Error, title = "Change password", subtitle = "Update your password", onClick = { showChangePassword = true })
-            RowDivider()
-            SettingsRow(icon = Icons.Outlined.Notifications, iconBg = Color(0xFFFEF3C7), iconTint = AppColors.Warning, title = "Notifications", subtitle = "Push and email alerts", onClick = {})
         }
 
         Spacer(Modifier.height(12.dp))
@@ -4898,7 +5157,7 @@ fun ProfileScreen(
         // ── Travel Documents ─────────────────────────────────────
         SectionLabel("Travel documents")
         SettingsCard {
-            SettingsRow(icon = Icons.Outlined.Badge, iconBg = Color(0xFFDBFAE2), iconTint = AppColors.Success, title = "Saved documents", subtitle = "Passports, IDs", onClick = {})
+            SettingsRow(icon = Icons.Outlined.Badge, iconBg = Color(0xFFDBFAE2), iconTint = AppColors.Success, title = "Saved documents", subtitle = "Passports, IDs", onClick = onSavedDocs)
         }
 
         Spacer(Modifier.height(12.dp))
@@ -4906,9 +5165,9 @@ fun ProfileScreen(
         // ── Support ───────────────────────────────────────────────
         SectionLabel("Support")
         SettingsCard {
-            SettingsRow(icon = Icons.Outlined.Help, iconBg = AppColors.Gray100, iconTint = AppColors.Gray700, title = "Help center", subtitle = "FAQs and contact", onClick = {})
+            SettingsRow(icon = Icons.Outlined.Help, iconBg = AppColors.Gray100, iconTint = AppColors.Gray700, title = "Help center", subtitle = "FAQs and virtual assistant", onClick = onHelpCenter)
             RowDivider()
-            SettingsRow(icon = Icons.Outlined.Info, iconBg = AppColors.Gray100, iconTint = AppColors.Gray700, title = "About", subtitle = "App version and info", onClick = {})
+            SettingsRow(icon = Icons.Outlined.Info, iconBg = AppColors.Gray100, iconTint = AppColors.Gray700, title = "About", subtitle = "App version and info", onClick = onAbout)
         }
 
         Spacer(Modifier.height(12.dp))
@@ -4938,21 +5197,115 @@ fun ProfileScreen(
     }
 
     if (showChangePassword) {
-        ChangePasswordSheet(
-            onDismiss = { showChangePassword = false },
-            viewModel = viewModel
-        )
+        ChangePasswordSheet(onDismiss = { showChangePassword = false }, viewModel = viewModel)
+    }
+}
+
+// ─── Sub-Screens for Profile ─────────────────────────────────────────
+
+@Composable
+fun AboutScreen(onBack: () -> Unit) {
+    Column(modifier = Modifier.fillMaxSize().background(AppColors.Gray50)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().background(AppColors.White).padding(start = 4.dp, end = 20.dp, top = 48.dp, bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back", tint = AppColors.Gray900) }
+            Text("About", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AppColors.Gray900)
+        }
+        HorizontalDivider(color = AppColors.Gray100)
+
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(32.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(modifier = Modifier.size(80.dp).clip(RoundedCornerShape(20.dp)).background(AppColors.Primary), contentAlignment = Alignment.Center) {
+                Icon(Icons.Outlined.FlightTakeoff, contentDescription = null, tint = Color.White, modifier = Modifier.size(40.dp))
+            }
+            Spacer(Modifier.height(16.dp))
+            Text("Airline Check-in", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = AppColors.Gray900)
+            Text("Version 1.0.0", fontSize = 14.sp, color = AppColors.Gray500)
+           
+            Spacer(Modifier.height(32.dp))
+            Text("Designed for seamless travel.", fontSize = 16.sp, color = AppColors.Gray700, textAlign = TextAlign.Center)
+            Spacer(Modifier.height(8.dp))
+            Text("Built using Jetpack Compose, Hilt, and Firebase.", fontSize = 14.sp, color = AppColors.Gray500, textAlign = TextAlign.Center)
+        }
     }
 }
 
 @Composable
+fun SavedDocumentsScreen(onBack: () -> Unit, viewModel: ProfileViewModel = hiltViewModel()) {
+    val doc by viewModel.savedPassport.collectAsState()
+   
+    Column(modifier = Modifier.fillMaxSize().background(AppColors.Gray50)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().background(AppColors.White).padding(start = 4.dp, end = 20.dp, top = 48.dp, bottom = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "Back", tint = AppColors.Gray900) }
+            Text("Saved Documents", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AppColors.Gray900)
+        }
+        HorizontalDivider(color = AppColors.Gray100)
+
+        if (doc == null) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Outlined.Badge, contentDescription = null, tint = AppColors.Gray300, modifier = Modifier.size(64.dp))
+                    Spacer(Modifier.height(16.dp))
+                    Text("No saved documents", fontSize = 18.sp, fontWeight = FontWeight.SemiBold, color = AppColors.Gray900)
+                    Text("Scan your passport during check-in\nto save it here automatically.", fontSize = 14.sp, color = AppColors.Gray500, textAlign = TextAlign.Center)
+                }
+            }
+        } else {
+            Column(modifier = Modifier.padding(20.dp)) {
+                Box(
+                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(AppDimens.radiusLarge)).background(AppColors.White).border(1.dp, AppColors.Gray100, RoundedCornerShape(AppDimens.radiusLarge)).padding(20.dp)
+                ) {
+                    Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Outlined.Badge, contentDescription = null, tint = AppColors.Primary)
+                            Spacer(Modifier.width(10.dp))
+                            Text("Passport", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = AppColors.Gray900)
+                        }
+                        Spacer(Modifier.height(16.dp))
+                        Text("Name: ${doc!!.firstName} ${doc!!.lastName}", fontSize = 14.sp, color = AppColors.Gray700)
+                        Spacer(Modifier.height(4.dp))
+                        Text("Passport No: ${doc!!.number}", fontSize = 14.sp, color = AppColors.Gray700)
+                        Spacer(Modifier.height(4.dp))
+                        Text("Date of Birth: ${doc!!.dob}", fontSize = 14.sp, color = AppColors.Gray700)
+                        Spacer(Modifier.height(4.dp))
+                        Text("Nationality: ${doc!!.nationality}", fontSize = 14.sp, color = AppColors.Gray700)
+                        Spacer(Modifier.height(4.dp))
+                        Text("Gender: ${doc!!.gender}", fontSize = 14.sp, color = AppColors.Gray700)
+                    }
+                }
+               
+                Spacer(Modifier.height(24.dp))
+               
+                OutlinedButton(
+                    onClick = { viewModel.deleteSavedPassport() },
+                    modifier = Modifier.fillMaxWidth().height(AppDimens.buttonHeight),
+                    shape = RoundedCornerShape(AppDimens.radiusFull),
+                    border = ButtonDefaults.outlinedButtonBorder.copy(brush = androidx.compose.ui.graphics.SolidColor(AppColors.Error)),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = AppColors.Error)
+                ) {
+                    Icon(Icons.Outlined.Delete, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text("Delete Document")
+                }
+            }
+        }
+    }
+}
+
+// ─── Helper Views ─────────────────────────────────────────────────────────
+
+@Composable
 private fun SectionLabel(label: String) {
     Text(
-        text = label.uppercase(),
-        fontSize = 11.sp,
-        fontWeight = FontWeight.SemiBold,
-        color = AppColors.Gray500,
-        letterSpacing = 0.8.sp,
+        text = label.uppercase(), fontSize = 11.sp, fontWeight = FontWeight.SemiBold,
+        color = AppColors.Gray500, letterSpacing = 0.8.sp,
         modifier = Modifier.padding(horizontal = 24.dp, vertical = 6.dp)
     )
 }
@@ -4960,11 +5313,7 @@ private fun SectionLabel(label: String) {
 @Composable
 private fun SettingsCard(content: @Composable ColumnScope.() -> Unit) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp)
-            .clip(RoundedCornerShape(AppDimens.radiusLarge))
-            .background(AppColors.White),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp).clip(RoundedCornerShape(AppDimens.radiusLarge)).background(AppColors.White),
         content = content
     )
 }
@@ -4975,24 +5324,12 @@ private fun RowDivider() {
 }
 
 @Composable
-private fun SettingsRow(
-    icon: ImageVector,
-    iconBg: Color,
-    iconTint: Color,
-    title: String,
-    subtitle: String,
-    onClick: () -> Unit
-) {
+private fun SettingsRow(icon: ImageVector, iconBg: Color, iconTint: Color, title: String, subtitle: String, onClick: () -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth().clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp)
+        modifier = Modifier.fillMaxWidth().clickable { onClick() }.padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Box(
-            modifier = Modifier.size(36.dp).clip(RoundedCornerShape(AppDimens.radiusMedium)).background(iconBg),
-            contentAlignment = Alignment.Center
-        ) {
+        Box(modifier = Modifier.size(36.dp).clip(RoundedCornerShape(AppDimens.radiusMedium)).background(iconBg), contentAlignment = Alignment.Center) {
             Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(18.dp))
         }
         Column(modifier = Modifier.weight(1f)) {
@@ -5003,46 +5340,50 @@ private fun SettingsRow(
     }
 }
 
+@Composable
+private fun SettingsRowSwitch(icon: ImageVector, iconBg: Color, iconTint: Color, title: String, subtitle: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().clickable { onCheckedChange(!checked) }.padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Box(modifier = Modifier.size(36.dp).clip(RoundedCornerShape(AppDimens.radiusMedium)).background(iconBg), contentAlignment = Alignment.Center) {
+            Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(18.dp))
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, fontSize = 15.sp, fontWeight = FontWeight.Medium, color = AppColors.Gray900)
+            Text(subtitle, fontSize = 12.sp, color = AppColors.Gray500)
+        }
+        Switch(checked = checked, onCheckedChange = onCheckedChange, colors = SwitchDefaults.colors(checkedThumbColor = AppColors.Primary, checkedTrackColor = AppColors.PrimaryLight))
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ChangePasswordSheet(onDismiss: () -> Unit, viewModel: ProfileViewModel) {
     var current by remember { mutableStateOf("") }
-    var newPass  by remember { mutableStateOf("") }
-    var confirm  by remember { mutableStateOf("") }
+    var newPass by remember { mutableStateOf("") }
+    var confirm by remember { mutableStateOf("") }
     var submitted by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
 
-    val mismatch = submitted && newPass != confirm
-    val tooShort = submitted && newPass.isNotBlank() && newPass.length < 6
-
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        containerColor = AppColors.White,
-        shape = RoundedCornerShape(topStart = AppDimens.radiusXL, topEnd = AppDimens.radiusXL)
-    ) {
+    ModalBottomSheet(onDismissRequest = onDismiss, containerColor = AppColors.White) {
         Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 16.dp)) {
             Text("Change password", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = AppColors.Gray900)
             Spacer(Modifier.height(20.dp))
-
             AppTextField(value = current, onValueChange = { current = it }, label = "Current password", visualTransformation = PasswordVisualTransformation(), error = if (submitted && current.isBlank()) "Required" else null)
             Spacer(Modifier.height(12.dp))
-            AppTextField(value = newPass, onValueChange = { newPass = it }, label = "New password", visualTransformation = PasswordVisualTransformation(), error = when { tooShort -> "Minimum 6 characters"; else -> null })
+            AppTextField(value = newPass, onValueChange = { newPass = it }, label = "New password", visualTransformation = PasswordVisualTransformation(), error = if (submitted && newPass.length < 6) "Minimum 6 characters" else null)
             Spacer(Modifier.height(12.dp))
-            AppTextField(value = confirm, onValueChange = { confirm = it }, label = "Confirm new password", visualTransformation = PasswordVisualTransformation(), error = if (mismatch) "Passwords do not match" else null)
-
+            AppTextField(value = confirm, onValueChange = { confirm = it }, label = "Confirm new password", visualTransformation = PasswordVisualTransformation(), error = if (submitted && newPass != confirm) "Passwords do not match" else null)
             error?.let { Spacer(Modifier.height(8.dp)); ErrorBanner(it) }
-
             Spacer(Modifier.height(24.dp))
             Button(
                 onClick = {
                     submitted = true
                     if (current.isBlank() || newPass.length < 6 || newPass != confirm) return@Button
-                    // viewModel.changePassword(current, newPass) ...
                     onDismiss()
                 },
-                modifier = Modifier.fillMaxWidth().height(AppDimens.buttonHeight),
-                shape = RoundedCornerShape(AppDimens.radiusFull),
-                colors = ButtonDefaults.buttonColors(containerColor = AppColors.Primary)
+                modifier = Modifier.fillMaxWidth().height(AppDimens.buttonHeight), colors = ButtonDefaults.buttonColors(containerColor = AppColors.Primary)
             ) { Text("Update password", fontSize = 16.sp, fontWeight = FontWeight.SemiBold) }
             Spacer(Modifier.height(32.dp))
         }
@@ -5055,19 +5396,37 @@ FILE: app/src/main/java/com/airline/checkin/ui/profile/ProfileViewModel.kt
 package com.airline.checkin.ui.profile
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.airline.checkin.data.local.DocumentPreferences
 import com.google.firebase.auth.FirebaseAuth
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val auth: FirebaseAuth
+    private val auth: FirebaseAuth,
+    private val docPrefs: DocumentPreferences
 ) : ViewModel() {
 
     val userId: String
         get() = auth.currentUser?.uid ?: ""
-}
 
+    // Expose the saved document to the UI
+    val savedPassport = docPrefs.savedPassport.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = null
+    )
+
+    fun deleteSavedPassport() {
+        viewModelScope.launch {
+            docPrefs.clear()
+        }
+    }
+}
 
 ============================================================
 FILE: app/src/main/java/com/airline/checkin/ui/seat/SeatMapScreen.kt
@@ -5514,14 +5873,17 @@ FILE: app/src/main/java/com/airline/checkin/ui/AppNavGraph.kt
 ============================================================
 package com.airline.checkin.ui
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Flight
+import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.FlightTakeoff
-import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -5533,16 +5895,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.ui.unit.dp
-import androidx.compose.material3.Text
-import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -5557,8 +5913,11 @@ import com.airline.checkin.ui.checkin.BookingFoundScreen
 import com.airline.checkin.ui.checkin.BookingLookupScreen
 import com.airline.checkin.ui.checkin.CheckInScreen
 import com.airline.checkin.ui.checkin.MyBookingsScreen
+import com.airline.checkin.ui.helpcenter.HelpCenterScreen
 import com.airline.checkin.ui.home.HomeScreen
+import com.airline.checkin.ui.profile.AboutScreen
 import com.airline.checkin.ui.profile.ProfileScreen
+import com.airline.checkin.ui.profile.SavedDocumentsScreen
 import com.airline.checkin.ui.onboarding.OnboardingScreen
 
 object Routes {
@@ -5573,6 +5932,9 @@ object Routes {
     const val BOOKING_FOUND  = "booking_found/{bookingId}"
     const val CHECK_IN       = "check_in/{bookingId}"
     const val BOARDING_PASS  = "boarding_pass/{bookingId}"
+    const val HELP_CENTER    = "help_center"
+    const val ABOUT          = "about"
+    const val SAVED_DOCS     = "saved_docs"
 }
 
 @Composable
@@ -5605,18 +5967,10 @@ fun AppNavGraph(
                         NavigationBarItem(
                             selected = selected,
                             onClick = {
-                                if (item.route == Routes.CHECK_IN_LOOKUP) {
-                                    navController.navigate(item.route) {
-                                        popUpTo(Routes.HOME) { saveState = false }
-                                        launchSingleTop = true
-                                        restoreState = false
-                                    }
-                                } else {
-                                    navController.navigate(item.route) {
-                                        popUpTo(Routes.HOME) { saveState = true }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
+                                navController.navigate(item.route) {
+                                    popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
                             },
                             icon = { Icon(item.icon, contentDescription = item.label) },
@@ -5693,8 +6047,23 @@ fun AppNavGraph(
                             popUpTo(Routes.HOME) { inclusive = true }
                         }
                     },
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    onHelpCenter = { navController.navigate(Routes.HELP_CENTER) },
+                    onAbout = { navController.navigate(Routes.ABOUT) },
+                    onSavedDocs = { navController.navigate(Routes.SAVED_DOCS) }
                 )
+            }
+
+            composable(Routes.ABOUT) {
+                AboutScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.SAVED_DOCS) {
+                SavedDocumentsScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.HELP_CENTER) {
+                HelpCenterScreen(onBack = { navController.popBackStack() })
             }
 
             composable(Routes.MY_BOOKINGS) {
@@ -5710,7 +6079,7 @@ fun AppNavGraph(
                 )
             }
 
-            // Home quick-lookup: resolve reference+lastName then go to booking_found
+            // Home quick-lookup
             composable(
                 route = Routes.HOME_LOOKUP,
                 arguments = listOf(
@@ -5736,24 +6105,26 @@ fun AppNavGraph(
                     if (state.result != null && !navigated.value) {
                         navigated.value = true
                         navController.navigate("booking_found/${state.result!!.id}") {
-                            popUpTo(Routes.HOME) { inclusive = false }
+                            popUpTo(Routes.HOME_LOOKUP) { inclusive = true }
                         }
                     }
                 }
-                Box(modifier = androidx.compose.ui.Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     when {
-                        state.isLoading -> androidx.compose.material3.CircularProgressIndicator(color = com.airline.checkin.ui.AppColors.Primary)
+                        state.isLoading -> androidx.compose.material3.CircularProgressIndicator(color = AppColors.Primary)
                         state.error != null -> {
-                            Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 com.airline.checkin.ui.auth.ErrorBanner(state.error ?: "Not found")
                                 Spacer(Modifier.height(16.dp))
-                                androidx.compose.material3.Button(onClick = { navController.popBackStack() },
-                                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = com.airline.checkin.ui.AppColors.Primary)) {
+                                androidx.compose.material3.Button(
+                                    onClick = { navController.popBackStack() },
+                                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = AppColors.Primary)
+                                ) {
                                     Text("Back")
                                 }
                             }
                         }
-                        else -> androidx.compose.material3.CircularProgressIndicator(color = com.airline.checkin.ui.AppColors.Primary)
+                        else -> androidx.compose.material3.CircularProgressIndicator(color = AppColors.Primary)
                     }
                 }
             }
@@ -5763,19 +6134,14 @@ fun AppNavGraph(
                 BookingFoundScreen(
                     bookingId = bookingId,
                     onStartCheckIn = { id ->
-                        navController.navigate("check_in/$id") {
-                            // Keep home in back stack so back button works
-                            popUpTo(Routes.HOME) { inclusive = false }
-                        }
+                        navController.navigate("check_in/$id")
                     },
                     onViewBoardingPass = { id -> navController.navigate("boarding_pass/$id") },
                     onBack = {
-                        // Go back to wherever we came from (home or check-in tab)
                         if (!navController.popBackStack()) navController.navigate(Routes.HOME)
                     }
                 )
             }
-
 
             composable(Routes.CHECK_IN) { backStack ->
                 val bookingId = backStack.arguments?.getString("bookingId") ?: ""
@@ -5818,22 +6184,85 @@ FILE: app/src/main/java/com/airline/checkin/ui/Theme.kt
 ============================================================
 package com.airline.checkin.ui
 
+import android.content.Context
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.preferencesDataStore
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Singleton
 
-// ─── Design System ───────────────────────────────────────────────
-// Primary:   #8400FF  (deep violet)
-// Accents:   tints/shades of primary
-// Neutrals:  white (#FFFFFF) and black (#000000)
-// Icons:     Lucide (lucide-icons/lucide-android) — monochrome, minimal
-// No emojis anywhere in UI
+// ─── DataStore ────────────────────────────────────────────────────────────────
 
-object AppColors {
+private val Context.themeDataStore by preferencesDataStore(name = "theme_prefs")
+private val DARK_MODE_KEY = booleanPreferencesKey("dark_mode")
+
+@Singleton
+class ThemePreferences @Inject constructor(@ApplicationContext private val context: Context) {
+    val isDarkMode = context.themeDataStore.data.map { prefs ->
+        prefs[DARK_MODE_KEY] ?: false
+    }
+
+    suspend fun setDarkMode(enabled: Boolean) {
+        context.themeDataStore.edit { it[DARK_MODE_KEY] = enabled }
+    }
+}
+
+// ─── ViewModel ────────────────────────────────────────────────────────────────
+
+@HiltViewModel
+class ThemeViewModel @Inject constructor(
+    private val prefs: ThemePreferences
+) : ViewModel() {
+
+    val isDarkMode = prefs.isDarkMode.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.Eagerly,
+        initialValue = false
+    )
+
+    fun toggle() {
+        viewModelScope.launch {
+            prefs.setDarkMode(!isDarkMode.value)
+        }
+    }
+
+    fun set(dark: Boolean) {
+        viewModelScope.launch { prefs.setDarkMode(dark) }
+    }
+}
+
+// ─── Composition Local ────────────────────────────────────────────────────────
+
+val LocalDarkTheme = compositionLocalOf { false }
+
+// ─── Design Tokens ────────────────────────────────────────────────────────────
+// Light palette
+private object LightColors {
     val Primary        = Color(0xFF8400FF)
-    val PrimaryLight   = Color(0xFFEDD9FF)   // 10% primary
-    val PrimaryMedium  = Color(0xFFBB80FF)   // 50% primary
-    val PrimaryDark    = Color(0xFF5500A8)   // 65% primary
-    val PrimaryFaint   = Color(0xFFF7EEFF)   // 5% primary — backgrounds
+    val PrimaryLight   = Color(0xFFEDD9FF)
+    val PrimaryMedium  = Color(0xFFBB80FF)
+    val PrimaryDark    = Color(0xFF5500A8)
+    val PrimaryFaint   = Color(0xFFF7EEFF)
 
     val Black          = Color(0xFF000000)
     val Gray900        = Color(0xFF111827)
@@ -5850,7 +6279,78 @@ object AppColors {
     val SuccessLight   = Color(0xFFDCFCE7)
     val Warning        = Color(0xFFD97706)
     val WarningLight   = Color(0xFFFEF3C7)
+
+    // Surfaces
+    val Background     = Color(0xFFF9FAFB)
+    val Surface        = Color(0xFFFFFFFF)
+    val CardBorder     = Color(0xFFF3F4F6)
 }
+
+// Dark palette
+private object DarkColors {
+    val Primary        = Color(0xFFA855F7)   // lighter violet readable on dark
+    val PrimaryLight   = Color(0xFF3B1A5E)
+    val PrimaryMedium  = Color(0xFF7C3ACA)
+    val PrimaryDark    = Color(0xFF6B21A8)
+    val PrimaryFaint   = Color(0xFF1E1232)
+
+    val Black          = Color(0xFFFFFFFF)   // inverted for text
+    val Gray900        = Color(0xFFF9FAFB)
+    val Gray700        = Color(0xFFD1D5DB)
+    val Gray500        = Color(0xFF9CA3AF)
+    val Gray300        = Color(0xFF4B5563)
+    val Gray100        = Color(0xFF1F2937)
+    val Gray50         = Color(0xFF111827)
+    val White          = Color(0xFF1F2937)   // "card" surface in dark
+
+    val Error          = Color(0xFFF87171)
+    val ErrorLight     = Color(0xFF3B1515)
+    val Success        = Color(0xFF4ADE80)
+    val SuccessLight   = Color(0xFF14381F)
+    val Warning        = Color(0xFFFBBF24)
+    val WarningLight   = Color(0xFF3A2A09)
+
+    // Surfaces
+    val Background     = Color(0xFF0F172A)
+    val Surface        = Color(0xFF1E293B)
+    val CardBorder     = Color(0xFF334155)
+}
+
+// ─── AppColors — dynamic, reads from CompositionLocal ─────────────────────────
+
+object AppColors {
+    // These are re-declared as vars that swap based on the current theme.
+    val Primary        get() = if (_dark) DarkColors.Primary        else LightColors.Primary
+    val PrimaryLight   get() = if (_dark) DarkColors.PrimaryLight   else LightColors.PrimaryLight
+    val PrimaryMedium  get() = if (_dark) DarkColors.PrimaryMedium  else LightColors.PrimaryMedium
+    val PrimaryDark    get() = if (_dark) DarkColors.PrimaryDark    else LightColors.PrimaryDark
+    val PrimaryFaint   get() = if (_dark) DarkColors.PrimaryFaint   else LightColors.PrimaryFaint
+
+    val Black          get() = if (_dark) DarkColors.Black          else LightColors.Black
+    val Gray900        get() = if (_dark) DarkColors.Gray900        else LightColors.Gray900
+    val Gray700        get() = if (_dark) DarkColors.Gray700        else LightColors.Gray700
+    val Gray500        get() = if (_dark) DarkColors.Gray500        else LightColors.Gray500
+    val Gray300        get() = if (_dark) DarkColors.Gray300        else LightColors.Gray300
+    val Gray100        get() = if (_dark) DarkColors.Gray100        else LightColors.Gray100
+    val Gray50         get() = if (_dark) DarkColors.Gray50         else LightColors.Gray50
+    val White          get() = if (_dark) DarkColors.White          else LightColors.White
+
+    val Error          get() = if (_dark) DarkColors.Error          else LightColors.Error
+    val ErrorLight     get() = if (_dark) DarkColors.ErrorLight     else LightColors.ErrorLight
+    val Success        get() = if (_dark) DarkColors.Success        else LightColors.Success
+    val SuccessLight   get() = if (_dark) DarkColors.SuccessLight   else LightColors.SuccessLight
+    val Warning        get() = if (_dark) DarkColors.Warning        else LightColors.Warning
+    val WarningLight   get() = if (_dark) DarkColors.WarningLight   else LightColors.WarningLight
+
+    val Background     get() = if (_dark) DarkColors.Background     else LightColors.Background
+    val Surface        get() = if (_dark) DarkColors.Surface        else LightColors.Surface
+    val CardBorder     get() = if (_dark) DarkColors.CardBorder     else LightColors.CardBorder
+
+    // Internal — set by AppTheme wrapper
+    internal var _dark: Boolean by mutableStateOf(false)
+}
+
+// ─── Dimensions ───────────────────────────────────────────────────────────────
 
 object AppDimens {
     val radiusSmall    = 8.dp
@@ -5870,6 +6370,39 @@ object AppDimens {
     val inputHeight    = 56.dp
 }
 
+@Composable
+fun AppTheme(
+    darkTheme: Boolean = isSystemInDarkTheme(),
+    content: @Composable () -> Unit
+) {
+    // Push the flag into the global AppColors object
+    AppColors._dark = darkTheme
+
+    val colorScheme = if (darkTheme) {
+        darkColorScheme(
+            primary          = DarkColors.Primary,
+            background       = DarkColors.Background,
+            surface          = DarkColors.Surface,
+            onBackground     = DarkColors.Gray900,
+            onSurface        = DarkColors.Gray900,
+            error            = DarkColors.Error,
+        )
+    } else {
+        lightColorScheme(
+            primary          = LightColors.Primary,
+            background       = LightColors.Background,
+            surface          = LightColors.Surface,
+            onBackground     = LightColors.Gray900,
+            onSurface        = LightColors.Gray900,
+            error            = LightColors.Error,
+        )
+    }
+
+    CompositionLocalProvider(LocalDarkTheme provides darkTheme) {
+        MaterialTheme(colorScheme = colorScheme, content = content)
+    }
+}
+
 ============================================================
 FILE: app/src/main/java/com/airline/checkin/MainActivity.kt
 ============================================================
@@ -5880,13 +6413,18 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.airline.checkin.data.local.OnboardingPreferences
 import com.airline.checkin.data.remote.firebase.DatabaseSeeder
 import com.airline.checkin.data.repository.AuthRepository
 import com.airline.checkin.ui.AppNavGraph
+import com.airline.checkin.ui.AppTheme
 import com.airline.checkin.ui.Routes
+import com.airline.checkin.ui.ThemeViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
@@ -5900,6 +6438,8 @@ class AirlineApp : Application()
 class MainActivity : ComponentActivity() {
     @Inject lateinit var databaseSeeder: DatabaseSeeder
     @Inject lateinit var authRepository: AuthRepository
+    private val themeViewModel: ThemeViewModel by viewModels()
+   
     private var keepSplashScreen = true
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -5908,7 +6448,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        // Single coroutine: seed first, then launch UI
         lifecycleScope.launch {
             try { databaseSeeder.seedIfNeeded() } catch (_: Exception) {}
 
@@ -5924,12 +6463,16 @@ class MainActivity : ComponentActivity() {
 
             keepSplashScreen = false
             setContent {
-                AppNavGraph(
-                    startDestination = startDest,
-                    onOnboardingComplete = {
-                        lifecycleScope.launch { onboardingPreferences.setHasOnboarded(true) }
-                    }
-                )
+                val isDarkMode by themeViewModel.isDarkMode.collectAsState()
+               
+                AppTheme(darkTheme = isDarkMode) {
+                    AppNavGraph(
+                        startDestination = startDest,
+                        onOnboardingComplete = {
+                            lifecycleScope.launch { onboardingPreferences.setHasOnboarded(true) }
+                        }
+                    )
+                }
             }
         }
     }
@@ -5973,20 +6516,18 @@ FILE: app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
 ============================================================
 <?xml version="1.0" encoding="utf-8"?>
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@drawable/ic_launcher_background" />
-    <foreground android:drawable="@drawable/ic_launcher_foreground" />
+    <background android:color="#FFFFFF" /> <!-- Makes the background white -->
+    <foreground android:drawable="@drawable/logo" /> <!-- Uses your logo -->
 </adaptive-icon>
-
 
 ============================================================
 FILE: app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
 ============================================================
 <?xml version="1.0" encoding="utf-8"?>
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@drawable/ic_launcher_background" />
-    <foreground android:drawable="@drawable/ic_launcher_foreground" />
+    <background android:color="#FFFFFF" />
+    <foreground android:drawable="@drawable/logo" />
 </adaptive-icon>
-
 
 ============================================================
 FILE: app/src/main/res/values/strings.xml
@@ -6038,6 +6579,8 @@ FILE: app/src/main/AndroidManifest.xml
     <application
         android:name=".AirlineApp"
         android:allowBackup="true"
+        android:icon="@drawable/logo" 
+        android:roundIcon="@drawable/logo"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.AirlineCheckin">
@@ -7222,93 +7765,6 @@ FILE: .firebaserc
   "targets": {},
   "etags": {}
 }
-
-============================================================
-FILE: .gitignore
-============================================================
-# ============================================================
-#  Android Studio / IntelliJ IDEA
-# ============================================================
-.idea/
-*.iml
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/gradle.xml
-.idea/asLocal.xml
-.idea/caches/
-.idea/libraries/
-.idea/modules.xml
-.idea/navEditor.xml
-.idea/deploymentTargetDropDown.xml
-captures/
-
-# ============================================================
-#  Gradle
-# ============================================================
-.gradle/
-build/
-**/build/
-gradle-wrapper.jar
-!gradle/wrapper/gradle-wrapper.jar
-local.properties
-
-# ============================================================
-#  Android build outputs
-# ============================================================
-*.apk
-*.aab
-*.ap_
-*.dex
-bin/
-gen/
-out/
-release/
-*.class
-
-# ============================================================
-#  Firebase — NEVER commit this file (contains API keys)
-# ============================================================
-google-services.json
-
-# ============================================================
-#  Keystore / Signing — NEVER commit these
-# ============================================================
-*.jks
-*.keystore
-keystore.properties
-
-# ============================================================
-#  Secrets / Environment
-# ============================================================
-secrets.properties
-.env
-secrets/
-node_modules/
-
-# ============================================================
-#  External native build
-# ============================================================
-.externalNativeBuild/
-.cxx/
-
-# ============================================================
-#  OS generated files
-# ============================================================
-.DS_Store
-Thumbs.db
-desktop.ini
-
-.kotlin/
-*.hprof
-hs_err_pid*.log
-
-
-# ============================================================
-# History
-# ============================================================  
-.history/
-logs/
-s.pdf
 
 ============================================================
 FILE: build.gradle.kts

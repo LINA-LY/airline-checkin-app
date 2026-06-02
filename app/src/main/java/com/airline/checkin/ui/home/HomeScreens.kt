@@ -1,5 +1,7 @@
 package com.airline.checkin.ui.home
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -22,10 +24,12 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.airline.checkin.domain.model.Booking
 import com.airline.checkin.ui.AppColors
@@ -42,6 +46,20 @@ fun HomeScreen(
     onFindBooking: (reference: String, lastName: String) -> Unit = { _, _ -> },
     authViewModel: AuthViewModel = hiltViewModel()
 ) {
+    val context = LocalContext.current
+    val cameraLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) {}
+
+    LaunchedEffect(Unit) {
+        if (ContextCompat.checkSelfPermission(
+                context, android.Manifest.permission.CAMERA
+            ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) {
+            cameraLauncher.launch(android.Manifest.permission.CAMERA)
+        }
+    }
+
     val userBookings by authViewModel.userBookings.collectAsState()
 
     var bookingRef by remember { mutableStateOf("") }

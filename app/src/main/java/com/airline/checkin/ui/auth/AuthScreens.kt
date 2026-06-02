@@ -153,6 +153,14 @@ fun WelcomeScreen(
     ) {
         Spacer(Modifier.height(56.dp))
 
+        // --- App Logo ---
+        Image(
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = "App Logo",
+            modifier = Modifier.size(80.dp)
+        )
+        Spacer(Modifier.height(16.dp))
+
         // Title
         Text(
             text = if (authMode == AuthMode.SignIn) "Welcome back" else "Create account",

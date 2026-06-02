@@ -1,13 +1,16 @@
 package com.airline.checkin.ui
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Flight
+import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.FlightTakeoff
-import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -19,16 +22,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.ui.unit.dp
-import androidx.compose.material3.Text
-import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -43,8 +40,11 @@ import com.airline.checkin.ui.checkin.BookingFoundScreen
 import com.airline.checkin.ui.checkin.BookingLookupScreen
 import com.airline.checkin.ui.checkin.CheckInScreen
 import com.airline.checkin.ui.checkin.MyBookingsScreen
+import com.airline.checkin.ui.helpcenter.HelpCenterScreen
 import com.airline.checkin.ui.home.HomeScreen
+import com.airline.checkin.ui.profile.AboutScreen
 import com.airline.checkin.ui.profile.ProfileScreen
+import com.airline.checkin.ui.profile.SavedDocumentsScreen
 import com.airline.checkin.ui.onboarding.OnboardingScreen
 
 object Routes {
@@ -59,6 +59,9 @@ object Routes {
     const val BOOKING_FOUND  = "booking_found/{bookingId}"
     const val CHECK_IN       = "check_in/{bookingId}"
     const val BOARDING_PASS  = "boarding_pass/{bookingId}"
+    const val HELP_CENTER    = "help_center"
+    const val ABOUT          = "about"
+    const val SAVED_DOCS     = "saved_docs"
 }
 
 @Composable
@@ -91,18 +94,10 @@ fun AppNavGraph(
                         NavigationBarItem(
                             selected = selected,
                             onClick = {
-                                if (item.route == Routes.CHECK_IN_LOOKUP) {
-                                    navController.navigate(item.route) {
-                                        popUpTo(Routes.HOME) { saveState = false }
-                                        launchSingleTop = true
-                                        restoreState = false
-                                    }
-                                } else {
-                                    navController.navigate(item.route) {
-                                        popUpTo(Routes.HOME) { saveState = true }
-                                        launchSingleTop = true
-                                        restoreState = true
-                                    }
+                                navController.navigate(item.route) {
+                                    popUpTo(navController.graph.startDestinationId) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
                             },
                             icon = { Icon(item.icon, contentDescription = item.label) },
@@ -179,8 +174,23 @@ fun AppNavGraph(
                             popUpTo(Routes.HOME) { inclusive = true }
                         }
                     },
-                    onBack = { navController.popBackStack() }
+                    onBack = { navController.popBackStack() },
+                    onHelpCenter = { navController.navigate(Routes.HELP_CENTER) },
+                    onAbout = { navController.navigate(Routes.ABOUT) },
+                    onSavedDocs = { navController.navigate(Routes.SAVED_DOCS) }
                 )
+            }
+
+            composable(Routes.ABOUT) {
+                AboutScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.SAVED_DOCS) {
+                SavedDocumentsScreen(onBack = { navController.popBackStack() })
+            }
+
+            composable(Routes.HELP_CENTER) {
+                HelpCenterScreen(onBack = { navController.popBackStack() })
             }
 
             composable(Routes.MY_BOOKINGS) {
@@ -196,7 +206,7 @@ fun AppNavGraph(
                 )
             }
 
-            // Home quick-lookup: resolve reference+lastName then go to booking_found
+            // Home quick-lookup
             composable(
                 route = Routes.HOME_LOOKUP,
                 arguments = listOf(
@@ -222,24 +232,26 @@ fun AppNavGraph(
                     if (state.result != null && !navigated.value) {
                         navigated.value = true
                         navController.navigate("booking_found/${state.result!!.id}") {
-                            popUpTo(Routes.HOME) { inclusive = false }
+                            popUpTo(Routes.HOME_LOOKUP) { inclusive = true }
                         }
                     }
                 }
-                Box(modifier = androidx.compose.ui.Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     when {
-                        state.isLoading -> androidx.compose.material3.CircularProgressIndicator(color = com.airline.checkin.ui.AppColors.Primary)
+                        state.isLoading -> androidx.compose.material3.CircularProgressIndicator(color = AppColors.Primary)
                         state.error != null -> {
-                            Column(horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 com.airline.checkin.ui.auth.ErrorBanner(state.error ?: "Not found")
                                 Spacer(Modifier.height(16.dp))
-                                androidx.compose.material3.Button(onClick = { navController.popBackStack() },
-                                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = com.airline.checkin.ui.AppColors.Primary)) {
+                                androidx.compose.material3.Button(
+                                    onClick = { navController.popBackStack() },
+                                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = AppColors.Primary)
+                                ) {
                                     Text("Back")
                                 }
                             }
                         }
-                        else -> androidx.compose.material3.CircularProgressIndicator(color = com.airline.checkin.ui.AppColors.Primary)
+                        else -> androidx.compose.material3.CircularProgressIndicator(color = AppColors.Primary)
                     }
                 }
             }
@@ -249,19 +261,14 @@ fun AppNavGraph(
                 BookingFoundScreen(
                     bookingId = bookingId,
                     onStartCheckIn = { id ->
-                        navController.navigate("check_in/$id") {
-                            // Keep home in back stack so back button works
-                            popUpTo(Routes.HOME) { inclusive = false }
-                        }
+                        navController.navigate("check_in/$id")
                     },
                     onViewBoardingPass = { id -> navController.navigate("boarding_pass/$id") },
                     onBack = {
-                        // Go back to wherever we came from (home or check-in tab)
                         if (!navController.popBackStack()) navController.navigate(Routes.HOME)
                     }
                 )
             }
-
 
             composable(Routes.CHECK_IN) { backStack ->
                 val bookingId = backStack.arguments?.getString("bookingId") ?: ""

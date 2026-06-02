@@ -122,6 +122,20 @@ object PdfGenerator {
             canvas.drawText("TBD", 350f, currentY, valuePaint)
             canvas.drawText(booking.seat?.seatNumber?.ifEmpty { "N/A" } ?: "N/A", 550f, currentY, valuePaint)
 
+            currentY += 80f
+            // Row 5: Baggage & Remarks
+            canvas.drawText("Baggage", 100f, currentY, labelPaint)
+            canvas.drawText("Remarks", 450f, currentY, labelPaint)
+            currentY += 40f
+            val bags = (booking.baggage?.checked ?: 0) + (booking.baggage?.cabin ?: 0)
+            canvas.drawText(if (bags > 0) "$bags Pieces" else "0 Pieces", 100f, currentY, valuePaint)
+            
+            val reqs = mutableListOf<String>()
+            if (booking.specialRequests?.wheelchair == true) reqs.add("WCHR")
+            if (booking.specialRequests?.infant == true) reqs.add("INFT")
+            if (booking.specialRequests?.pet == true) reqs.add("PETC")
+            canvas.drawText(if (reqs.isNotEmpty()) reqs.joinToString(", ") else "NONE", 450f, currentY, valuePaint)
+            
             // --- Draw Dashed Divider ---
             currentY += 100f
             canvas.drawLine(80f, currentY, 720f, currentY, dashPaint)

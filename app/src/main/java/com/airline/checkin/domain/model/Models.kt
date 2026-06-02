@@ -23,7 +23,8 @@ data class PassengerDocument(
     val docType: String = "",
     val docNumber: String = "",
     val nationality: String = "",
-    val dateOfBirth: String = ""
+    val dateOfBirth: String = "",
+    val gender: String = ""
 )
 
 data class PassportData(
@@ -85,7 +86,8 @@ data class Passenger(
     val passportNumber: String = "",
     val fullName: String = "",
     val dateOfBirth: String = "",
-    val nationality: String = ""
+    val nationality: String = "",
+    val gender: String = ""
 )
 
 data class BaggageDeclaration(

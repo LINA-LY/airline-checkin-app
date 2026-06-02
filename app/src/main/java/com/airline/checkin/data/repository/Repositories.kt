@@ -1,3 +1,4 @@
+// app/src/main/java/com/airline/checkin/data/repository/Repositories.kt
 package com.airline.checkin.data.repository
 
 import com.airline.checkin.data.local.dao.*
@@ -62,6 +63,26 @@ class AuthRepository @Inject constructor(
         if (!remote.isNullOrBlank()) return remote
         val uid = firebase.currentUserId() ?: return null
         return userDao.getById(uid)?.fullName?.takeIf { it.isNotBlank() }
+    }
+
+    // FIXED: Expose user profile details to view models, loading locally first
+    suspend fun getUserProfile(): User? {
+        val uid = firebase.currentUserId() ?: return null
+        val local = userDao.getById(uid)
+        if (local != null) {
+            return User(
+                id = local.id,
+                fullName = local.fullName,
+                email = local.email,
+                phone = local.phone
+            )
+        }
+        val remote = try { firebase.getUserProfile() } catch (_: Exception) { null }
+        if (remote != null) {
+            cacheUserLocally()
+            return remote
+        }
+        return null
     }
 
     suspend fun cacheUserLocally() {

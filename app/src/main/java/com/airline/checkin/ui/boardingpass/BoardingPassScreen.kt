@@ -345,6 +345,22 @@ private fun BoardingPassContent(
                             Text("TBD", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
                         }
                     }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            InfoLabel(label = "Baggage")
+                            val bags = (booking.baggage?.checked ?: 0) + (booking.baggage?.cabin ?: 0)
+                            Text(if (bags > 0) "$bags Pieces" else "0 Pieces", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                        }
+                        Column(modifier = Modifier.weight(1f)) {
+                            InfoLabel(label = "Remarks")
+                            val reqs = mutableListOf<String>()
+                            if (booking.specialRequests?.wheelchair == true) reqs.add("WCHR")
+                            if (booking.specialRequests?.infant == true) reqs.add("INFT")
+                            if (booking.specialRequests?.pet == true) reqs.add("PETC")
+                            Text(if (reqs.isNotEmpty()) reqs.joinToString(", ") else "NONE", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                        }
+                    }
 
                     Row(modifier = Modifier.fillMaxWidth()) {
                         Column(modifier = Modifier.weight(1f)) {
