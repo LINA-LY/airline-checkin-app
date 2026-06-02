@@ -18,8 +18,10 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -75,7 +77,8 @@ fun BoardingPassScreen(
         if (storageGranted || Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             coroutineScope.launch {
                 val booking = uiState.booking ?: return@launch
-                val uriString = PdfGenerator.generateAndSavePdf(context, booking, uiState.qrCodeBitmap)
+                // Make sure your PdfGenerator takes the flight object: (context, booking, flight, qrCode)
+                val uriString = PdfGenerator.generateAndSavePdf(context, booking, uiState.flight, uiState.qrCodeBitmap)
                 if (uriString != null) {
                     savedPdfUri = uriString
                     showSuccessDialog = true
@@ -103,7 +106,7 @@ fun BoardingPassScreen(
         } else {
             coroutineScope.launch {
                 val booking = uiState.booking ?: return@launch
-                val uriString = PdfGenerator.generateAndSavePdf(context, booking, uiState.qrCodeBitmap)
+                val uriString = PdfGenerator.generateAndSavePdf(context, booking, uiState.flight, uiState.qrCodeBitmap)
                 if (uriString != null) {
                     savedPdfUri = uriString
                     showSuccessDialog = true
@@ -143,6 +146,7 @@ fun BoardingPassScreen(
                 uiState.booking != null -> {
                     BoardingPassContent(
                         booking = uiState.booking!!,
+                        flight = uiState.flight,
                         qrCodeBitmap = uiState.qrCodeBitmap,
                         onDownloadClick = downloadTicket,
                         onViewQrFullScreen = { showQrFullScreen = true }
@@ -260,133 +264,134 @@ private fun showDownloadNotification(context: Context, uriString: String?) {
 @Composable
 private fun BoardingPassContent(
     booking: com.airline.checkin.domain.model.Booking,
+    flight: com.airline.checkin.domain.model.Flight?,
     qrCodeBitmap: Bitmap?,
     onDownloadClick: () -> Unit,
     onViewQrFullScreen: () -> Unit
 ) {
-    // We removed verticalScroll() entirely and use weight(1f) to stretch perfectly
+    // Generate deterministic dynamic gate based on flight number hash
+    val dynamicGate = remember(booking.flightNumber) { "G${(booking.flightNumber.hashCode() and 0x7FFFFFFF) % 30 + 1}" }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState()) // Makes everything scrollable safely!
             .padding(16.dp)
     ) {
-        // Ticket Card takes all remaining vertical space above the buttons
         Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
+            modifier = Modifier.fillMaxWidth(), // Removed weights so card can take natural height
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
         ) {
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 20.dp, vertical = 16.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Info Section: Takes majority of the card space, evenly spacing the rows
-                Column(
-                    modifier = Modifier.weight(1f),
-                    verticalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    FlightRouteSection(
-                        origin = booking.departure.ifBlank { "—" }, originCity = "—",
-                        destination = booking.destination.ifBlank { "—" }, destinationCity = "—",
-                        duration = "N/A"
+                FlightRouteSection(
+                    origin = booking.departure.ifBlank { "—" }, originCity = "—",
+                    destination = booking.destination.ifBlank { "—" }, destinationCity = "—",
+                    duration = "N/A"
+                )
+
+                Column {
+                    InfoLabel(label = "Traveler Name")
+                    val travelerName = listOf(booking.firstName, booking.lastName).joinToString(" ").trim()
+                    Text(
+                        text = travelerName.ifEmpty { "—" },
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.Black
                     )
+                }
 
-                    Column {
-                        InfoLabel(label = "Traveler Name")
-                        val travelerName = listOf(booking.firstName, booking.lastName).joinToString(" ").trim()
-                        Text(
-                            text = travelerName.ifEmpty { "—" },
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color.Black
-                        )
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        InfoLabel(label = "Date")
+                        val displayDate = try {
+                            if (booking.departureTime.isNotBlank()) {
+                                val instant = java.time.Instant.parse(booking.departureTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
+                                val localDate = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
+                                localDate.format(java.time.format.DateTimeFormatter.ofPattern("EEE, MMM d"))
+                            } else "—"
+                        } catch (e: Exception) {
+                            "—"
+                        }
+                        Text(displayDate, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
                     }
-
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            InfoLabel(label = "Date")
-                            val displayDate = try {
-                                if (booking.departureTime.isNotBlank()) {
-                                    val instant = java.time.Instant.parse(booking.departureTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
-                                    val localDate = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
-                                    localDate.format(java.time.format.DateTimeFormatter.ofPattern("EEE, MMM d"))
-                                } else "—"
-                            } catch (e: Exception) {
-                                "—"
-                            }
-                            Text(displayDate, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
-                        }
-                        Column(modifier = Modifier.weight(1f)) {
-                            InfoLabel(label = "Class")
-                            Text("Economy", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
-                        }
-                    }
-
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            InfoLabel(label = "Departure")
-                            val displayTime = try {
-                                if (booking.departureTime.isNotBlank()) {
-                                    val instant = java.time.Instant.parse(booking.departureTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
-                                    val localDate = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
-                                    localDate.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
-                                } else "—"
-                            } catch (e: Exception) {
-                                "—"
-                            }
-                            Text(displayTime, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
-                        }
-                        Column(modifier = Modifier.weight(1f)) {
-                            InfoLabel(label = "Arrival")
-                            Text("TBD", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
-                        }
-                    }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            InfoLabel(label = "Baggage")
-                            val bags = (booking.baggage?.checked ?: 0) + (booking.baggage?.cabin ?: 0)
-                            Text(if (bags > 0) "$bags Pieces" else "0 Pieces", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
-                        }
-                        Column(modifier = Modifier.weight(1f)) {
-                            InfoLabel(label = "Remarks")
-                            val reqs = mutableListOf<String>()
-                            if (booking.specialRequests?.wheelchair == true) reqs.add("WCHR")
-                            if (booking.specialRequests?.infant == true) reqs.add("INFT")
-                            if (booking.specialRequests?.pet == true) reqs.add("PETC")
-                            Text(if (reqs.isNotEmpty()) reqs.joinToString(", ") else "NONE", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
-                        }
-                    }
-
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            InfoLabel(label = "Flight no")
-                            Text(booking.flightNumber.ifEmpty { "N/A" }, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
-                        }
-                        Column(modifier = Modifier.weight(0.6f)) {
-                            InfoLabel(label = "Gate")
-                            Text("TBD", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
-                        }
-                        Column(modifier = Modifier.weight(0.6f)) {
-                            InfoLabel(label = "Seat")
-                            Text(booking.seat?.seatNumber?.ifEmpty { "N/A" } ?: "N/A", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
-                        }
+                    Column(modifier = Modifier.weight(1f)) {
+                        InfoLabel(label = "Class")
+                        Text(booking.cabinClass.ifEmpty { "Economy" }, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
                     }
                 }
 
-                Spacer(modifier = Modifier.height(16.dp))
-                DashedDivider()
-                Spacer(modifier = Modifier.height(16.dp))
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        InfoLabel(label = "Departure")
+                        val displayTime = try {
+                            if (booking.departureTime.isNotBlank()) {
+                                val instant = java.time.Instant.parse(booking.departureTime.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
+                                val localDate = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
+                                localDate.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
+                            } else "—"
+                        } catch (e: Exception) {
+                            "—"
+                        }
+                        Text(displayTime, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        InfoLabel(label = "Arrival")
+                        val arrTimeStr = try {
+                            val arrStr = flight?.arrivalTime ?: ""
+                            if (arrStr.isNotBlank()) {
+                                val instant = java.time.Instant.parse(arrStr.let { if (!it.endsWith("Z") && !it.contains("+")) "${it}Z" else it })
+                                val localDate = java.time.LocalDateTime.ofInstant(instant, java.time.ZoneId.systemDefault())
+                                localDate.format(java.time.format.DateTimeFormatter.ofPattern("HH:mm"))
+                            } else "TBD"
+                        } catch (e: Exception) { "TBD" }
+                        Text(arrTimeStr, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                    }
+                }
 
-                // QR Code Section: Scales dynamically but takes less space than the info section
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        InfoLabel(label = "Baggage")
+                        val bags = (booking.baggage?.checked ?: 0) + (booking.baggage?.cabin ?: 0)
+                        Text(if (bags > 0) "$bags Pieces" else "0 Pieces", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                    }
+                    Column(modifier = Modifier.weight(1f)) {
+                        InfoLabel(label = "Remarks")
+                        val reqs = mutableListOf<String>()
+                        if (booking.specialRequests?.wheelchair == true) reqs.add("WCHR")
+                        if (booking.specialRequests?.infant == true) reqs.add("INFT")
+                        if (booking.specialRequests?.pet == true) reqs.add("PETC")
+                        Text(if (reqs.isNotEmpty()) reqs.joinToString(", ") else "NONE", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                    }
+                }
+
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        InfoLabel(label = "Flight no")
+                        Text(booking.flightNumber.ifEmpty { "N/A" }, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                    }
+                    Column(modifier = Modifier.weight(0.6f)) {
+                        InfoLabel(label = "Gate")
+                        Text(dynamicGate, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                    }
+                    Column(modifier = Modifier.weight(0.6f)) {
+                        InfoLabel(label = "Seat")
+                        Text(booking.seat?.seatNumber?.ifEmpty { "N/A" } ?: "N/A", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = Color.Black)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(4.dp))
+                DashedDivider()
+                Spacer(modifier = Modifier.height(4.dp))
+
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(0.55f),
+                    modifier = Modifier.fillMaxWidth(),
                     contentAlignment = Alignment.Center
                 ) {
                     if (qrCodeBitmap != null) {
@@ -394,8 +399,8 @@ private fun BoardingPassContent(
                             bitmap = qrCodeBitmap.asImageBitmap(),
                             contentDescription = "QR Code",
                             modifier = Modifier
-                                .fillMaxHeight() 
-                                .aspectRatio(1f) 
+                                .fillMaxWidth(0.6f) // Takes 60% of the card width so it's a good size
+                                .aspectRatio(1f)
                         )
                     } else {
                         CircularProgressIndicator(color = PurplePrimary)
@@ -404,9 +409,9 @@ private fun BoardingPassContent(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        // Fixed size buttons at the bottom
+        // Action Buttons
         Button(
             onClick = onDownloadClick,
             modifier = Modifier.fillMaxWidth().height(50.dp),
@@ -422,6 +427,8 @@ private fun BoardingPassContent(
             shape = RoundedCornerShape(25.dp),
             border = ButtonDefaults.outlinedButtonBorder(enabled = true).copy(brush = SolidColor(PurplePrimary))
         ) { Text("View QR code full screen", fontSize = 16.sp, fontWeight = FontWeight.SemiBold, color = PurplePrimary) }
+
+        Spacer(modifier = Modifier.height(32.dp))
     }
 }
 

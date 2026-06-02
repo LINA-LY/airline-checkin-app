@@ -1058,12 +1058,18 @@ private fun DatePickerDialog(onDismissRequest: () -> Unit, onDateSelected: (day:
 
 // ─── Step 4: Baggage ──────────────────────────────────────────────
 
+// FILE: app/src/main/java/com/airline/checkin/ui/checkin/CheckInScreens.kt
+// Replace the BaggageStep and BaggageAddButton functions with the following:
+
 @Composable
 fun BaggageStep(
     baggageList: List<BaggageDeclaration>,
     onAdd: (BaggageDeclaration) -> Unit, onRemove: (Int) -> Unit,
     onNext: () -> Unit, onBack: () -> Unit
 ) {
+    val MAX_BAGS = 3
+    val totalBags = baggageList.sumOf { it.cabinBags + it.checkedBags }
+
     Column(modifier = Modifier.fillMaxSize().background(AppColors.White).padding(24.dp)) {
         Text("Baggage", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = AppColors.Gray900)
         Spacer(Modifier.height(4.dp))
@@ -1071,9 +1077,23 @@ fun BaggageStep(
         Spacer(Modifier.height(20.dp))
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            BaggageAddButton(label = "Cabin bag", sublabel = "7 kg", icon = Icons.Outlined.Backpack, modifier = Modifier.weight(1f), onClick = { onAdd(BaggageDeclaration(id = "BAG-${baggageList.size + 1}", cabinBags = 1, checkedBags = 0)) })
-            BaggageAddButton(label = "Checked bag", sublabel = "20 kg", icon = Icons.Outlined.Luggage, modifier = Modifier.weight(1f), onClick = { onAdd(BaggageDeclaration(id = "BAG-${baggageList.size + 1}", cabinBags = 0, checkedBags = 1)) })
+            BaggageAddButton(
+                label = "Cabin bag", sublabel = "7 kg", icon = Icons.Outlined.Backpack, modifier = Modifier.weight(1f),
+                enabled = totalBags < MAX_BAGS,
+                onClick = { onAdd(BaggageDeclaration(id = "BAG-${baggageList.size + 1}", cabinBags = 1, checkedBags = 0)) }
+            )
+            BaggageAddButton(
+                label = "Checked bag", sublabel = "20 kg", icon = Icons.Outlined.Luggage, modifier = Modifier.weight(1f),
+                enabled = totalBags < MAX_BAGS,
+                onClick = { onAdd(BaggageDeclaration(id = "BAG-${baggageList.size + 1}", cabinBags = 0, checkedBags = 1)) }
+            )
         }
+
+        if (totalBags >= MAX_BAGS) {
+            Spacer(Modifier.height(8.dp))
+            Text("Maximum limit of $MAX_BAGS bags reached.", color = AppColors.Warning, fontSize = 12.sp)
+        }
+
         Spacer(Modifier.height(20.dp))
 
         if (baggageList.isEmpty()) {
@@ -1098,8 +1118,15 @@ fun BaggageStep(
 }
 
 @Composable
-private fun BaggageAddButton(label: String, sublabel: String, icon: androidx.compose.ui.graphics.vector.ImageVector, modifier: Modifier, onClick: () -> Unit) {
-    OutlinedButton(onClick = onClick, modifier = modifier.height(80.dp), shape = RoundedCornerShape(AppDimens.radiusLarge), border = ButtonDefaults.outlinedButtonBorder.copy(brush = androidx.compose.ui.graphics.SolidColor(AppColors.Primary)), colors = ButtonDefaults.outlinedButtonColors(contentColor = AppColors.Primary)) {
+private fun BaggageAddButton(label: String, sublabel: String, icon: androidx.compose.ui.graphics.vector.ImageVector, modifier: Modifier, enabled: Boolean = true, onClick: () -> Unit) {
+    OutlinedButton(
+        onClick = onClick,
+        modifier = modifier.height(80.dp),
+        enabled = enabled,
+        shape = RoundedCornerShape(AppDimens.radiusLarge),
+        border = ButtonDefaults.outlinedButtonBorder.copy(brush = androidx.compose.ui.graphics.SolidColor(if(enabled) AppColors.Primary else AppColors.Gray300)),
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = if(enabled) AppColors.Primary else AppColors.Gray500)
+    ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp))
             Spacer(Modifier.height(4.dp))
@@ -1108,7 +1135,6 @@ private fun BaggageAddButton(label: String, sublabel: String, icon: androidx.com
         }
     }
 }
-
 // ─── Step 5: Special Requests ─────────────────────────────────────
 
 @Composable
